@@ -84,6 +84,7 @@ jobs:
           mkdir -p npm/bin dist
           find artifacts -type f -name 'novel-craft-*' ! -name '*.sha256' -exec cp {} npm/bin/ \;
           find artifacts -type f -path '*/dist/*' -exec cp {} dist/ \;
+          find npm/bin -type f -name 'novel-craft-*' ! -name '*.exe' -exec chmod 755 {} \;
 
       - name: Setup Node
         uses: actions/setup-node@v4
