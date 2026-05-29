@@ -1,0 +1,42 @@
+- file: passive_action.md
+  should_trigger:
+    - VOICE-PASSIVE
+- file: passive_withholding.md
+  should_trigger:
+    - VOICE-PASSIVE
+  note: Correctly flagged for review, but may be intentionally acceptable because the actor is hidden.
+- file: show_tell_emotion.md
+  should_trigger:
+    - EMO-EMBODY
+    - SDT-CONCRETE
+- file: filter_words.md
+  should_trigger:
+    - POV-FILTER
+- file: exposition_opening.md
+  should_trigger:
+    - SCN-ANCHOR
+    - EXPO-BLOCK
+- file: dialogue_as_you_know.md
+  should_trigger:
+    - DIA-ASYOUKNOW
+- file: dialogue_on_the_nose.md
+  should_trigger:
+    - DIA-ONNOSE
+- file: repeated_gestures.md
+  should_trigger:
+    - CHR-EMOTION-RANGE
+- file: progression_gap.md
+  should_trigger:
+    - PROG-DELTA
+    - SERIAL-PAYOFF
+- file: serial_mobile_paragraph.md
+  should_trigger:
+    - SERIAL-MOBILE
+- file: promise_payoff.md
+  should_trigger:
+    - PLOT-PROMISE
+  note: Requires project plot matrix with many open promises.
+- file: continuity_eye_colour.md
+  should_trigger:
+    - CHR-CONTINUITY
+  note: Requires character sheet canon for blue eyes.

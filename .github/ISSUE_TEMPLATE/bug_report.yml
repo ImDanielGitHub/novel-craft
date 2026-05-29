@@ -1,0 +1,29 @@
+name: Bug report
+description: Report a Novel Craft bug
+title: "Bug: "
+labels: ["bug"]
+body:
+  - type: textarea
+    id: summary
+    attributes:
+      label: Summary
+      description: What happened?
+    validations:
+      required: true
+  - type: textarea
+    id: reproduce
+    attributes:
+      label: Reproduction
+      description: Include the exact command and minimal files if possible.
+    validations:
+      required: true
+  - type: input
+    id: version
+    attributes:
+      label: Version
+      placeholder: novel-craft --version
+  - type: input
+    id: os
+    attributes:
+      label: OS
+      placeholder: macOS, Linux, Windows

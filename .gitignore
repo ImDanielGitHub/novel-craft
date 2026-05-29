@@ -1,0 +1,14 @@
+.venv/
+__pycache__/
+*.pyc
+.novel/
+*.revised
+*.line-review.md
+*.scene-review.md
+*.plot-review.md
+target/
+dist/
+node_modules/
+npm/bin/novel-craft-*
+*.tgz
+.DS_Store

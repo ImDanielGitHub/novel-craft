@@ -1,0 +1,1 @@
+Mara reached the alarm room with one breath left. The glass was broken by the guard and the lever was pulled by Mara before the captain could shout. The door was sealed by the old mechanism. She was trapped in the red light with boots hammering toward her.

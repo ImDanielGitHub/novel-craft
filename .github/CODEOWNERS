@@ -1,0 +1,12 @@
+# Maintainer-owned surfaces. Replace @da393 with the final GitHub handle if different.
+* @da393
+
+/.github/ @da393
+/Cargo.toml @da393
+/Cargo.lock @da393
+/package.json @da393
+/npm/ @da393
+/skills/ @da393
+/rules/ @da393
+/SECURITY.md @da393
+/GOVERNANCE.md @da393

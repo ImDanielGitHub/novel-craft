@@ -1,0 +1,54 @@
+[package]
+name = "novel-craft"
+version = "0.1.0"
+edition = "2021"
+license = "MIT"
+description = "A craft-aware CLI for planning, evaluating, and continuing long-form fiction."
+repository = "https://github.com/da393/novel-craft"
+homepage = "https://github.com/da393/novel-craft"
+readme = "README.md"
+keywords = ["writing", "cli", "fiction", "novel", "llm"]
+categories = ["command-line-utilities", "text-processing"]
+include = [
+  "src/**",
+  "rules/default.yml",
+  "references/**",
+  "skills/**",
+  "evals/fixtures/**",
+  "assets/readme/hero.png",
+  "README.md",
+  "LICENSE",
+]
+
+[[bin]]
+name = "novel-craft"
+path = "src/bin/novel-craft.rs"
+
+[[bin]]
+name = "novel"
+path = "src/bin/novel.rs"
+
+[dependencies]
+anyhow = "1.0"
+chrono = { version = "0.4", default-features = false, features = ["clock", "std"] }
+clap = { version = "4.5", features = ["derive"] }
+comfy-table = "7.1"
+regex = "1.10"
+rusqlite = { version = "0.31", features = ["bundled"] }
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+serde_yaml = "0.9"
+thiserror = "1.0"
+unicode-segmentation = "1.11"
+unicode-width = "0.1"
+
+[dev-dependencies]
+assert_cmd = "2.0"
+assert_fs = "1.1"
+predicates = "3.1"
+insta = { version = "1.39", features = ["yaml"] }
+
+[profile.release]
+lto = true
+codegen-units = 1
+strip = true
