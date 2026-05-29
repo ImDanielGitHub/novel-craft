@@ -6,208 +6,218 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![npm](https://img.shields.io/npm/v/novel-craft.svg)](https://www.npmjs.com/package/novel-craft)
 
-**A model-neutral writing-quality CLI, starting with long-form fiction.**
+Novel Craft is a local CLI that helps an AI agent write better fiction from a user prompt.
 
-Novel Craft is a local-first CLI for writers and writing agents. It does not call a model for you. Instead, it prepares the writing state, rule guides, context packets, rubrics, score sheets, and review prompts that you can give to any LLM.
-
-The first public domain pack is novels and webnovels. That is deliberate: long fiction stresses voice, rhythm, character memory, reader attention, continuity, promises, payoffs, and long-context drift.
-
-The longer-term goal is broader: a general writing-quality engine for fiction, copywriting, essays, reports, emails, proposals, product writing, marketing pages, technical docs, and other purpose-driven writing.
+The agent uses it to plan a chapter, compare possible directions, draft in Markdown, review the draft, revise, and compare versions. Novel Craft itself does not call an LLM.
 
 ## Install
 
-The public install target is npm/npx:
-
 ```bash
-npx novel-craft start
+npx novel-craft doctor --json
 ```
 
-Local tarball testing before publish:
+Start a project when the agent needs local story state:
 
 ```bash
-cargo build --release
-cp target/release/novel-craft npm/bin/novel-craft-$(rustc -vV | awk '/host:/ {print $2}')
-npm pack
-npm install -g ./novel-craft-0.1.0.tgz
-novel-craft doctor --json
-npm uninstall -g novel-craft
+npx novel-craft start --no-input --defaults --json
 ```
 
 From a source checkout:
 
 ```bash
-cargo run --bin novel-craft -- start --no-input --defaults
+cargo run --bin novel-craft -- doctor --json
 ```
 
-The primary command is `novel-craft`. A convenience alias, `novel`, is also built where package managers support it.
+More install notes: [docs/npm-install.md](docs/npm-install.md).
 
-See [docs/npm-install.md](https://github.com/ImDanielGitHub/novel-craft/blob/main/docs/npm-install.md) for local install, `npx`, and PATH troubleshooting.
+## Agent Flow
 
-## Quick Start
+The user says what they want. The agent runs Novel Craft before and after drafting.
 
-Beginner guided setup:
+1. Turn the user prompt into an agent plan.
 
 ```bash
-novel-craft start
+novel-craft agent plan \
+  --idea "weak-to-strong kingdom-building system" \
+  --chapters 1 \
+  --genre system-isekai \
+  --profile fast-webnovel \
+  --json
 ```
 
-Agent-friendly setup with defaults:
+The packet tells the agent what facts to preserve, what story questions are missing, how to generate contenders, how to compare them, and how to review the finished chapter.
+
+2. Pull a broad ingredient map when the prompt is thin or too familiar.
 
 ```bash
-novel-craft start --no-input --defaults --json
+novel-craft creative atlas --json
 ```
 
-Evaluate an existing chapter:
+3. Convert the request into a draft brief when the agent needs a more detailed instruction packet.
 
 ```bash
-novel-craft eval sheet chapter.md --json
-novel-craft creative novelty chapter.md --json
-novel-craft eval reader-check chapter.md --profile fast-webnovel --json
+novel-craft creative brief \
+  --idea "write a launch-night tech-fantasy story for a newly published CLI" \
+  --genre tech-fantasy-celebration \
+  --must-include "package name: novel-craft" \
+  --must-include "the CLI is model-neutral" \
+  --must-avoid "wrong version number"
 ```
 
-Compare two draft ideas:
+4. Ask the model to draft finished prose in Markdown.
+
+5. Save the draft, then run the normal chapter review.
 
 ```bash
-novel-craft creative tournament --idea "weak-to-strong kingdom-building isekai" --json
-novel-craft eval compare draft-a.md draft-b.md --json
+novel-craft eval chapter draft.md \
+  --genre tech-fantasy-celebration \
+  --profile fast-webnovel \
+  --json
 ```
 
-Build a context packet for another model:
+6. If hard facts matter, run the deterministic gate.
 
 ```bash
-novel-craft scene create chapter_01_scene_01 \
-  --goal "A weak newcomer promises shelter before winter arrives" \
-  --conflict "The settlement has no food and the guild hides the real danger" \
-  --turn "The system rewards the promise instead of a kill"
+novel-craft eval gate draft.md \
+  --must-include "package name: novel-craft" \
+  --must-avoid "wrong version number" \
+  --json
+```
 
+7. Revise for useful craft signals. Treat findings as guidance, not automatic rewrite orders.
+
+8. Compare alternatives.
+
+```bash
+novel-craft eval compare draft-a.md draft-b.md \
+  --must-include "package name: novel-craft" \
+  --must-avoid "wrong version number" \
+  --json
+```
+
+`eval compare` never chooses the winner. It gives the agent evidence so a human or LLM judge can make the call.
+
+## Commands Agents Usually Use
+
+```bash
+novel-craft creative brief --idea "<user request>" --genre <genre-or-profile> --must-include "<fact>" --must-avoid "<bad claim>"
+novel-craft agent plan --idea "<user request>" --chapters 1 --genre <genre-or-profile> --profile fast-webnovel --json
+novel-craft creative atlas --json
+novel-craft creative tournament --idea "<user request>" --count 8 --json
+novel-craft eval chapter draft.md --genre <genre-or-profile> --profile fast-webnovel --json
+novel-craft eval story draft.md --genre <genre-or-profile> --json
+novel-craft eval gate draft.md --must-include "<fact>" --must-avoid "<bad claim>" --json
+novel-craft eval compare old.md new.md --json
+novel-craft lint line draft.md --json
+novel-craft eval reader-check draft.md --profile breakout-serial --json
+novel-craft creative novelty draft.md --json
 novel-craft context build chapter_01_scene_01 --out .novel/context/ch01s01.md
+novel-craft writing guide
+novel-craft skills list --json
 ```
 
-Check the local install and project state:
+`creative novelty` reports lexical signals only. It is not a quality score.
 
-```bash
-novel-craft doctor --json
-```
+Useful genre/profile values include `breakout-serial`, `nightmare-survival`, `rational-magus`, `beast-bond-progression`, `vr-cultivation`, `monster-evolution`, `high-drama-romance`, `system-isekai`, and `general-fiction`.
+
+`creative atlas` gives agents 50 genres, 50 subgenres, 50 tropes, and 50 sub-tropes for broad mix-and-match planning. Briefs and tournaments also carry the always-on novel standard: a strong first chapter, costly advantages, scene turns, chapter-end continuation, and a wider story engine.
+
+Opening guidance: often promise the big story through a small dramatic unit first. For example, a kingdom-building novel might begin with one room, meal, door, ledger, oath, protected person, or boundary before the prose leans on kingdoms, empires, domains, or future upgrade ladders. These examples are indicators, not hard limits.
+
+## What The Package Contains
+
+The npm package ships:
+
+- a small Node wrapper at `npm/bin/novel-craft.js`
+- release binaries under `npm/bin/`
+- embedded craft rules
+- embedded `novel-craft-*` agent skills, plus one-release deprecated alias stubs
+- embedded writing-support profile and reader checks
+- a craft reference packet for story/chapter planning and review
+
+The rules and skills are compiled into the binary. The agent does not need to read this repository at runtime.
 
 ## What It Does
 
-- Creates `.novel/` project state for the first fiction domain pack: characters, scene cards, plot threads, memory, context packets, eval records, and reports.
-- Bundles effect-first craft rules with examples and legitimate rule-breaking cases.
-- Generates model-neutral prompt packets for planning, drafting, review, revision, and continuity sync.
-- Checks prose, purpose, and reader-effect signals.
-- Current checks include passive voice, filter words, abstract emotion, trope saturation, novelty, reader-level fit, voice drift, repeated beats, promises, payoff pressure, clarity, specificity, tone, and word-choice fit.
-- Exports Codex skills so agents can call the CLI rather than stuffing every rule into one prompt.
+Novel Craft helps the agent:
 
-## Product Direction
+- make a vague prompt more concrete before drafting
+- build an agent-facing chapter plan with `agent plan`
+- widen a narrow premise with a broad story atlas
+- review an existing `.md` or `.txt` story file after drafting
+- review a single chapter with `eval chapter`
+- carry required facts into the draft
+- block forbidden claims
+- create scene cards and context packets
+- check reader fit
+- flag likely line issues
+- surface trope and novelty signals
+- compare revisions without pretending metrics are taste
+- export bundled, model-neutral skill files
 
-Novel Craft starts with novels, but the root product is a writing rule engine. Each rule should explain the effect it protects, the common failure mode, when to keep or break the pattern, and which examples or counterexamples an LLM should consider before revising.
+## What It Checks
 
-Future domain packs should reuse the same core machinery for:
+The checks are deterministic signals:
 
-- copywriting: audience, promise, proof, objection handling, offer clarity, conversion risk
-- essays and articles: thesis, structure, evidence, transitions, reader contract, intellectual honesty
-- reports and proposals: claims, sources, actionability, skim structure, risk language, decision support
-- email and outreach: tone, ask clarity, credibility, concision, pressure level, reply likelihood
-- product and UX writing: task clarity, friction, labels, error states, empty states, accessibility
-- technical docs: prerequisites, sequence, examples, edge cases, correctness, maintenance burden
+- required facts missing
+- forbidden claims present
+- passive voice
+- filter words
+- abstract emotion labels
+- weak reader fit
+- opening that announces the macro premise before showing micro-action
+- trope saturation
+- repeated beats
+- voice drift
+- open promises and payoff pressure
+- power without cost
+- weak world-depth signals
+- missing chapter-end continuation reason
 
-See [docs/general-writing-engine.md](https://github.com/ImDanielGitHub/novel-craft/blob/main/docs/general-writing-engine.md).
+These checks tell the agent where to look. They do not replace human or LLM judgement, and they should not force the story into a rigid template.
 
-## What It Does Not Do
+## Project State
 
-- It does not call OpenAI, Anthropic, Ollama, or any hosted model in v1.
-- It does not store API keys.
-- It does not scrape hosted fiction.
-- It does not train on or imitate copyrighted novels.
-- It does not claim objective literary quality. Metrics route attention; the author decides.
+When state is useful, `novel-craft start` creates `.novel/`:
 
-## CLI Shape
+- project settings
+- craft rules
+- scene cards
+- character notes
+- plot threads
+- context packets
+- review reports
+- local memory files
 
-Core groups:
+For one-off prompt-to-draft work, an agent can use `creative brief`, `eval gate`, and `eval compare` without creating a full project.
 
-```text
-novel-craft start
-novel-craft init
-novel-craft doctor
-novel-craft character
-novel-craft scene
-novel-craft plot
-novel-craft matrix
-novel-craft context
-novel-craft rules
-novel-craft creative
-novel-craft eval
-novel-craft lint
-novel-craft audit
-novel-craft memory
-novel-craft skills
-novel-craft export
-```
+## Limits
 
-Human-friendly commands can prompt. Agent-friendly commands support `--json`, `--out`, and non-interactive defaults where relevant.
+Novel Craft does not:
 
-## Skills
+- call OpenAI, Anthropic, Ollama, or any hosted model
+- store API keys
+- scrape hosted fiction
+- train on or imitate copyrighted novels
+- claim objective literary quality
+- guarantee awards, rankings, publishing outcomes, platform eligibility, or reader response
 
-List bundled skills:
-
-```bash
-novel-craft skills list
-```
-
-Export them:
-
-```bash
-novel-craft skills export --out ./skills-export
-```
-
-Dry-run install to a Codex skills directory:
-
-```bash
-novel-craft skills install --target ~/.codex/skills --dry-run
-```
-
-Check skill export/install readiness:
-
-```bash
-novel-craft skills doctor --target ~/.codex/skills --json
-```
-
-## Source Policy
-
-Novel Craft is for user-owned drafts, licensed/public-domain material, and high-level craft pattern notes. Hosted fiction can be observed for structure, cadence, and genre conventions, but should not be bulk copied, stored as a corpus, embedded, trained on, or imitated without permission.
-
-See [docs/source-policy.md](https://github.com/ImDanielGitHub/novel-craft/blob/main/docs/source-policy.md).
+Source policy: [docs/source-policy.md](docs/source-policy.md).
 
 ## Development
 
 ```bash
-cargo fmt
+cargo fmt --check
 cargo check
 cargo clippy -- -D warnings
 cargo test
 npm run pack:dry
 ```
 
-The Rust CLI is the only supported public implementation.
+More docs:
 
-## Publishing
-
-Publishing is maintainer-only and not automatic from local development. The first release path is:
-
-1. verify the clean Rust-only tree
-2. create a private GitHub repo
-3. pass CI
-4. configure npm trusted publishing
-5. create a signed release tag
-6. publish through GitHub Actions with provenance
-
-See [docs/npm-publish.md](https://github.com/ImDanielGitHub/novel-craft/blob/main/docs/npm-publish.md) and [docs/release-process.md](https://github.com/ImDanielGitHub/novel-craft/blob/main/docs/release-process.md).
-
-## Governance
-
-Public PRs are welcome. Maintainers guard merges and releases with review, CODEOWNERS, branch protection, and CI. See:
-
-- [CONTRIBUTING.md](https://github.com/ImDanielGitHub/novel-craft/blob/main/CONTRIBUTING.md)
-- [SECURITY.md](https://github.com/ImDanielGitHub/novel-craft/blob/main/SECURITY.md)
-- [GOVERNANCE.md](https://github.com/ImDanielGitHub/novel-craft/blob/main/GOVERNANCE.md)
-- [docs/release-process.md](https://github.com/ImDanielGitHub/novel-craft/blob/main/docs/release-process.md)
+- [docs/cli-reference.md](docs/cli-reference.md)
+- [docs/release-process.md](docs/release-process.md)
+- [docs/npm-publish.md](docs/npm-publish.md)
+- [CONTRIBUTING.md](CONTRIBUTING.md)
+- [SECURITY.md](SECURITY.md)

@@ -68,7 +68,7 @@ It should not include `.novel/`, `target/`, `node_modules/`, local tarballs, cre
 ## Install Globally From The Local Tarball
 
 ```bash
-npm install -g ./novel-craft-0.1.0.tgz
+npm install -g ./novel-craft-0.1.1.tgz
 novel-craft --help
 novel-craft doctor --json
 novel-craft start --no-input --defaults --json
@@ -79,13 +79,13 @@ npm uninstall -g novel-craft
 ## Test npx From The Local Tarball
 
 ```bash
-npx --yes ./novel-craft-0.1.0.tgz --version
+npx --yes ./novel-craft-0.1.1.tgz --version
 ```
 
 If your npm version does not accept that local tarball syntax, use:
 
 ```bash
-npm exec --yes --package ./novel-craft-0.1.0.tgz -- novel-craft --version
+npm exec --yes --package ./novel-craft-0.1.1.tgz -- novel-craft --version
 ```
 
 ## Add npm To PATH

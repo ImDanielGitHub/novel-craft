@@ -20,16 +20,16 @@ novel-craft skills install --target ~/.codex/skills --dry-run
 
 The bundled skills cover:
 
-- next chapter context
-- line editing
-- dialogue review
-- character review
-- continuity sync
-- memory diff
-- rulebook review
-- full-book review
-- scene architecture
-- creative architecture
-- evaluation review
+- `novel-craft-agentic-writer` for prompt-to-plan-to-finished-chapter loops
+- `novel-craft-creativity-engine` for atlas, brief, and contender generation
+- `novel-craft-draft-review` for chapter/story review, gates, and comparison
+- `novel-craft-next-chapter` for continuation work
+- `novel-craft-scene-planner` for scene cards and context
+- `novel-craft-line-review`, `novel-craft-dialogue-review`, and `novel-craft-character-review`
+- `novel-craft-continuity-sync`, `novel-craft-memory-sync`, and `novel-craft-book-audit`
+- `novel-craft-rulebook-review`
+- `novel-craft-writing-support` for plain naming, natural wording, and docs cleanup
 
-Model boundary: the skill may ask a model to draft, review, compare, or revise, but the CLI itself should not call a model in v1.
+Older skill names are shipped only as deprecated alias stubs for one release.
+
+Model boundary: the skill may ask a model to draft, review, compare, or revise, but the CLI itself does not call a model.

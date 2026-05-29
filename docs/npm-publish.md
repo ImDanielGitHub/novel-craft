@@ -1,6 +1,6 @@
 # npm Publish Process
 
-Novel Craft is published to npm as `novel-craft`. Do not publish from a developer machine for v1. The intended release path is GitHub Actions trusted publishing with provenance.
+Novel Craft is published to npm as `novel-craft`. The intended release path is GitHub Actions trusted publishing with provenance. Local developer publishes are only an emergency fallback.
 
 ## Publish Boundary
 
@@ -9,7 +9,7 @@ Do not publish until all are true:
 - the public tree contains only the Rust CLI, docs, rules, skills, fixtures, npm wrapper, and release metadata
 - unsupported implementation files are absent from the public root commit
 - leak checks pass
-- CI passes on the private GitHub repository
+- CI passes on the protected public repository
 - npm package contents have been reviewed with `npm pack --dry-run`
 - maintainer explicitly approves the release
 
@@ -17,13 +17,11 @@ Do not publish until all are true:
 
 1. Own or create the npm account that will publish `novel-craft`.
 2. Enable two-factor authentication on the npm account.
-3. Check package availability immediately before first publish:
+3. Confirm the currently published package version before tagging:
 
 ```bash
-npm view novel-craft
+npm view novel-craft version
 ```
-
-If npm returns `404 Not Found`, the unscoped package name is available at that moment. Package names can change, so check again immediately before release.
 
 ## Trusted Publishing
 
@@ -31,7 +29,7 @@ Use npm trusted publishing instead of long-lived npm tokens.
 
 In npm:
 
-1. Open the `novel-craft` package publishing settings after the first package setup flow is available.
+1. Open the `novel-craft` package publishing settings.
 2. Add the GitHub repository as a trusted publisher.
 3. Point it at the release workflow that runs `npm publish --provenance --access public`.
 
@@ -60,8 +58,8 @@ npm pack --dry-run
 Create and push a signed tag:
 
 ```bash
-git tag -s v0.1.0 -m "Novel Craft v0.1.0"
-git push origin v0.1.0
+git tag -s v0.1.1 -m "Novel Craft v0.1.1"
+git push origin v0.1.1
 ```
 
 The release workflow should:
@@ -84,7 +82,7 @@ After release:
 ```bash
 npm view novel-craft version
 npx --yes novel-craft --version
-npx --yes novel-craft start --no-input --defaults --json
+npx --yes novel-craft doctor --json
 ```
 
 Also inspect the GitHub Release artifacts, checksums, and attestation/provenance output.
@@ -98,7 +96,7 @@ npm packages cannot be treated like a private branch after publish. If a bad rel
 3. deprecate the bad version with a clear message:
 
 ```bash
-npm deprecate novel-craft@0.1.0 "Use 0.1.1; 0.1.0 has a packaging issue."
+npm deprecate novel-craft@<bad-version> "Use <fixed-version>; this release has a confirmed issue."
 ```
 
 Only unpublish if the package is inside npm's narrow unpublish policy window and the release creates a serious security or accidental-publication issue.

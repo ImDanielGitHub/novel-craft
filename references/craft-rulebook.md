@@ -49,7 +49,7 @@ Every rule guide entry should give the LLM:
 Use:
 
 ```bash
-novel rules guide
+novel-craft rules guide
 ```
 
 The LLM should follow this decision path:
@@ -66,14 +66,15 @@ The LLM should follow this decision path:
 If the premise feels narrow, generic, or unrelatable, do not line-edit it first. Run a creativity pass:
 
 ```bash
-novel creative brief --idea "<seed>" --avoid "<stale frame>"
-novel creative tropes --genre system-isekai
-novel creative methods
+novel-craft creative brief --idea "<seed>" --avoid "<stale frame>"
+novel-craft creative tropes --genre system-isekai
+novel-craft creative methods
 ```
 
 The LLM should generate several alternatives before committing. It should check:
 
 - Does the first page offer wonder, danger, injustice, desire, or a concrete problem?
+- Does the first chapter show the smallest working unit of the premise before leaning on the whole roadmap, if that would improve reader grip?
 - Is the protagonist's situation broadly relatable?
 - Is the frame too niche, such as extended office/accounting mechanics before fantasy appears?
 - Can this premise sustain 50+ chapters through growth, costs, rivals, locations, promises, and relationship turns?
@@ -96,6 +97,7 @@ The executable rulebook now covers these modules:
 - **Sentence rhythm:** track length variance, fragments, repeated openings, and monotony clusters.
 - **Paragraphing as camera:** use paragraph breaks for emphasis, suspense, mobile readability, and attention control.
 - **Exposition function:** exposition should attach to conflict, decision, discovery, danger, contradiction, object, ritual, or place.
+- **Opening micro-promise:** the first chapter often works best when it seeds the macro premise through a small dramatic unit before leaning on future scale, category, rank ladders, or world history.
 - **Functional repetition:** distinguish lexical, syntactic, imagery, emotional, and story-function repetition.
 - **Therefore/because plotting:** prefer causal chains over additive `and then` scene lists.
 
@@ -104,6 +106,7 @@ The executable rulebook now covers these modules:
 For webnovel and progression fantasy, add checks that general novel tools often miss:
 
 - Early chapter hook.
+- Micro-action before macro-roadmap.
 - End-of-chapter forward desire or question.
 - Recap bloat.
 - Mobile paragraph length.

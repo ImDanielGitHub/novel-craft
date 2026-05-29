@@ -22,7 +22,7 @@ The product thesis:
 ## Commands
 
 ```bash
-novel scene create chapter_08_scene_02 \
+novel-craft scene create chapter_08_scene_02 \
   --chapter 8 \
   --scene 2 \
   --pov Mara \
@@ -38,17 +38,18 @@ novel scene create chapter_08_scene_02 \
 ```
 
 ```bash
-novel context build chapter_08_scene_02
-novel draft chapter_08_scene_02
-novel analyse scenes/ch08_s02.md --out .novel/reports/ch08_s02.analysis.md
-novel review scenes/ch08_s02.md --rubric dialogue
-novel audit continuity scenes/ch08_s02.md
-novel audit repetition scenes --recent 10
-novel audit causality
-novel memory extract scenes/ch08_s02.md --scene-id chapter_08_scene_02
-novel memory commit .novel/pending-memory/chapter_08_scene_02.diff.yml
-novel matrix build
-novel matrix audit
+novel-craft context build chapter_08_scene_02
+novel-craft draft chapter_08_scene_02
+novel-craft eval story scenes/ch08_s02.md --genre system-isekai --json
+novel-craft analyse scenes/ch08_s02.md --out .novel/reports/ch08_s02.analysis.md
+novel-craft review scenes/ch08_s02.md --rubric dialogue
+novel-craft audit continuity scenes/ch08_s02.md
+novel-craft audit repetition scenes --recent 10
+novel-craft audit causality
+novel-craft memory extract scenes/ch08_s02.md --scene-id chapter_08_scene_02
+novel-craft memory commit .novel/pending-memory/chapter_08_scene_02.diff.yml
+novel-craft matrix build
+novel-craft matrix audit
 ```
 
 ## Context Packet Layers
@@ -80,7 +81,7 @@ Rules are effects, not commandments.
 The agent should use the LLM-facing guide:
 
 ```bash
-novel rules guide
+novel-craft rules guide
 ```
 
 That guide gives each rule a problem example and a counterexample/keep-case. The deterministic detector is only the smoke alarm; the LLM decides whether there is a fire.
@@ -98,6 +99,7 @@ Novel Craft is especially designed to catch failures common in AI-written long f
 
 - protagonist passivity
 - smooth scenes with no turn
+- openings that lean on the macro premise before dramatizing the smallest working unit, when that weakens reader grip
 - repeated arguments with no changed power dynamic
 - promises repeated without progress
 - characters using knowledge they do not have

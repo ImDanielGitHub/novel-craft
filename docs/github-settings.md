@@ -1,11 +1,11 @@
 # GitHub Repository Settings
 
-Configure these settings after creating `github.com/ImDanielGitHub/novel-craft` as a private repository. Keep it private until the clean root commit, CI, npm package dry run, and leak checks have passed.
+Use these settings for the public `github.com/ImDanielGitHub/novel-craft` repository.
 
 ## General
 
 - Default branch: `main`
-- Visibility: private until release readiness review passes, then public only by explicit maintainer action
+- Visibility: public
 - Issues: enabled
 - Discussions: optional
 - Wiki: disabled unless maintainers want it

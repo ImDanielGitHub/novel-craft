@@ -17,11 +17,13 @@ novel-craft/
   skills/
 ```
 
-The CLI is intentionally local-first. Project state lives inside each writing project under `.novel/` for the first fiction domain pack. v1 has no built-in LLM calls, no API key handling, no telemetry, and no scraping.
+The CLI is intentionally local-first. Project state lives inside each writing project under `.novel/`. The current release has no built-in LLM calls, no API key handling, no telemetry, and no scraping.
 
-Architecturally, Novel Craft should be treated as a general writing-quality engine with a fiction pack on top. The reusable core is rule cards, purpose profiles, context packets, deterministic approximations, LLM-facing review guides, comparison reports, feedback memory, and targeted revision passes.
+Architecturally, Novel Craft should be treated as a fiction-first writing engine for agents. The reusable core is rule cards, purpose profiles, context packets, deterministic approximations, LLM-facing review guides, comparison reports, feedback memory, and targeted revision passes.
 
-Fiction-specific state such as characters, scene cards, promises, and plot threads should stay isolated. That keeps the door open for copywriting, essays, reports, emails, proposals, product writing, and technical docs without pretending every writing task is a novel.
+Fiction-specific state such as characters, scene cards, promises, and plot threads should stay isolated. Supporting prose outside fiction is currently limited to the `novel-craft-writing-support` skill for names, docs, release notes, and claim checks.
+
+Serial-success research is represented as abstract genre/profile matrices, not as copied source text. The matrices should push agents toward opening wounds, costly powers, world-depth signals, and serial-retention hooks while preserving source-policy boundaries.
 
 ## Storage
 
@@ -45,7 +47,7 @@ Project files:
 - `.novel/context/*.md`: layered context packets for a target scene or chapter.
 - `.novel/reports/*.md`: context packets, revision reports, full-book audits.
 
-Future generalized project state may use a separate layer, such as `.writing/`, after the domain-pack abstraction is stable. Until then, `.novel/` is the supported public state for v0.1.
+If broader project state is added later, it should use a separate layer rather than overloading `.novel/`. For now, `.novel/` is the supported public state.
 
 ## Rule Card Schema
 
@@ -74,9 +76,9 @@ Each rule card contains:
 - `examples`: short bad/better examples.
 - `counterexamples`: a keep-case showing when the pattern should not be "fixed."
 
-Future generalized rule cards should also support:
+If broader rule cards are added later, they should also support:
 
-- `domain`: fiction, copy, essay, report, email, proposal, product, docs, or shared.
+- `domain`: fiction, docs, or another explicitly supported writing domain.
 - `purpose`: the writing job or reader task the rule helps.
 - `reader_effect`: the practical effect to protect, such as trust, desire, clarity, suspense, actionability, empathy, or decision confidence.
 - `source_requirements`: whether claims need citations, examples, evidence, or approval.
@@ -126,6 +128,7 @@ Primary commands use `novel-craft`; `novel` is a convenience alias where the ins
 - `novel-craft start`: run the guided story setup wizard.
 - `novel-craft init`: create `.novel/` non-interactively.
 - `novel-craft doctor`: run read-only install, wrapper, asset, and project checks.
+- `novel-craft agent plan`: build an agent-facing chapter or multi-chapter workflow from a user prompt.
 - `novel-craft scene create`: create a structured scene card.
 - `novel-craft scene from-text`: draft a scene card from manuscript signals.
 - `novel-craft context build`: build a layered context packet for a scene or chapter.
@@ -145,6 +148,7 @@ Primary commands use `novel-craft`; `novel` is a convenience alias where the ins
 - `novel-craft rules refresh`: replace a project's copied rule cards with CLI defaults.
 - `novel-craft creative methods`: list LLM creativity methods such as divergence/convergence, trope twist, matrix mixing, inversion, SCAMPER, self-refine, and branching.
 - `novel-craft creative tropes`: emit trope axes for mix-and-match narrative generation.
+- `novel-craft creative atlas`: emit 50 genres, 50 subgenres, 50 tropes, 50 sub-tropes, a mixing protocol, and the always-on novel excellence standard.
 - `novel-craft creative brief`: build a premise-generation prompt that avoids over-narrow frames and scores options.
 - `novel-craft creative diagnose`: report readability, word-choice watchlists, and premise-narrowing language.
 - `novel-craft creative novelty`: estimate novelty/specificity with generic phrase, concrete detail, freshness, and trope-saturation signals.
@@ -152,6 +156,9 @@ Primary commands use `novel-craft`; `novel` is a convenience alias where the ins
 - `novel-craft creative tournament`: generate a high-variance prompt tournament pack before drafting.
 - `novel-craft eval rubric`: emit a multi-dimensional creative-writing rubric.
 - `novel-craft eval sheet`: create an evidence-based scoring sheet for a draft.
+- `novel-craft eval chapter`: review a drafted chapter file with chapter spine, scene change, reader retention, prose, voice, open-loop, progression, and dialogue checks.
+- `novel-craft eval story`: review a drafted story or extract with the same model-neutral post-writing checks.
+- `novel-craft eval gate`: run hard-constraint pass/warn/fail checks for required facts and forbidden claims.
 - `novel-craft eval compare`: create a pairwise comparison prompt for two revisions.
 - `novel-craft eval reader-profiles`: list built-in readability/reader-fit profiles.
 - `novel-craft eval reader-check`: check a draft against a target reader-level profile.
@@ -163,13 +170,19 @@ Primary commands use `novel-craft`; `novel` is a convenience alias where the ins
 - `novel-craft eval reward-export`: append a pairwise preference record to JSONL for evaluator/reward adapters.
 - `novel-craft eval reward-report`: summarize exported pairwise records.
 
-Future domain-pack commands should reuse the same command families instead of adding model-specific wrappers. For example, `creative`, `eval`, `rules`, `review`, `revise`, and `skills` can support purpose profiles for copy, reports, email, proposals, product writing, essays, and docs.
+Later domain-pack commands should reuse the same command families instead of adding model-specific wrappers. The current public release keeps that surface fiction-first.
 
 Those commands should stay model-neutral.
 
+Supported public profile names include `system-isekai`, `breakout-serial`, `nightmare-survival`, `rational-magus`, `beast-bond-progression`, `vr-cultivation`, `monster-evolution`, `high-drama-romance`, `tech-fantasy-celebration`, and `general-fiction`.
+
+`breakout-serial` is a reader-profile matrix, not the only high-quality mode. The shared novel excellence standard is injected into brief, tournament, and start packets so agents always check first-chapter pull, chapter structure, wider story engine, costly advantages, and continuation pressure.
+
+Opening-promise checks run inside `eval chapter`, `eval story`, and `eval gate`. They inspect the opening window for macro-scale announcement risk and ask the agent whether early world/system explanation would work better as scene-level action, choice, cost, or consequence.
+
 ## AI Boundary
 
-The v1 CLI prepares review reports, context packets, and drafting prompts. It does not call a hosted model by default. Future LLM adapters should:
+The CLI prepares review reports, context packets, and drafting prompts. It does not call a hosted model. Any future LLM adapters should:
 
 - Use context packets, not raw whole-book dumps.
 - Preserve source policy.
