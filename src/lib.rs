@@ -292,7 +292,7 @@ const EMOTION_WORDS: &[&str] = &[
 #[command(name = "novel-craft")]
 #[command(bin_name = "novel-craft")]
 #[command(version)]
-#[command(about = "A craft-aware CLI for planning, evaluating, and continuing long-form fiction.")]
+#[command(about = "A model-neutral writing-quality CLI, starting with long-form fiction.")]
 #[command(after_help = "Install:
   npx novel-craft start
 
@@ -308,7 +308,10 @@ Agent-friendly flags:
 
 Model boundary:
   Novel Craft emits prompt packets, rubrics, rule guides, and reports only.
-  It does not call models, store API keys, scrape hosted fiction, or publish anything for you.")]
+  It does not call models, store API keys, scrape hosted fiction, or publish anything for you.
+
+Direction:
+  The first public domain pack is long-form fiction. The underlying rule engine is designed to grow into purpose profiles for copy, essays, reports, emails, proposals, product writing, and technical docs.")]
 struct Cli {
     #[command(subcommand)]
     command: Command,

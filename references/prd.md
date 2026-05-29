@@ -2,17 +2,28 @@
 
 ## Goal
 
-Novel Craft helps a writer or Codex agent draft, review, revise, and continue long-form serial fiction without losing craft quality, character facts, plot promises, or progression logic across many chapters.
+Novel Craft helps writers and Codex agents draft, review, revise, and continue writing without losing purpose, reader effect, voice, clarity, structure, or long-context state.
 
-The v1 product is a local-first CLI wrapped by Codex skills. It is optimised for webnovel/progression fantasy, where chapter cadence, hooks, power growth, recap control, kingdom-building logistics, and continuity are especially important.
+The v1 product is a local-first CLI wrapped by Codex skills. Its first public domain pack is long-form fiction, especially webnovel/progression fantasy.
 
-The product is not merely a grammar checker. It is a stateful fiction-engineering system: rule cards describe reader effects, legitimate rule-breaking, character memory, plot progression, knowledge state, repetition risks, and long-context packet construction.
+That domain is a useful starting point because chapter cadence, hooks, power growth, recap control, kingdom-building logistics, and continuity all matter at once.
+
+The product is not merely a grammar checker. It is a stateful writing-quality engine. In the fiction pack, rule cards describe reader effects, legitimate rule-breaking, character memory, plot progression, knowledge state, repetition risks, and long-context packet construction.
+
+Future packs should reuse the same machinery for copywriting, essays, reports, proposals, emails, product writing, technical docs, and other writing jobs.
+
+## Product Thesis
+
+Good writing is not one universal voice. Good writing fits the reader, purpose, constraints, evidence, and desired effect.
+
+Novel Craft should therefore encode effect-first rule cards, purpose profiles, examples, counterexamples, rubrics, comparison prompts, and revision passes. Those tools should guide any model toward better writing without treating metrics as taste.
 
 ## Users
 
 - A writer drafting serial chapters.
 - A Codex agent helping with next-chapter planning, line editing, continuity sync, or whole-book review.
-- A future maintainer extending craft rule cards, genre profiles, or LLM rewrite adapters.
+- A future maintainer extending craft rule cards, genre profiles, purpose profiles, domain packs, or LLM rewrite adapters.
+- A future user improving copy, reports, emails, proposals, essays, product copy, or technical docs with the same rule-card and prompt-packet engine.
 
 ## Non-Goals
 
@@ -20,6 +31,8 @@ The product is not merely a grammar checker. It is a stateful fiction-engineerin
 - Do not bulk-scrape or train on hosted copyrighted fiction.
 - Do not silently rewrite a whole book without review.
 - Do not replace author judgement on voice, subtext, rhythm, theme, or intentional rule-breaking.
+- Do not force every writing purpose into a novel-shaped workflow.
+- Do not claim one generic "humanized" style is good for every audience or task.
 
 ## Primary Workflow
 
@@ -48,6 +61,7 @@ Novel Craft may use hosted fiction as browser-observed reference for high-level 
 ## Acceptance Criteria
 
 - A user can create a `.novel` project with config, rule cards, plot matrix, reports folder, character folder, and SQLite memory.
+- The public docs describe the long-term product as a general writing-quality engine, with the fiction pack clearly identified as the first domain pack rather than the full scope.
 - A user can add/update character sheets with appearance, dress, smell, motives, powers, wounds, secrets, voice, knowledge, and advanced dynamic-state fields.
 - A user can create scene cards and plot-thread state machines.
 - A user can run high-variance creative premise generation before drafting, including trope matrices, tournament prompts, novelty/specificity checks, and trope-saturation checks.
@@ -55,7 +69,7 @@ Novel Craft may use hosted fiction as browser-observed reference for high-level 
 - A user can compare dialogue voice fingerprints across chapters and hand the output to the LLM for voice-matrix review.
 - A user can store beta-reader feedback and liked/disliked taste samples instead of losing reader evidence in chat history.
 - A user can export pairwise preference records for future evaluator or reward-model adapters without claiming automatic model training.
-- A user can produce a promise heat map from the story matrix so open loops are escalated, paid off, reframed, or intentionally deferred.
+- A user can produce a promise heat map from the story matrix so the writer can escalate, pay off, reframe, or intentionally defer open loops.
 - A user can lint a draft at line, scene, and plot levels.
 - A user can run full analysis with agency, narrative distance, motivation-reaction order, scene function, dialogue power/subtext, rhythm, paragraphing, exposition, and repetition signals.
 - A user can generate a context packet that includes project config, characters, knowledge state, relationship state, scene card, recent scenes, open promises, plot threads, style profile, and memory events.

@@ -17,7 +17,11 @@ novel-craft/
   skills/
 ```
 
-The CLI is intentionally local-first. Project state lives inside each writing project under `.novel/`. v1 has no built-in LLM calls, no API key handling, no telemetry, and no scraping.
+The CLI is intentionally local-first. Project state lives inside each writing project under `.novel/` for the first fiction domain pack. v1 has no built-in LLM calls, no API key handling, no telemetry, and no scraping.
+
+Architecturally, Novel Craft should be treated as a general writing-quality engine with a fiction pack on top. The reusable core is rule cards, purpose profiles, context packets, deterministic approximations, LLM-facing review guides, comparison reports, feedback memory, and targeted revision passes.
+
+Fiction-specific state such as characters, scene cards, promises, and plot threads should stay isolated. That keeps the door open for copywriting, essays, reports, emails, proposals, product writing, and technical docs without pretending every writing task is a novel.
 
 ## Storage
 
@@ -40,6 +44,8 @@ Project files:
 - `.novel/pending-memory/*.diff.yml`: reviewable state changes before canon commit.
 - `.novel/context/*.md`: layered context packets for a target scene or chapter.
 - `.novel/reports/*.md`: context packets, revision reports, full-book audits.
+
+Future generalized project state may use a separate layer, such as `.writing/`, after the domain-pack abstraction is stable. Until then, `.novel/` is the supported public state for v0.1.
 
 ## Rule Card Schema
 
@@ -68,7 +74,14 @@ Each rule card contains:
 - `examples`: short bad/better examples.
 - `counterexamples`: a keep-case showing when the pattern should not be "fixed."
 
-Findings are classified into:
+Future generalized rule cards should also support:
+
+- `domain`: fiction, copy, essay, report, email, proposal, product, docs, or shared.
+- `purpose`: the writing job or reader task the rule helps.
+- `reader_effect`: the practical effect to protect, such as trust, desire, clarity, suspense, actionability, empathy, or decision confidence.
+- `source_requirements`: whether claims need citations, examples, evidence, or approval.
+
+The analyzer classifies findings into:
 
 - `likely_mistake`: the pattern probably weakens the intended effect.
 - `possibly_intentional`: the pattern may be serving a legitimate effect and should be reviewed.
@@ -117,7 +130,7 @@ Primary commands use `novel-craft`; `novel` is a convenience alias where the ins
 - `novel-craft scene from-text`: draft a scene card from manuscript signals.
 - `novel-craft context build`: build a layered context packet for a scene or chapter.
 - `novel-craft draft`: write a drafting prompt from the context packet.
-- `novel-craft analyse`: run deterministic fiction-engineering analysis.
+- `novel-craft analyse`: run deterministic writing-quality analysis for fiction projects.
 - `novel-craft review --rubric`: write a focused prose, scene, character, dialogue, continuity, or all-pass review packet.
 - `novel-craft matrix build`: generate `.novel/story-matrix.yml`.
 - `novel-craft matrix audit`: find repeated functions, weak causality, and promise load.
@@ -150,9 +163,13 @@ Primary commands use `novel-craft`; `novel` is a convenience alias where the ins
 - `novel-craft eval reward-export`: append a pairwise preference record to JSONL for evaluator/reward adapters.
 - `novel-craft eval reward-report`: summarize exported pairwise records.
 
+Future domain-pack commands should reuse the same command families instead of adding model-specific wrappers. For example, `creative`, `eval`, `rules`, `review`, `revise`, and `skills` can support purpose profiles for copy, reports, email, proposals, product writing, essays, and docs.
+
+Those commands should stay model-neutral.
+
 ## AI Boundary
 
-The v1 CLI prepares review reports and next-chapter prompts. It does not call a hosted model by default. Future LLM adapters should:
+The v1 CLI prepares review reports, context packets, and drafting prompts. It does not call a hosted model by default. Future LLM adapters should:
 
 - Use context packets, not raw whole-book dumps.
 - Preserve source policy.
@@ -173,4 +190,4 @@ The context packet is the main long-context defence. It carries:
 - Style profile and recent memory events.
 - Token budget.
 
-Full-book review is chunked by file and reports aggregate rule counts rather than loading every chapter into one model window. Long novels should move from raw manuscript to scene summaries, chapter summaries, arc summaries, story bible, state ledgers, and target-specific context packets.
+Full-book review chunks files and reports aggregate rule counts rather than loading every chapter into one model window. Long novels should move from raw manuscript to scene summaries, chapter summaries, arc summaries, story bible, state ledgers, and target-specific context packets.

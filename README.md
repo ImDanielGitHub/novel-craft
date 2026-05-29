@@ -6,9 +6,13 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![npm](https://img.shields.io/npm/v/novel-craft.svg)](https://www.npmjs.com/package/novel-craft)
 
-**A craft-aware CLI for planning, evaluating, and continuing long-form fiction.**
+**A model-neutral writing-quality CLI, starting with long-form fiction.**
 
-Novel Craft is a local-first command-line tool for writers and writing agents. It does not call a model for you. Instead, it creates the story state, rule guides, context packets, rubrics, score sheets, and review prompts that you can give to any LLM.
+Novel Craft is a local-first CLI for writers and writing agents. It does not call a model for you. Instead, it prepares the writing state, rule guides, context packets, rubrics, score sheets, and review prompts that you can give to any LLM.
+
+The first public domain pack is novels and webnovels. That is deliberate: long fiction stresses voice, rhythm, character memory, reader attention, continuity, promises, payoffs, and long-context drift.
+
+The longer-term goal is broader: a general writing-quality engine for fiction, copywriting, essays, reports, emails, proposals, product writing, marketing pages, technical docs, and other purpose-driven writing.
 
 ## Install
 
@@ -87,11 +91,27 @@ novel-craft doctor --json
 
 ## What It Does
 
-- Creates `.novel/` project state for characters, scene cards, plot threads, memory, context packets, eval records, and reports.
+- Creates `.novel/` project state for the first fiction domain pack: characters, scene cards, plot threads, memory, context packets, eval records, and reports.
 - Bundles effect-first craft rules with examples and legitimate rule-breaking cases.
-- Generates model-neutral prompt packets for story planning, drafting, review, revision, and continuity sync.
-- Checks prose and story signals such as passive voice, filter words, abstract emotion, trope saturation, novelty, reader-level fit, voice drift, repeated beats, promises, and payoff pressure.
+- Generates model-neutral prompt packets for planning, drafting, review, revision, and continuity sync.
+- Checks prose, purpose, and reader-effect signals.
+- Current checks include passive voice, filter words, abstract emotion, trope saturation, novelty, reader-level fit, voice drift, repeated beats, promises, payoff pressure, clarity, specificity, tone, and word-choice fit.
 - Exports Codex skills so agents can call the CLI rather than stuffing every rule into one prompt.
+
+## Product Direction
+
+Novel Craft starts with novels, but the root product is a writing rule engine. Each rule should explain the effect it protects, the common failure mode, when to keep or break the pattern, and which examples or counterexamples an LLM should consider before revising.
+
+Future domain packs should reuse the same core machinery for:
+
+- copywriting: audience, promise, proof, objection handling, offer clarity, conversion risk
+- essays and articles: thesis, structure, evidence, transitions, reader contract, intellectual honesty
+- reports and proposals: claims, sources, actionability, skim structure, risk language, decision support
+- email and outreach: tone, ask clarity, credibility, concision, pressure level, reply likelihood
+- product and UX writing: task clarity, friction, labels, error states, empty states, accessibility
+- technical docs: prerequisites, sequence, examples, edge cases, correctness, maintenance burden
+
+See [docs/general-writing-engine.md](https://github.com/ImDanielGitHub/novel-craft/blob/main/docs/general-writing-engine.md).
 
 ## What It Does Not Do
 
@@ -185,7 +205,7 @@ See [docs/npm-publish.md](https://github.com/ImDanielGitHub/novel-craft/blob/mai
 
 ## Governance
 
-Public PRs are welcome, but merges and releases are guarded by maintainer review, CODEOWNERS, branch protection, and CI. See:
+Public PRs are welcome. Maintainers guard merges and releases with review, CODEOWNERS, branch protection, and CI. See:
 
 - [CONTRIBUTING.md](https://github.com/ImDanielGitHub/novel-craft/blob/main/CONTRIBUTING.md)
 - [SECURITY.md](https://github.com/ImDanielGitHub/novel-craft/blob/main/SECURITY.md)

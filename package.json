@@ -1,7 +1,7 @@
 {
   "name": "novel-craft",
   "version": "0.1.0",
-  "description": "A craft-aware CLI for planning, evaluating, and continuing long-form fiction.",
+  "description": "A model-neutral writing-quality CLI, starting with long-form fiction.",
   "license": "MIT",
   "homepage": "https://github.com/ImDanielGitHub/novel-craft#readme",
   "repository": {
@@ -27,6 +27,7 @@
   },
   "keywords": [
     "creative-writing",
+    "copywriting",
     "fiction",
     "novel",
     "cli",
