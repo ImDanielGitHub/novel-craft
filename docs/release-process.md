@@ -31,10 +31,10 @@ cargo deny check
 zizmor .github/workflows
 ```
 
-Check npm package availability immediately before the first public publish:
+Check the currently published npm version before tagging:
 
 ```bash
-npm view novel-craft
+npm view novel-craft version
 ```
 
 Test the local npm package without publishing:
@@ -45,13 +45,13 @@ cp target/release/novel-craft "npm/bin/novel-craft-${HOST_TRIPLE}"
 chmod +x "npm/bin/novel-craft-${HOST_TRIPLE}"
 npm pack --dry-run
 npm pack
-npm install -g ./novel-craft-0.1.0.tgz
+npm install -g ./novel-craft-0.1.1.tgz
 novel-craft --help
 novel-craft doctor --json
 novel-craft start --no-input --defaults --json
 novel --version
 npm uninstall -g novel-craft
-npx --yes ./novel-craft-0.1.0.tgz --version
+npx --yes ./novel-craft-0.1.1.tgz --version
 rm -f novel-craft-*.tgz npm/bin/novel-craft-*
 ```
 
@@ -62,8 +62,8 @@ See [npm-install.md](npm-install.md) for PATH troubleshooting and alternate `npm
 Create a signed release tag from `main`:
 
 ```bash
-git tag -s v0.1.0 -m "Novel Craft v0.1.0"
-git push origin v0.1.0
+git tag -s v0.1.1 -m "Novel Craft v0.1.1"
+git push origin v0.1.1
 ```
 
 ## GitHub Actions
@@ -83,6 +83,7 @@ See [npm-publish.md](npm-publish.md) for trusted publishing setup, provenance, a
 ## After Release
 
 - Confirm `npx novel-craft --version`.
-- Confirm `npx novel-craft start --no-input --defaults`.
-- Update `CHANGELOG.md`.
+- Confirm `npx novel-craft doctor --json`.
+- Confirm `npx novel-craft start --no-input --defaults --json`.
+- Update `CHANGELOG.md` or release notes.
 - Open a tracking issue for any release follow-ups.

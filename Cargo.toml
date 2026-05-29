@@ -1,13 +1,13 @@
 [package]
 name = "novel-craft"
-version = "0.1.0"
+version = "0.1.1"
 edition = "2021"
 license = "MIT"
-description = "A model-neutral writing-quality CLI, starting with long-form fiction."
+description = "A local fiction-writing CLI for AI agents."
 repository = "https://github.com/ImDanielGitHub/novel-craft"
 homepage = "https://github.com/ImDanielGitHub/novel-craft"
 readme = "README.md"
-keywords = ["writing", "cli", "fiction", "copywriting", "llm"]
+keywords = ["writing", "cli", "fiction", "storytelling", "llm"]
 categories = ["command-line-utilities", "text-processing"]
 include = [
   "src/**",

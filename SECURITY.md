@@ -19,7 +19,7 @@ Until a dedicated security advisory channel is configured, contact the maintaine
 
 ## Security Defaults
 
-Novel Craft v1 is local-first:
+Novel Craft is local-first:
 
 - no built-in LLM provider calls
 - no API-key storage

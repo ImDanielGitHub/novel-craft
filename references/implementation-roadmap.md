@@ -7,7 +7,7 @@ Done in v0.1:
 - PRD, SDS, source policy, roadmap.
 - Machine-readable effect-first rule cards with break conditions, good/bad contexts, and classification doctrine.
 - Evaluation fixtures.
-- Plugin metadata and Codex skills.
+- Plugin metadata and bundled agent skills.
 
 ## Phase 2: Deterministic CLI
 
@@ -93,14 +93,14 @@ Next:
 - Tune thresholds per genre profile.
 - Add long-context synthetic 100-chapter audit fixture.
 
-## Phase 6: General Writing Engine
+## Phase 6: Broader Writing Support
 
-Next after the fiction pack is stable:
+Only after the fiction pack is stable:
 
-- Extract shared rule-card fields into a domain-neutral writing engine: purpose, reader effect, examples, counterexamples, source requirements, revision pass, and deterministic limitations.
-- Add purpose profiles for copywriting, essays/articles, reports, emails, proposals, product/UX writing, technical docs, and social/content writing.
-- Add domain skills such as `copy-review`, `humanize-draft`, `report-clarity`, `claim-evidence-audit`, `email-tone`, `landing-page-copy`, `proposal-review`, `plain-language-edit`, `ux-copy-review`, and `technical-doc-review`.
-- Add generalized context packets that carry audience, job-to-be-done, desired effect, constraints, examples, source notes, claim risk, and style profile.
-- Add evaluation fixtures outside fiction: weak landing page, vague proposal, over-formal email, unsourced report claim, unclear UX error message, bloated technical tutorial, generic article intro, and misleading marketing copy.
+- Extract shared rule-card fields only when they are already proven in fiction: purpose, reader effect, examples, counterexamples, source requirements, revision pass, and deterministic limitations.
+- Expand `novel-craft-writing-support` gradually for names, docs, release notes, and claim checks around novel projects.
+- Add broader profiles only when there are concrete fixtures and real user workflows for them.
+- Keep generalized context packets focused on audience, desired effect, constraints, examples, source notes, claim risk, and style profile.
+- Add evaluation fixtures outside fiction only with clear pass/fail expectations.
 - Keep the CLI model-neutral: it should generate rule guides, prompt packets, rubrics, comparison reports, and revision instructions that any LLM can consume.
-- Decide whether a future major version needs `.writing/` project state while preserving `.novel/` compatibility for fiction projects.
+- Decide whether broader writing support needs separate project state while preserving `.novel/` compatibility for fiction projects.

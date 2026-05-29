@@ -1,7 +1,7 @@
 {
   "name": "novel-craft",
-  "version": "0.1.0",
-  "description": "A model-neutral writing-quality CLI, starting with long-form fiction.",
+  "version": "0.1.1",
+  "description": "A local fiction-writing CLI for AI agents.",
   "license": "MIT",
   "homepage": "https://github.com/ImDanielGitHub/novel-craft#readme",
   "repository": {
@@ -27,11 +27,11 @@
   },
   "keywords": [
     "creative-writing",
-    "copywriting",
     "fiction",
+    "storytelling",
     "novel",
     "cli",
-    "llm",
+    "ai-agents",
     "webnovel"
   ],
   "scripts": {
