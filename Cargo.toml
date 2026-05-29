@@ -3,11 +3,11 @@ name = "novel-craft"
 version = "0.1.0"
 edition = "2021"
 license = "MIT"
-description = "A craft-aware CLI for planning, evaluating, and continuing long-form fiction."
+description = "A model-neutral writing-quality CLI, starting with long-form fiction."
 repository = "https://github.com/ImDanielGitHub/novel-craft"
 homepage = "https://github.com/ImDanielGitHub/novel-craft"
 readme = "README.md"
-keywords = ["writing", "cli", "fiction", "novel", "llm"]
+keywords = ["writing", "cli", "fiction", "copywriting", "llm"]
 categories = ["command-line-utilities", "text-processing"]
 include = [
   "src/**",

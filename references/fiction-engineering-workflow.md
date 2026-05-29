@@ -1,6 +1,6 @@
-# Fiction Engineering Workflow
+# Fiction Pack Workflow
 
-Novel Craft is not a grammar checker. It is a stateful fiction-engineering engine for long-form AI-assisted novels.
+Novel Craft is not a grammar checker. For fiction, it behaves like a stateful writing engine for long-form AI-assisted novels.
 
 The product thesis:
 
@@ -29,7 +29,7 @@ novel scene create chapter_08_scene_02 \
   --location prison_archive_outer_hall \
   --goal "Mara confronts Soren about the altered transfer record" \
   --conflict "Soren blocks access and evades direct answers" \
-  --turn "Soren admits the record was altered but denies altering it" \
+  --turn "Soren admits someone altered the record, but denies doing it" \
   --stakes "Mara may lose the only trail to Elian" \
   --thread missing_brother \
   --thread soren_divided_loyalty \

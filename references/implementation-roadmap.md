@@ -92,3 +92,15 @@ Next:
 - Add regression tests for false positives and intentional rule-breaking.
 - Tune thresholds per genre profile.
 - Add long-context synthetic 100-chapter audit fixture.
+
+## Phase 6: General Writing Engine
+
+Next after the fiction pack is stable:
+
+- Extract shared rule-card fields into a domain-neutral writing engine: purpose, reader effect, examples, counterexamples, source requirements, revision pass, and deterministic limitations.
+- Add purpose profiles for copywriting, essays/articles, reports, emails, proposals, product/UX writing, technical docs, and social/content writing.
+- Add domain skills such as `copy-review`, `humanize-draft`, `report-clarity`, `claim-evidence-audit`, `email-tone`, `landing-page-copy`, `proposal-review`, `plain-language-edit`, `ux-copy-review`, and `technical-doc-review`.
+- Add generalized context packets that carry audience, job-to-be-done, desired effect, constraints, examples, source notes, claim risk, and style profile.
+- Add evaluation fixtures outside fiction: weak landing page, vague proposal, over-formal email, unsourced report claim, unclear UX error message, bloated technical tutorial, generic article intro, and misleading marketing copy.
+- Keep the CLI model-neutral: it should generate rule guides, prompt packets, rubrics, comparison reports, and revision instructions that any LLM can consume.
+- Decide whether a future major version needs `.writing/` project state while preserving `.novel/` compatibility for fiction projects.
