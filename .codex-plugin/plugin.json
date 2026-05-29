@@ -1,0 +1,27 @@
+{
+  "name": "novel-craft",
+  "version": "0.2.0",
+  "description": "Local CLI and Codex skills for webnovel/progression-fantasy drafting, effect-aware craft linting, scene cards, continuity memory, story matrices, and full-book review.",
+  "author": {
+    "name": "Daniel / Codex"
+  },
+  "skills": "./skills/",
+  "interface": {
+    "displayName": "Novel Craft",
+    "shortDescription": "Draft, lint, revise, and track long-form fiction.",
+    "longDescription": "Novel Craft provides a local `novel` CLI plus Codex skills for serial fiction, progression fantasy, effect-aware craft rule cards, creativity/trope matrices, scene cards, plot-thread state machines, layered context packets, continuity memory, story-matrix audits, and full-book reviews.",
+    "developerName": "Daniel / Codex",
+    "category": "Productivity",
+    "capabilities": [
+      "Local CLI",
+      "Creative writing lint",
+      "Continuity memory",
+      "Scene cards",
+      "Story matrix audits",
+      "Creative premise generation",
+      "Readability diagnostics",
+      "Codex skills"
+    ],
+    "defaultPrompt": "Use Novel Craft to review this chapter, update continuity memory, and prepare the next-chapter context packet."
+  }
+}

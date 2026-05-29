@@ -1,0 +1,24 @@
+name: Feature request
+description: Suggest an improvement
+title: "Feature: "
+labels: ["enhancement"]
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: Writer or agent problem
+      description: What job should Novel Craft help with?
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed behavior
+      description: What should the CLI or skills do?
+    validations:
+      required: true
+  - type: textarea
+    id: model_boundary
+    attributes:
+      label: Model boundary
+      description: Confirm whether this stays prompt-packet only or requires a future optional adapter.

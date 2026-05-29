@@ -1,0 +1,12 @@
+# Maintainer-owned surfaces.
+* @ImDanielGitHub
+
+/.github/ @ImDanielGitHub
+/Cargo.toml @ImDanielGitHub
+/Cargo.lock @ImDanielGitHub
+/package.json @ImDanielGitHub
+/npm/ @ImDanielGitHub
+/skills/ @ImDanielGitHub
+/rules/ @ImDanielGitHub
+/SECURITY.md @ImDanielGitHub
+/GOVERNANCE.md @ImDanielGitHub

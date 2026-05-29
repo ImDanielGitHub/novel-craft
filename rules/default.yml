@@ -1,0 +1,926 @@
+- id: SDT-CONCRETE
+  level: line
+  description: Replace vague evaluative labels with concrete evidence in live scenes.
+  applies_when:
+    mode:
+      - scene
+      - close-pov
+  detect:
+    kind: lexical-window
+    terms:
+      - creepy
+      - beautiful
+      - dangerous
+      - tense
+      - powerful
+  break_when:
+    - Fast summary or deliberately judgemental narrator.
+    - Comic exaggeration.
+    - A direct character thought where blunt judgement is the point.
+  severity: S3
+  automation_risk: R1
+  rewrite_strategy: Swap the abstract judgement for image, action, object detail, sensory cue, or consequence.
+  llm_guidance: Treat the detector as a cue to ask whether the prose has created the promised quality on the page.
+  llm_questions:
+    - What exact evidence makes the thing creepy, beautiful, dangerous, tense, or powerful?
+    - Is the judgement being used as fast summary, voice, irony, or a lazy substitute for evidence?
+  counterexamples:
+    good: Three days later, the cellar still felt wrong.
+    reason: Reflective compression can use judgement when the scene has already supplied evidence or the narrator's blunt reaction is the point.
+  examples:
+    bad: The cellar was creepy.
+    better: Water ticked through the stone, and something soft shifted behind the coal bin.
+- id: EMO-EMBODY
+  level: line
+  description: In hot scenes, replace bare emotion labels with embodied evidence, action, thought, or choice.
+  applies_when:
+    scene_heat:
+      - medium
+      - high
+    pov:
+      - first
+      - deep-third
+  detect:
+    kind: emotion-label
+  break_when:
+    - Reflective summary.
+    - Emotionally articulate character self-report.
+    - Clarity matters more than subtlety.
+  severity: S3
+  automation_risk: R1
+  rewrite_strategy: Show body, behaviour, impulse, sharpened thought, or pressured choice.
+  llm_guidance: Use emotion labels as a lead. Decide whether this beat needs embodied experience or efficient summary.
+  llm_questions:
+    - Is this a hot turning point the reader should feel?
+    - Does the emotion alter behaviour, choice, perception, or dialogue?
+  counterexamples:
+    good: For three days, Mina was furious.
+    reason: Summary can compress repeated emotion when dramatizing every hour would slow the story.
+  examples:
+    bad: Mina was furious.
+    better: Mina set the mug down so hard tea leapt over her knuckles.
+- id: POV-FILTER
+  level: line
+  description: Remove redundant filter words when close POV already implies perception.
+  applies_when:
+    pov:
+      - first
+      - deep-third
+  detect:
+    kind: filter-words
+    terms:
+      - saw
+      - heard
+      - felt
+      - realised
+      - noticed
+      - wondered
+  break_when:
+    - The act of perceiving is itself important.
+    - POV handoff or deliberate distance.
+    - The character is uncertain about what they sensed.
+  severity: S2
+  automation_risk: R1
+  rewrite_strategy: Delete the filter and recast the sentence as direct experience.
+  llm_guidance: Check whether perception itself changes tactics, uncertainty, timing, or dramatic irony.
+  llm_questions:
+    - Would deleting the filter preserve the meaning?
+    - Is seeing/hearing/noticing itself the action that matters?
+  counterexamples:
+    good: She saw him before he saw her.
+    reason: The act of seeing creates tactical advantage, so the filter carries story information.
+  examples:
+    bad: He saw the knife glitter.
+    better: The knife glittered.
+- id: POV-DISTANCE
+  level: scene
+  description: Keep narrative distance intentional rather than drifting between close interiority and detached summary.
+  applies_when:
+    pov:
+      - first
+      - deep-third
+      - omniscient
+  detect:
+    kind: ai-review
+  break_when:
+    - Deliberate zoom-out for transition, irony, chapter turn, or voice.
+  severity: S3
+  automation_risk: R2
+  rewrite_strategy: Add a bridge sentence, move outward in steps, or keep the beat consistently close.
+  examples:
+    bad: Ruth wanted to scream. The town had suffered many hardships over decades.
+    better: Ruth wanted to scream. Beyond the courthouse windows, the town seemed to hold its breath with her.
+- id: VOICE-PASSIVE
+  level: line
+  description: Prefer active voice in action-heavy beats unless passive voice has a clear purpose.
+  applies_when:
+    scene_mode:
+      - action
+      - conflict
+      - discovery
+  detect:
+    kind: passive-voice
+  break_when:
+    - Actor unknown.
+    - Actor deliberately hidden.
+    - Object or victim should hold focus.
+    - Passive rhythm supports voice or withholding.
+  severity: S2
+  automation_risk: R1
+  rewrite_strategy: Name the actor first and convert to active when the actor is explicit.
+  llm_guidance: The detector finds possible passive; the LLM decides whether it weakens agency or creates useful focus, helplessness, mystery, or tone.
+  llm_questions:
+    - Is the actor known, important, and better placed as subject?
+    - Does passive voice focus victimhood, conceal the actor, delay revelation, or create institutional coldness?
+  counterexamples:
+    good: The prisoner was processed, catalogued, and transferred.
+    reason: Passive voice supports dehumanising bureaucracy and removes agency on purpose.
+  examples:
+    bad: The alarm was triggered by Mara.
+    better: Mara triggered the alarm.
+- id: VERB-PRECISION
+  level: line
+  description: Prefer a precise verb or action beat over weak verb plus adverb or padded phrasing.
+  applies_when:
+    mode:
+      - line-edit
+  detect:
+    kind: adverbs-weak-phrases
+  break_when:
+    - The adverb carries exact gradation.
+    - The narrator voice depends on the phrase.
+    - Removing every softener would make the prose stiff.
+  severity: S2
+  automation_risk: R1
+  rewrite_strategy: Cut padding, choose a sharper verb, or move the modifier into physical action.
+  examples:
+    bad: He walked slowly to the door.
+    better: He crept to the door.
+- id: RHYTHM-MONO
+  level: line
+  description: Catch accidental repeated word, sentence opening, and cadence monotony.
+  applies_when:
+    mode:
+      - polish
+  detect:
+    kind: repetition-rhythm
+  break_when:
+    - Deliberate chant, ritual, insistence, or comic pattern.
+  severity: S2
+  automation_risk: R2
+  rewrite_strategy: Vary sentence length, clause order, punctuation, and emphasis.
+  examples:
+    bad: He opened the drawer. He found the key. He left the room.
+    better: In the drawer, beneath the ledgers, he found the key. Then he ran.
+- id: PROSE-PURPLE
+  level: line
+  description: Flag dense ornate image clusters, abstract grandeur, and mixed metaphors.
+  applies_when:
+    mode:
+      - polish
+  detect:
+    kind: ornate-term-density
+  break_when:
+    - Lush literary voice is an explicit style anchor.
+    - The passage is ritual, myth, prophecy, or comic excess.
+  severity: S2
+  automation_risk: R2
+  rewrite_strategy: Keep the strongest image and ground it in physical action or consequence.
+  examples:
+    bad: The eternal obsidian abyss sang a luminous symphony in his soul.
+    better: The pit swallowed the torchlight.
+- id: SCN-ANCHOR
+  level: scene
+  description: Ground scene openings in immediate, POV-specific reality.
+  applies_when:
+    position:
+      - opening
+  detect:
+    kind: opening-backstory
+  break_when:
+    - Deliberate summary bridge.
+    - Voice-led opening with strong hook.
+  severity: S2
+  automation_risk: R1
+  rewrite_strategy: Add body, place, current action, pressure, or character-specific sensory detail.
+  examples:
+    bad: It had been a bad week.
+    better: By Thursday, Talia's blouse still smelled faintly of smoke.
+- id: EXPO-BLOCK
+  level: scene
+  description: Cut or defer exposition dumps in live scenes and openings.
+  applies_when:
+    mode:
+      - scene
+      - opening
+  detect:
+    kind: long-backstory-paragraph
+  break_when:
+    - Omniscient opening.
+    - Literary reflective mode.
+    - Intentional framing voice.
+  severity: S3
+  automation_risk: R2
+  rewrite_strategy: Compress, defer, dramatise, or distribute context through pressure and consequence.
+  examples:
+    bad: Before she entered the tavern, here is everything about the war.
+    better: Keep only the war fact that changes what she risks inside the tavern.
+- id: SCN-SUMMARY-MISMATCH
+  level: scene
+  description: Use scene for turning points and summary for bridges, repetitions, recap, and logistics.
+  applies_when:
+    mode:
+      - scene-review
+  detect:
+    kind: ai-review
+  break_when:
+    - Voice, atmosphere, or thematic compression is the main purpose.
+  severity: S4
+  automation_risk: R2
+  rewrite_strategy: Expand first-time high-stakes turns; compress routine or repeated logistics.
+  examples:
+    bad: They argued for an hour and broke up.
+    better: Dramatise the line or choice that makes the breakup irreversible.
+- id: DIA-ONNOSE
+  level: scene
+  description: Reduce overly explicit dialogue where subtext should carry tension.
+  applies_when:
+    mode:
+      - dialogue
+  detect:
+    kind: dialogue-direct-desire
+  break_when:
+    - Confession scene.
+    - Childlike bluntness.
+    - Comedy or clarity after long ambiguity.
+  severity: S3
+  automation_risk: R2
+  rewrite_strategy: Let speech dodge, deflect, understate, threaten, bargain, or reveal desire indirectly.
+  examples:
+    bad: I resent you for leaving me.
+    better: Funny how you always show up after the worst part.
+- id: DIA-ASYOUKNOW
+  level: scene
+  description: Cut expository dialogue between people who already know the facts.
+  applies_when:
+    mode:
+      - dialogue
+  detect:
+    kind: shared-fact-dialogue
+  break_when:
+    - Recap is strategic, manipulative, mistaken, or weaponised.
+  severity: S3
+  automation_risk: R1
+  rewrite_strategy: Shift exposition into asymmetry, conflict, action, or narration.
+  examples:
+    bad: As you know, brother, since Father died...
+    better: You wore his ring before the body was cold.
+- id: DIA-TAG-LOAD
+  level: scene
+  description: Keep dialogue tags clear and quiet unless an ornate tag earns its effect.
+  applies_when:
+    mode:
+      - dialogue
+  detect:
+    kind: ornate-dialogue-tags
+  break_when:
+    - Rare emphasis.
+    - Comic texture.
+    - Speaker clarity issue.
+  severity: S2
+  automation_risk: R1
+  rewrite_strategy: Prefer said, no tag, or a meaningful action beat.
+  examples:
+    bad: '"No," she hissed angrily.'
+    better: '"No." She kept her voice thin and low.'
+- id: SCN-MRU
+  level: scene
+  description: Preserve stimulus then reaction order inside close scene work.
+  applies_when:
+    pov:
+      - first
+      - deep-third
+  detect:
+    kind: ai-review
+  break_when:
+    - Retrospective narration.
+    - Dream logic.
+    - Stylised intentional reorder.
+  severity: S4
+  automation_risk: R1
+  rewrite_strategy: Put external event first, then feeling, reflex, rational action, and speech.
+  examples:
+    bad: Jack ducked. The tiger dropped from the tree.
+    better: The tiger dropped from the tree. Jack ducked.
+- id: SCN-PURPOSE
+  level: scene
+  description: Ensure each scene has a goal, friction, and changed state.
+  applies_when:
+    mode:
+      - scene-review
+  detect:
+    kind: goal-conflict-outcome
+  break_when:
+    - Atmospheric interlude has strong later payoff.
+    - Contemplative passage is intentional and genre-fitting.
+  severity: S4
+  automation_risk: R3
+  rewrite_strategy: Clarify what the POV character wants, what resists it, and what changes.
+  examples:
+    bad: They discussed the map.
+    better: She wants the route; he withholds it unless she lies to the captain.
+- id: SCN-SEQUEL
+  level: scene
+  description: After major setback, include reaction, dilemma, and decision before the next goal.
+  applies_when:
+    mode:
+      - scene-review
+  detect:
+    kind: setback-without-decision
+  break_when:
+    - Thriller pace compresses sequel into one or two beats.
+  severity: S3
+  automation_risk: R2
+  rewrite_strategy: Add a brief emotional reaction, meaning-making dilemma, and next choice.
+  examples:
+    bad: After failure, jump straight to the next quest.
+    better: Let the failure force the choice that launches the next quest.
+- id: SENSORY-BALANCE
+  level: scene
+  description: Use sensory detail as pressure-bearing support, not blankness or wallpaper.
+  applies_when:
+    mode:
+      - close-pov
+  detect:
+    kind: sensory-density
+  break_when:
+    - Sparse style, numbness, or high-speed action intentionally narrows perception.
+  severity: S2
+  automation_risk: R2
+  rewrite_strategy: Choose 1-3 character-relevant sensory cues that affect mood, decision, or threat.
+  examples:
+    bad: The market was loud, bright, smelly, colourful, and busy.
+    better: The butcher's smoke clung to her tongue; behind it, she caught the mint-oil scent of the assassin.
+- id: CHR-MOTIVE
+  level: plot
+  description: Motivation must show up in choice, not only in description.
+  applies_when:
+    mode:
+      - continuity
+  detect:
+    kind: ai-review
+  break_when:
+    - Hidden motive or unreliable narration is intentional.
+  severity: S4
+  automation_risk: R3
+  rewrite_strategy: Add decision pressure that expresses motive through action.
+  examples:
+    bad: He wanted freedom.
+    better: He trades safety for freedom when the gate opens.
+- id: CHR-CONTINUITY
+  level: plot
+  description: Keep stable character facts consistent across long contexts.
+  applies_when:
+    mode:
+      - continuity
+  detect:
+    kind: canon-contradiction
+  break_when:
+    - The change is justified on page and canon is updated.
+  severity: S4
+  automation_risk: R1
+  rewrite_strategy: Correct the detail or record an explicit canonical change.
+  examples:
+    bad: Blue eyes in chapter 2, brown eyes in chapter 9 without cause.
+    better: Keep eye colour stable or make the change a story event.
+- id: CHR-EMOTION-RANGE
+  level: plot
+  description: Avoid repeating the same stock gestures for many emotional states.
+  applies_when:
+    mode:
+      - continuity
+  detect:
+    kind: gesture-frequency
+  break_when:
+    - Deliberate motif, tic, or character signal.
+  severity: S2
+  automation_risk: R1
+  rewrite_strategy: Replace repeated stock gesture with character-specific behaviour, thought, or action.
+  examples:
+    bad: Every emotional turn is a sigh.
+    better: Use scene-specific responses that reveal motive and pressure.
+- id: PLOT-CAUSE
+  level: plot
+  description: Keep cause and effect visible across scenes.
+  applies_when:
+    mode:
+      - plot-review
+  detect:
+    kind: ai-review
+  break_when:
+    - Episodic structure is explicit, but major arcs still need consequence.
+  severity: S4
+  automation_risk: R3
+  rewrite_strategy: Add causal edge, consequence, or decision link between scenes.
+  examples:
+    bad: He left town. Next chapter he is a mercenary.
+    better: Show the choice chain that makes mercenary work necessary.
+- id: PLOT-REPEAT
+  level: plot
+  description: Prevent repeated beats that do not escalate, vary, invert, reveal, or pay off.
+  applies_when:
+    mode:
+      - full-book
+  detect:
+    kind: scene-function-repeat
+  break_when:
+    - Intentional refrain, ritual, comedy, or motif with escalation.
+  severity: S3
+  automation_risk: R2
+  rewrite_strategy: Cut, merge, invert, or add new cost/reveal/escalation.
+  examples:
+    bad: Three tavern scenes all prove the hero is stubborn.
+    better: Keep one, transform one, and cut or merge the third.
+- id: PLOT-PROMISE
+  level: plot
+  description: Track setups, hooks, mysteries, threats, debts, and payoffs.
+  applies_when:
+    mode:
+      - full-book
+  detect:
+    kind: unresolved-promises
+  break_when:
+    - Deliberate anti-climax or later-book payoff is clearly marked.
+  severity: S4
+  automation_risk: R3
+  rewrite_strategy: Add reminder, partial payoff, explicit deferral, or payoff.
+  examples:
+    bad: Introduce magical debt and never collect on it.
+    better: Pay it off, remind the reader, or mark the deferral.
+- id: PROG-DELTA
+  level: plot
+  description: Progression chapters should show advancement, cost, limitation, rival pressure, or system discovery.
+  applies_when:
+    genre:
+      - progression-fantasy
+      - litrpg
+      - cultivation
+  detect:
+    kind: progression-signal
+  break_when:
+    - Deliberate recovery, romance, mystery, or worldbuilding chapter still advances another major promise.
+  severity: S3
+  automation_risk: R2
+  rewrite_strategy: Add visible growth, cost, limitation, tactical discovery, or changed status.
+  examples:
+    bad: Another training chapter with the same result.
+    better: Training reveals a limitation, costs a relationship, or changes rank.
+- id: SERIAL-HOOK
+  level: scene
+  description: Serial chapters need early desire, threat, mystery, progression, or concrete pressure.
+  applies_when:
+    genre:
+      - webnovel
+      - serial
+  detect:
+    kind: opening-ending-hook
+  break_when:
+    - Slow-burn chapter is buffered by strong prior cliffhanger or exceptional voice.
+  severity: S2
+  automation_risk: R2
+  rewrite_strategy: Bring a problem, desire, threat, mystery, or changed state closer to the edge of the chapter.
+  examples:
+    bad: Chapter opens with a page of neutral weather.
+    better: Weather matters because the trial begins before the bridge thaws.
+- id: SERIAL-MOBILE
+  level: scene
+  description: Keep serial paragraphs readable on phones.
+  applies_when:
+    genre:
+      - webnovel
+      - serial
+  detect:
+    kind: paragraph-length
+  break_when:
+    - A deliberately breathless or immersive block is short and earned.
+  severity: S1
+  automation_risk: R1
+  rewrite_strategy: Split by beat, speaker, action turn, or emotional turn.
+  examples:
+    bad: A 250-word paragraph with three speakers and two turns.
+    better: Break each pressure or speaker shift onto its own paragraph.
+- id: SERIAL-PAYOFF
+  level: plot
+  description: Each serial update should deliver a concrete answer, cost, reveal, reward, escalation, or new question.
+  applies_when:
+    genre:
+      - webnovel
+      - serial
+  detect:
+    kind: payoff-cadence
+  break_when:
+    - A quiet chapter pays off through relationship, theme, or dread instead of plot mechanics.
+  severity: S2
+  automation_risk: R2
+  rewrite_strategy: "Add changed state: reward, cost, discovery, failure, escalation, or sharper desire."
+  examples:
+    bad: The chapter ends where it began.
+    better: The hero fails the test but learns the examiner is cheating.
+- id: AGENCY-CHOICE
+  name: Protagonist Agency
+  level: scene
+  priority: P1
+  effect: Reader investment rises when the POV character changes the situation through costly choice.
+  description: Track whether the protagonist acts, chooses, and causes consequences instead of only observing and reacting.
+  applies_when:
+    mode:
+      - scene-review
+      - story-review
+  detect:
+    kind: agency-action-reaction-ratio
+  usual_problem:
+    - protagonist becomes a camera
+    - conflict happens around the character
+    - scene feels smooth but inert
+  good_when:
+    - temporary powerlessness is the intended emotional effect
+    - defeat scene removes agency on purpose
+    - horror or tragedy wants helplessness
+  bad_when:
+    - scene contains conflict but no meaningful character decision
+    - protagonist only notices, feels, waits, or is moved by others
+    - plot advances without character choice or cost
+  break_when:
+    - The scene is explicitly about helplessness, coercion, coma, captivity, bureaucracy, or trauma.
+  severity: S4
+  automation_risk: R3
+  rewrite_strategy: Give the POV character a specific want, a blocked option, and a costly choice that changes the next scene.
+  rewrite_strategies:
+    - convert observation into decision under pressure
+    - make the character trade one value for another
+    - let a failed action cause the next complication
+  examples:
+    bad: Mara watched the council decide her fate.
+    better: Mara named the traitor before the vote, knowing it would cost her the last safe ally.
+- id: DISTANCE-FILTER-FUNCTION
+  name: Functional Filtering
+  level: line
+  priority: P1
+  effect: Filter words widen or focus POV distance depending on whether the act of perception matters.
+  description: Keep filters when seeing, hearing, noticing, or remembering is tactically or emotionally important; cut them when they merely add distance.
+  applies_when:
+    pov:
+      - first
+      - deep-third
+  detect:
+    kind: filter-word-effect-classification
+  usual_problem:
+    - reader receives a report of perception instead of direct experience
+    - prose becomes emotionally distant without intent
+  good_when:
+    - one character sees something before another
+    - perception is uncertain, tactical, delayed, mistaken, or hidden
+    - memory itself is the event
+  bad_when:
+    - the filter can be deleted without changing meaning
+    - the perceived detail is more important than the act of perception
+  break_when:
+    - Spying, recognition, misdirection, witness testimony, or tactical awareness is the point.
+  severity: S2
+  automation_risk: R1
+  rewrite_strategy: Delete the filter for direct experience unless perception itself changes the scene.
+  rewrite_strategies:
+    - remove saw/felt/noticed and place the object directly on the page
+    - keep the filter when the act of noticing gives leverage
+  examples:
+    bad: She saw the man standing in the doorway.
+    better: A man stood in the doorway.
+- id: MRU-ORDER
+  name: Motivation-Reaction Order
+  level: scene
+  priority: P1
+  effect: Fiction feels causal when external stimulus precedes bodily reaction, thought, action, and speech.
+  description: Check close POV beats for clean stimulus to reaction order.
+  applies_when:
+    pov:
+      - first
+      - deep-third
+  detect:
+    kind: stimulus-reaction-sequence
+  usual_problem:
+    - character reacts before the reader sees what caused it
+    - action beat feels temporally scrambled
+  good_when:
+    - retrospective narration intentionally reorders cause and explanation
+    - dream logic, shock, or fragmented memory controls the sequence
+  bad_when:
+    - the sentence accidentally reverses cause and effect
+    - fear, action, or speech appears before the trigger
+  break_when:
+    - Retrospective narration, stylised trauma memory, comedy timing, or deliberate withholding.
+  severity: S4
+  automation_risk: R1
+  rewrite_strategy: Put the trigger first, then body response, thought, action, and speech.
+  examples:
+    bad: Mara grabbed the knife and felt afraid when the lock clicked.
+    better: The lock clicked. Mara's stomach dropped. She grabbed the knife.
+- id: SCN-TURN
+  name: Scene Turn
+  level: scene
+  priority: P1
+  effect: A scene earns its length when the situation changes by information, emotion, power, danger, decision, cost, or payoff.
+  description: Detect static scenes that enter and leave with the same story state.
+  applies_when:
+    mode:
+      - scene-review
+  detect:
+    kind: goal-conflict-turn-state
+  usual_problem:
+    - scene reads as filler
+    - characters talk or travel without changed state
+  good_when:
+    - deliberate pause after extreme intensity
+    - atmosphere is establishing a later payoff
+  bad_when:
+    - no new information, decision, cost, reveal, reversal, or relationship change occurs
+    - the next scene would work the same if this one were cut
+  break_when:
+    - Quiet interlude has a declared purpose and later payoff.
+  severity: S4
+  automation_risk: R3
+  rewrite_strategy: Add a clear turn and record the exit-state change in the scene card.
+  examples:
+    bad: They discuss the map and agree to keep travelling.
+    better: The map proves the road is a trap, forcing them to ask the enemy for passage.
+- id: INFO-KNOWLEDGE-STATE
+  name: Knowledge State
+  level: plot
+  priority: P1
+  effect: Controlled information creates suspense, dramatic irony, mystery, and continuity.
+  description: Track who knows what so characters cannot use information before they learn it.
+  applies_when:
+    mode:
+      - continuity
+      - full-book
+  detect:
+    kind: knowledge-matrix-review
+  usual_problem:
+    - character references facts they should not know yet
+    - reader, POV, and antagonist knowledge collapse into one blur
+  good_when:
+    - unreliable narration or dramatic irony is explicitly controlled
+  bad_when:
+    - hidden truth leaks into dialogue or narration from the wrong character
+    - plot depends on ignorance the prose has already broken
+  break_when:
+    - The character learned the information off page and the memory matrix is updated deliberately.
+  severity: S4
+  automation_risk: R3
+  rewrite_strategy: Update the knowledge matrix or remove the leaked information from the character's speech, action, or thought.
+  examples:
+    bad: Mara mentions Elian is alive three chapters before she learns it.
+    better: Mara suspects the ledger is false but does not know why.
+- id: EMOTION-PROGRESSION
+  name: Emotional Progression
+  level: plot
+  priority: P1
+  effect: Character emotion should progress, reverse, escalate, or force behaviour rather than loop unchanged.
+  description: Track emotional state change across scenes and flag repeated emotional endpoints.
+  applies_when:
+    mode:
+      - character-review
+      - full-book
+  detect:
+    kind: emotional-beat-matrix
+  usual_problem:
+    - same wound or guilt repeats without new pressure
+    - arc feels stalled even though events happen
+  good_when:
+    - repetition is a motif with escalation
+    - character is deliberately stuck and the cost rises
+  bad_when:
+    - several scenes end in the same emotional state with no new cost, behaviour, or insight
+  break_when:
+    - Trauma loop or ritual repetition is the point and the matrix marks escalation.
+  severity: S3
+  automation_risk: R2
+  rewrite_strategy: Change the emotion, increase the cost, force a behavioural decision, or move the character one step along the wound/need arc.
+  examples:
+    bad: Mara feels guilty in six scenes and changes nothing.
+    better: Guilt becomes denial, then defensiveness, then confession, then sacrifice.
+- id: DIALOGUE-POWER
+  name: Dialogue Power Dynamics
+  level: scene
+  priority: P1
+  effect: Dialogue gains tension when characters enter with unequal leverage and leave with a changed power relationship.
+  description: Check whether a conversation shifts leverage, trust, debt, threat, attraction, or access.
+  applies_when:
+    mode:
+      - dialogue
+  detect:
+    kind: dialogue-power-shift
+  usual_problem:
+    - conversation becomes polite information exchange
+    - speakers answer too directly without tactics
+  good_when:
+    - scene is intentionally restorative, comic, or intimate
+  bad_when:
+    - conflict-bearing dialogue has no want, withholding, lie, test, interruption, or power shift
+  break_when:
+    - Low-conflict intimacy, relief after danger, or slice-of-life scene is the declared purpose.
+  severity: S3
+  automation_risk: R2
+  rewrite_strategy: Give each speaker a want, leverage, and tactic; make the exchange change the relationship or next action.
+  examples:
+    bad: They exchange facts about the prison archive.
+    better: Mara uses the forged ledger to make Soren choose between his oath and his secret.
+- id: DIALOGUE-SUBTEXT
+  name: Dialogue Subtext
+  level: scene
+  priority: P1
+  effect: Subtext lets literal speech conceal fear, desire, accusation, attraction, resentment, or strategy.
+  description: Flag dialogue where characters state the exact emotion or motive in scenes that should carry tension.
+  applies_when:
+    mode:
+      - dialogue
+  detect:
+    kind: direct-emotion-dialogue
+  usual_problem:
+    - characters explain themselves instead of behaving under pressure
+    - tension leaks out of the scene
+  good_when:
+    - confession, vow, child speech, comedy, or clarity after prolonged ambiguity is intended
+  bad_when:
+    - every character says exactly what they want, fear, or mean
+    - direct statement replaces behaviour, evasion, or power move
+  break_when:
+    - Confession is the payoff and the directness is earned.
+  severity: S3
+  automation_risk: R2
+  rewrite_strategy: Replace direct motive statements with evasion, silence, loaded specifics, threat, bargain, or action beat.
+  examples:
+    bad: I am angry because you betrayed me.
+    better: You always did prefer locked doors.
+- id: SENSORY-SIGNATURE
+  name: Sensory Identity
+  level: character
+  priority: P2
+  effect: Recurring sensory identity makes characters memorable without repeating generic body language.
+  description: Store and use visual motifs, scent, sound, touch, dress, stress behaviour, and do-not-overuse gestures.
+  applies_when:
+    mode:
+      - character-review
+  detect:
+    kind: character-sheet-sensory-fields
+  usual_problem:
+    - character description stays at hair, eyes, height
+    - AI repeats the same gestures for every emotion
+  good_when:
+    - a sparse style intentionally uses minimal physical description
+  bad_when:
+    - major characters lack sensory signature or overuse one tic
+  break_when:
+    - Minimalist narration is explicit and character distinction comes from voice/action instead.
+  severity: S2
+  automation_risk: R1
+  rewrite_strategy: Add sensory signature and do-not-overuse fields to the character sheet; use details only when they carry pressure.
+  examples:
+    bad: He was tall with brown hair.
+    better: He smelled faintly of mint oil and counted exits before faces.
+- id: RHYTHM-FRAGMENT
+  name: Sentence Fragments
+  level: line
+  priority: P2
+  effect: Fragments can create shock, emphasis, voice, comedy, or broken thought.
+  description: Classify fragments by effect rather than automatically treating them as grammar errors.
+  applies_when:
+    mode:
+      - prose
+      - line-edit
+  detect:
+    kind: short-sentence-fragment-density
+  usual_problem:
+    - accidental fragments create confusion
+    - too many impact lines dilute impact
+  good_when:
+    - shock, revelation, punchline, panic, or cadence is the goal
+  bad_when:
+    - fragment does not clarify emphasis or voice
+    - repeated fragmenting becomes melodrama
+  break_when:
+    - The beat needs a hard stop or interior rupture.
+  severity: S1
+  automation_risk: R2
+  rewrite_strategy: Keep fragments that land an effect; merge accidental fragments into surrounding sentences.
+  examples:
+    bad: The box was empty. No ring. No map. No hope. No anything.
+    better: The box was empty. No ring.
+- id: PARA-CAMERA
+  name: Paragraphing As Camera Control
+  level: scene
+  priority: P2
+  effect: Paragraph breaks control emphasis, suspense, mobile readability, and attention.
+  description: Track paragraph length and single-line emphasis density.
+  applies_when:
+    mode:
+      - scene-review
+      - serial
+  detect:
+    kind: paragraph-function
+  usual_problem:
+    - long paragraphs bury turns
+    - too many single-line paragraphs make everything feel important
+  good_when:
+    - breathless immersion, formal voice, or serial pacing is intentional
+  bad_when:
+    - action, speaker, emotional turn, and reveal are trapped in one block
+    - every beat is isolated for false drama
+  break_when:
+    - Deliberate breathless block or highly stylised narration.
+  severity: S2
+  automation_risk: R1
+  rewrite_strategy: Break at speaker shifts, action turns, reversals, and reveals; reserve single-line paragraphs for true impact.
+  examples:
+    bad: A 220-word paragraph contains three speakers and a betrayal.
+    better: Put the betrayal on its own beat.
+- id: EXPO-ACTIVE-FUNCTION
+  name: Exposition With Scene Function
+  level: scene
+  priority: P1
+  effect: Exposition works when attached to conflict, decision, discovery, danger, contradiction, object, ritual, or place.
+  description: Flag backstory blocks that do not alter immediate pressure.
+  applies_when:
+    mode:
+      - scene-review
+  detect:
+    kind: exposition-conflict-attachment
+  usual_problem:
+    - lore pauses the scene before reader desire is active
+    - characters explain information both already know
+  good_when:
+    - epic fantasy, progression fantasy, sci-fi, or historical fiction needs orientation
+    - exposition is embedded in argument, danger, or choice
+  bad_when:
+    - no decision, conflict, or consequence changes after the explanation
+  break_when:
+    - Omniscient or reflective mode is part of the style contract.
+  severity: S3
+  automation_risk: R2
+  rewrite_strategy: Attach exposition to pressure, object, contradiction, action, or argument; compress the rest.
+  examples:
+    bad: Three paragraphs explain the rebellion before the door opens.
+    better: Mara spits on the rebellion date carved into the king's statue.
+- id: REPETITION-FUNCTION
+  name: Functional Repetition
+  level: plot
+  priority: P1
+  effect: Repetition is useful as motif or escalation, harmful when the same story function repeats unchanged.
+  description: Separate lexical, syntactic, imagery, emotional, and plot-function repetition.
+  applies_when:
+    mode:
+      - full-book
+      - matrix-audit
+  detect:
+    kind: repetition-taxonomy
+  usual_problem:
+    - same argument, clue, training scene, or emotional endpoint repeats
+    - reminders do not add information
+  good_when:
+    - refrain, motif, obsession, ritual, or comic pattern escalates
+  bad_when:
+    - no escalation, variation, reversal, cost, reveal, or payoff occurs
+  break_when:
+    - The matrix marks repetition as intentional motif with new consequence.
+  severity: S3
+  automation_risk: R2
+  rewrite_strategy: Escalate, vary, invert, pay off, merge, or cut the repeated story function.
+  examples:
+    bad: Four Soren/Mara scenes end with partial clue and Mara leaving angry.
+    better: Let Mara win leverage, let Soren tell truth for the wrong reason, or let a third party change the power dynamic.
+- id: PLOT-THEREFORE
+  name: Therefore/Because Plot Test
+  level: plot
+  priority: P1
+  effect: Plot momentum comes from consequence chains, not a list of plausible events.
+  description: Classify scene transitions as consequence, escalation, contrast, interruption, setup, or additive.
+  applies_when:
+    mode:
+      - matrix-audit
+      - full-book
+  detect:
+    kind: scene-transition-causality
+  usual_problem:
+    - story becomes and-then plotting
+    - scenes are individually plausible but collectively unearned
+  good_when:
+    - episodic chapter is intentional but arc threads still maintain consequence
+  bad_when:
+    - next scene does not arise from previous choice, failure, pressure, or reveal
+  break_when:
+    - Deliberate slice-of-life or anthology shape is the declared form.
+  severity: S4
+  automation_risk: R3
+  rewrite_strategy: Add a because/therefore edge from prior outcome to next goal, conflict, cost, or reveal.
+  examples:
+    bad: This happened. Then this happened. Then this happened.
+    better: This happened, therefore she chose X; because she chose X, the next problem got worse.

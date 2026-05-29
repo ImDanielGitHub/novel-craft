@@ -1,0 +1,16 @@
+name: Security note
+description: Do not use this for private vulnerability reports
+title: "Security hardening: "
+labels: ["security"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Do not disclose exploitable vulnerabilities here. See SECURITY.md.
+  - type: textarea
+    id: note
+    attributes:
+      label: Hardening suggestion
+      description: General, non-sensitive security improvement.
+    validations:
+      required: true

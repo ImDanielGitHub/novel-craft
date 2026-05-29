@@ -1,0 +1,46 @@
+{
+  "name": "novel-craft",
+  "version": "0.1.0",
+  "description": "A craft-aware CLI for planning, evaluating, and continuing long-form fiction.",
+  "license": "MIT",
+  "homepage": "https://github.com/ImDanielGitHub/novel-craft#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ImDanielGitHub/novel-craft.git"
+  },
+  "bugs": {
+    "url": "https://github.com/ImDanielGitHub/novel-craft/issues"
+  },
+  "bin": {
+    "novel-craft": "npm/bin/novel-craft.js",
+    "novel": "npm/bin/novel-craft.js"
+  },
+  "files": [
+    "npm/bin/",
+    "assets/readme/hero.png",
+    "assets/readme/PROVENANCE.md",
+    "README.md",
+    "LICENSE"
+  ],
+  "engines": {
+    "node": ">=18"
+  },
+  "keywords": [
+    "creative-writing",
+    "fiction",
+    "novel",
+    "cli",
+    "llm",
+    "webnovel"
+  ],
+  "scripts": {
+    "test": "node npm/bin/novel-craft.js --version",
+    "pack:dry": "npm pack --dry-run",
+    "smoke:local": "node npm/bin/novel-craft.js --version && node npm/bin/novel-craft.js doctor --json",
+    "prepublishOnly": "node npm/bin/novel-craft.js --version && node npm/bin/novel-craft.js doctor --json && npm pack --dry-run"
+  },
+  "publishConfig": {
+    "access": "public",
+    "provenance": true
+  }
+}
