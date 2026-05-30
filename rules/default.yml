@@ -20,8 +20,8 @@
   severity: S3
   automation_risk: R1
   rewrite_strategy: Swap the abstract judgement for image, action, object detail, sensory cue, or consequence.
-  llm_guidance: Treat the detector as a cue to ask whether the prose has created the promised quality on the page.
-  llm_questions:
+  review_guidance: Treat the detector as a cue to ask whether the prose has created the promised quality on the page.
+  review_questions:
     - What exact evidence makes the thing creepy, beautiful, dangerous, tense, or powerful?
     - Is the judgement being used as fast summary, voice, irony, or a lazy substitute for evidence?
   counterexamples:
@@ -49,8 +49,8 @@
   severity: S3
   automation_risk: R1
   rewrite_strategy: Show body, behaviour, impulse, sharpened thought, or pressured choice.
-  llm_guidance: Use emotion labels as a lead. Decide whether this beat needs embodied experience or efficient summary.
-  llm_questions:
+  review_guidance: Use emotion labels as a lead. Decide whether this beat needs embodied experience or efficient summary.
+  review_questions:
     - Is this a hot turning point the reader should feel?
     - Does the emotion alter behaviour, choice, perception, or dialogue?
   counterexamples:
@@ -82,8 +82,8 @@
   severity: S2
   automation_risk: R1
   rewrite_strategy: Delete the filter and recast the sentence as direct experience.
-  llm_guidance: Check whether perception itself changes tactics, uncertainty, timing, or dramatic irony.
-  llm_questions:
+  review_guidance: Check whether perception itself changes tactics, uncertainty, timing, or dramatic irony.
+  review_questions:
     - Would deleting the filter preserve the meaning?
     - Is seeing/hearing/noticing itself the action that matters?
   counterexamples:
@@ -101,7 +101,7 @@
       - deep-third
       - omniscient
   detect:
-    kind: ai-review
+    kind: judgement-review
   break_when:
     - Deliberate zoom-out for transition, irony, chapter turn, or voice.
   severity: S3
@@ -128,8 +128,8 @@
   severity: S2
   automation_risk: R1
   rewrite_strategy: Name the actor first and convert to active when the actor is explicit.
-  llm_guidance: The detector finds possible passive; the LLM decides whether it weakens agency or creates useful focus, helplessness, mystery, or tone.
-  llm_questions:
+  review_guidance: The detector finds possible passive; the reviewer decides whether it weakens agency or creates useful focus, helplessness, mystery, or tone.
+  review_questions:
     - Is the actor known, important, and better placed as subject?
     - Does passive voice focus victimhood, conceal the actor, delay revelation, or create institutional coldness?
   counterexamples:
@@ -232,7 +232,7 @@
     mode:
       - scene-review
   detect:
-    kind: ai-review
+    kind: judgement-review
   break_when:
     - Voice, atmosphere, or thematic compression is the main purpose.
   severity: S4
@@ -301,7 +301,7 @@
       - first
       - deep-third
   detect:
-    kind: ai-review
+    kind: judgement-review
   break_when:
     - Retrospective narration.
     - Dream logic.
@@ -368,7 +368,7 @@
     mode:
       - continuity
   detect:
-    kind: ai-review
+    kind: judgement-review
   break_when:
     - Hidden motive or unreliable narration is intentional.
   severity: S4
@@ -416,7 +416,7 @@
     mode:
       - plot-review
   detect:
-    kind: ai-review
+    kind: judgement-review
   break_when:
     - Episodic structure is explicit, but major arcs still need consequence.
   severity: S4
@@ -774,7 +774,7 @@
     kind: character-sheet-sensory-fields
   usual_problem:
     - character description stays at hair, eyes, height
-    - AI repeats the same gestures for every emotion
+    - Draft repeats the same gestures for every emotion
   good_when:
     - a sparse style intentionally uses minimal physical description
   bad_when:

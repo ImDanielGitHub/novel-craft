@@ -60,10 +60,10 @@ See [npm-install.md](npm-install.md) for PATH troubleshooting and alternate `npm
 
 ## Tag
 
-Create a signed release tag from `main`:
+Create an annotated release tag from `main`. Use `git tag -s` only after local GPG signing is configured:
 
 ```bash
-git tag -s v0.1.2 -m "Novel Craft v0.1.2"
+git tag -a v0.1.2 -m "Novel Craft v0.1.2"
 git push origin v0.1.2
 ```
 

@@ -60,7 +60,7 @@ Each rule card contains:
 - `effect`: what reader/narrative effect the rule is protecting.
 - `priority`: `P1` always run, `P2` default review, `P3` optional or genre-specific.
 - `applies_when`: genre, POV, mode, or scene conditions.
-- `detect`: deterministic, hybrid, or AI-review detection hint.
+- `detect`: deterministic, hybrid, or judgement-review detection hint.
 - `break_when`: legitimate exceptions.
 - `usual_problem`: what goes wrong when the pattern is accidental.
 - `good_when`: cases where the pattern is probably useful.

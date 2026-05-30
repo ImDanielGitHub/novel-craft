@@ -1205,7 +1205,7 @@ const EMOTION_WORDS: &[&str] = &[
 #[command(name = "novel-craft")]
 #[command(bin_name = "novel-craft")]
 #[command(version)]
-#[command(about = "A local fiction-writing CLI for AI agents.")]
+#[command(about = "A local fiction-writing CLI for writing agents.")]
 #[command(after_help = "Install:
   npx novel-craft setup
   npx novel-craft start
@@ -4784,7 +4784,7 @@ fn normalize_key(value: &str) -> String {
 fn trope_axes_for(genre: &str) -> (&'static str, TropeAxes) {
     match normalize_key(genre).as_str() {
         "breakout-serial" | "serial-breakout" => ("breakout-serial", BREAKOUT_SERIAL_AXES),
-        "nightmare-survival" | "shadow-survival" | "dark-progression" => {
+        "nightmare-survival" | "dark-progression" | "survival-progression" => {
             ("nightmare-survival", NIGHTMARE_SURVIVAL_AXES)
         }
         "rational-magus" | "magus-progression" | "western-magus" => {
@@ -4793,10 +4793,10 @@ fn trope_axes_for(genre: &str) -> (&'static str, TropeAxes) {
         "beast-bond-progression" | "beast-master" | "beast-taming" => {
             ("beast-bond-progression", BEAST_BOND_PROGRESSION_AXES)
         }
-        "vr-cultivation" | "cultivation-online" | "cultivation-vrmmorpg" => {
+        "vr-cultivation" | "vr-cultivation-game" | "cultivation-vrmmorpg" => {
             ("vr-cultivation", VR_CULTIVATION_AXES)
         }
-        "monster-evolution" | "slime-evolution" | "nonhuman-evolution" => {
+        "monster-evolution" | "creature-evolution" | "nonhuman-evolution" => {
             ("monster-evolution", MONSTER_EVOLUTION_AXES)
         }
         "high-drama-romance" | "rejected-bond-romance" | "secret-baby-romance" => {
@@ -4973,7 +4973,7 @@ fn agent_plan_json(args: &AgentPlanArgs) -> serde_json::Value {
         "profile_axes": trope_axis_map(axes),
         "craft_only_scope": [
             "This public packet covers story craft and chapter review.",
-            "Platform rules, award eligibility, contracts, rights, monetisation, and AI disclosure requirements are out of scope for bundled defaults and should be checked live when needed."
+            "Platform rules, award eligibility, contracts, rights, monetisation, and disclosure requirements are out of scope for bundled defaults and should be checked live when needed."
         ]
     })
 }
@@ -5003,7 +5003,7 @@ fn agent_plan_packet(args: &AgentPlanArgs) -> String {
         .collect::<Vec<_>>()
         .join("\n");
     format!(
-        "# Agent Chapter Plan\n\n## Task Facts\n- Seed idea: {}\n- Genre/profile: {}\n- Reader profile: {}\n- Chapters: {}\n- Avoid: {}\n- Must include: {}\n- Must avoid: {}\n\n## Missing Story Questions\n{}\n\n## Reader Effect Guidance\n{}\n\n## Contender Rules\n{}\n\n## Comparison Protocol\n{}\n\n## Chapter Cards\n{}\n## Drafting Instructions\n{}\n\n## Revision Loop\n{}\n\n## Post-Write Commands\n{}\n\n## Scope\nThis packet is craft-only. Check platform, award, publishing, rights, monetisation, and AI-disclosure requirements live if the user asks for those decisions.\n",
+        "# Agent Chapter Plan\n\n## Task Facts\n- Seed idea: {}\n- Genre/profile: {}\n- Reader profile: {}\n- Chapters: {}\n- Avoid: {}\n- Must include: {}\n- Must avoid: {}\n\n## Missing Story Questions\n{}\n\n## Reader Effect Guidance\n{}\n\n## Contender Rules\n{}\n\n## Comparison Protocol\n{}\n\n## Chapter Cards\n{}\n## Drafting Instructions\n{}\n\n## Revision Loop\n{}\n\n## Post-Write Commands\n{}\n\n## Scope\nThis packet is craft-only. Check platform, award, publishing, rights, monetisation, and disclosure requirements live if the user asks for those decisions.\n",
         facts["seed_idea"].as_str().unwrap_or(""),
         facts["genre"].as_str().unwrap_or("general-fiction"),
         facts["profile"].as_str().unwrap_or("fast-webnovel"),

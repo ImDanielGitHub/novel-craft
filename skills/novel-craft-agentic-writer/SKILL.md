@@ -61,4 +61,4 @@ novel-craft eval compare old.md new.md --json
 - Treat examples, trope axes, and reader-effect language as indicators, not limits. Do not default to literal oath, vow, or contract magic unless the user asks for it or it clearly wins after comparison.
 - Every chapter should have a visible want, resistance, a turn, cost, and continuation reason.
 - Do not use lexical novelty as a quality score.
-- Keep platform, award, publishing, rights, monetisation, and AI-disclosure facts out of this craft loop unless the user asks for fresh research.
+- Keep platform, award, publishing, rights, monetisation, and disclosure facts out of this craft loop unless the user asks for fresh research.

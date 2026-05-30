@@ -4,7 +4,7 @@ Novel Craft is maintainer-led.
 
 ## Maintainers
 
-The initial maintainer is Daniel.
+The initial maintainer is the repository owner, `ImDanielGitHub`.
 
 ## Decision Model
 

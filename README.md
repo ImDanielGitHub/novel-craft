@@ -6,7 +6,7 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![npm](https://img.shields.io/npm/v/novel-craft.svg)](https://www.npmjs.com/package/novel-craft)
 
-Novel Craft is a local CLI that helps an AI agent write better fiction from a user prompt.
+Novel Craft is a local CLI that helps a writing agent turn a user prompt into better fiction.
 
 The agent uses it to plan a chapter, compare possible directions, draft in Markdown, review the draft, revise, and compare versions.
 

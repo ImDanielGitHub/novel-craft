@@ -1,10 +1,10 @@
 # Fiction Pack Workflow
 
-Novel Craft is not a grammar checker. For fiction, it behaves like a stateful writing engine for long-form AI-assisted novels.
+Novel Craft is not a grammar checker. For fiction, it behaves like a stateful writing engine for long-form agent-assisted novels.
 
 The product thesis:
 
-> Deterministic checks + structured story memory + AI critique + controlled revision loops can help a writing agent draft, audit, revise, and remember a novel over hundreds of thousands of words.
+> Deterministic checks + structured story memory + structured critique + controlled revision loops can help a writing agent draft, audit, revise, and remember a novel over hundreds of thousands of words.
 
 ## Core Loop
 
@@ -95,7 +95,7 @@ Examples:
 
 ## Long-Form Failure Modes
 
-Novel Craft is especially designed to catch failures common in AI-written long fiction:
+Novel Craft is especially designed to catch failures common in agent-assisted long fiction:
 
 - protagonist passivity
 - smooth scenes with no turn

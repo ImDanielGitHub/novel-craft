@@ -1,15 +1,12 @@
 # Serial Success Patterns
 
-This note summarises public signals from high-ranking serial fiction titles, title pages, and reader discussions. It is for craft abstraction only. Do not copy scenes, prose, characters, settings, or title-specific lore.
+This note summarises public signals from high-ranking serial fiction title pages and reader discussions. It is for craft abstraction only. Do not copy scenes, prose, characters, settings, or title-specific lore.
 
 ## Sources Reviewed
 
-- `Shadow Slave` by Guiltythree: official author site, official WebNovel page, reader discussions.
-- `Supreme Magus` by Legion20: official WebNovel page and reader reviews.
-- `The First Legendary Beast Master` by Aoki_Aku: official WebNovel page and reviews.
-- `Cultivation Online` by MyLittleBrother: official WebNovel page and reviews.
-- `Slime Evolution` by NunuXD: official WebNovel page and reviews.
-- WSA 2024 pages and gold-winner pages, including `Two times rejected Luna, the desire of all Alphas`, `Mr. President: You Are The Daddy Of My Triplets`, and `Obtaining 10x rewards! Reincarnated into a novel as a side-character!`.
+The working research looked at public title pages, author pages where available, official store/platform pages, ranking pages, review summaries, and reader discussions across high-performing fantasy, progression, cultivation, monster-evolution, beast-bond, survival, and high-drama romance serials.
+
+The public repo keeps only abstract craft patterns. Title-specific notes, screenshots, and any wording tied to a particular work should stay out of bundled commands and public examples.
 
 ## Repeating Appeal Patterns
 
@@ -23,7 +20,7 @@ High-performing serials often combine:
 - world depth: geography, culture, history, system rules, ecology, technology, or politics shape the choices
 - memorable role pressure: side characters must affect plot, leverage, emotion, or world response
 - serial retention: chapter endings create a fair reason to continue
-- update trust: stable release cadence and reader interaction matter on WebNovel
+- update trust: stable release cadence and reader interaction matter for serial platforms
 - adaptation clarity: the hook should be visible as a cover, comic panel, trailer beat, or short pitch
 
 ## Risks Readers Repeatedly Notice
