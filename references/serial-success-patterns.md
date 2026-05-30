@@ -16,7 +16,7 @@ This note summarises public signals from high-ranking serial fiction titles, tit
 High-performing serials often combine:
 
 - an unfair starting wound: poverty, illness, public rejection, family betrayal, uselessness, debt, or social ownership
-- a clear reader promise: system, weak-to-strong, beast bond, VR cultivation, monster evolution, magus research, rejected romance, secret identity
+- a clear reader draw: system, weak-to-strong, beast bond, VR cultivation, monster evolution, magus research, rejected romance, secret identity
 - a costly advantage: power creates exposure, ownership, moral debt, social risk, bodily cost, or a new enemy
 - legible progress: power, status, knowledge, relationship, territory, or mystery advances almost every chapter
 - mystery discipline: answer one question while opening a deeper one
@@ -32,7 +32,7 @@ The same reader communities also criticise:
 
 - slow starts that spend too long on data before desire, danger, or character interaction
 - power systems that become explanation instead of pressure
-- filler arcs where events happen but do not change character, world, plot, or reader promise
+- filler arcs where events happen but do not change character, world, plot, or reader expectation
 - characters who only orbit the protagonist and stop growing
 - worlds that become stages for fights instead of living systems
 - convenient coincidences that replace earned causality

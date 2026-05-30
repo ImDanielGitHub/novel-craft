@@ -12,4 +12,4 @@ novel-craft lint line <fixture.md>
 novel-craft analyse <fixture.md>
 ```
 
-Rules need exceptions. Encode reader effects, normal problem cases, good uses, break cases, examples, counterexamples, deterministic limitations, and LLM questions.
+Rules need exceptions. Encode reader effects, normal problem cases, good uses, break cases, examples, counterexamples, deterministic limitations, and review questions.

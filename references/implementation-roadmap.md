@@ -61,12 +61,12 @@ Added in the creative-evaluation gap pass:
 - `.novel/state/taste-profile.yml`
 - `.novel/evals/reward-pairs.jsonl`
 
-## Phase 3: Model-Neutral Skill Packets
+## Phase 3: Agent Skill Packets
 
 Next:
 
-- Keep the core CLI model-neutral and provider-free.
-- Expand skills that call the CLI, then hand prompt packets to the user's chosen model.
+- Keep the core CLI provider-free.
+- Expand skills that call the CLI, then keep packets tight enough for the active agent context.
 - Add explicit author approval gates for high-risk voice, plot, canon, or memory changes.
 - Add skill modes: architect, draft, critic, revision, continuity, line-editor, memory.
 - Use feedback/taste profiles as optional context inside generated prompt packets.
@@ -102,5 +102,5 @@ Only after the fiction pack is stable:
 - Add broader profiles only when there are concrete fixtures and real user workflows for them.
 - Keep generalized context packets focused on audience, desired effect, constraints, examples, source notes, claim risk, and style profile.
 - Add evaluation fixtures outside fiction only with clear pass/fail expectations.
-- Keep the CLI model-neutral: it should generate rule guides, prompt packets, rubrics, comparison reports, and revision instructions that any LLM can consume.
+- Keep packets compact: rule guides, prompt packets, rubrics, comparison reports, and revision instructions should be useful without redundant boundary language.
 - Decide whether broader writing support needs separate project state while preserving `.novel/` compatibility for fiction projects.

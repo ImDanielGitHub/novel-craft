@@ -20,7 +20,7 @@ novel-craft writing guide
 3. Put commands, output, and next steps before broad claims.
 4. Replace vague confidence with proof, constraints, or honest judgement.
 5. Cut generated-sounding filler.
-6. Keep deterministic checks separate from human or LLM judgement.
+6. Keep deterministic checks separate from creative judgement.
 
 ## Gates
 

@@ -78,13 +78,13 @@ Every finding should be classified:
 
 Rules are effects, not commandments.
 
-The agent should use the LLM-facing guide:
+The agent should use the rule guide:
 
 ```bash
 novel-craft rules guide
 ```
 
-That guide gives each rule a problem example and a counterexample/keep-case. The deterministic detector is only the smoke alarm; the LLM decides whether there is a fire.
+That guide gives each rule a problem example and a counterexample/keep-case. The deterministic detector is only the smoke alarm; the reviewer decides whether there is a fire.
 
 Examples:
 

@@ -8,9 +8,35 @@
 
 Novel Craft is a local CLI that helps an AI agent write better fiction from a user prompt.
 
-The agent uses it to plan a chapter, compare possible directions, draft in Markdown, review the draft, revise, and compare versions. Novel Craft itself does not call an LLM.
+The agent uses it to plan a chapter, compare possible directions, draft in Markdown, review the draft, revise, and compare versions.
 
 ## Install
+
+Run the startup wizard first. It lists the bundled Novel Craft skills, explains why they matter, and asks before installing them into your agent skills folder.
+
+```bash
+npx novel-craft setup
+```
+
+For unattended setup:
+
+```bash
+npx novel-craft setup --yes --target ~/.codex/skills --json
+```
+
+To opt out of skill installation and only use the binary:
+
+```bash
+npx novel-craft setup --no-skills --json
+```
+
+You can install the skills later:
+
+```bash
+novel-craft skills install --target ~/.codex/skills
+```
+
+Check the installed binary:
 
 ```bash
 npx novel-craft doctor --json
@@ -19,7 +45,12 @@ npx novel-craft doctor --json
 Start a project when the agent needs local story state:
 
 ```bash
-npx novel-craft start --no-input --defaults --json
+npx novel-craft start \
+  --no-input \
+  --title "Oathspire Climber" \
+  --idea "weak-to-strong isekai tower climbing" \
+  --genre system-isekai \
+  --json
 ```
 
 From a source checkout:
@@ -60,13 +91,23 @@ novel-craft creative brief \
   --idea "write a launch-night tech-fantasy story for a newly published CLI" \
   --genre tech-fantasy-celebration \
   --must-include "package name: novel-craft" \
-  --must-include "the CLI is model-neutral" \
+  --must-include "the CLI ships bundled craft checks" \
   --must-avoid "wrong version number"
 ```
 
-4. Ask the model to draft finished prose in Markdown.
+4. Draft finished prose in Markdown.
 
-5. Save the draft, then run the normal chapter review.
+For stateful projects, the agent can build a draft packet from `.novel/` before drafting:
+
+```bash
+novel-craft draft chapter_01_scene_01 \
+  --word-count "1800 words" \
+  --must-include "service stair" \
+  --avoid "status dump" \
+  --json
+```
+
+5. Save the draft, then run the normal chapter review. The review now includes action-ranked revision priorities so the agent can fix the highest-impact issue first.
 
 ```bash
 novel-craft eval chapter draft.md \
@@ -95,7 +136,7 @@ novel-craft eval compare draft-a.md draft-b.md \
   --json
 ```
 
-`eval compare` never chooses the winner. It gives the agent evidence so a human or LLM judge can make the call.
+`eval compare` never chooses the winner. It gives the agent evidence so the reviewer can make the call.
 
 ## Commands Agents Usually Use
 
@@ -112,6 +153,8 @@ novel-craft lint line draft.md --json
 novel-craft eval reader-check draft.md --profile breakout-serial --json
 novel-craft creative novelty draft.md --json
 novel-craft context build chapter_01_scene_01 --out .novel/context/ch01s01.md
+novel-craft next chapter_02 --from chapter-01.md --json
+novel-craft memory extract chapter-01.md --review --json
 novel-craft writing guide
 novel-craft skills list --json
 ```
@@ -122,7 +165,7 @@ Useful genre/profile values include `breakout-serial`, `nightmare-survival`, `ra
 
 `creative atlas` gives agents 50 genres, 50 subgenres, 50 tropes, and 50 sub-tropes for broad mix-and-match planning. Briefs and tournaments also carry the always-on novel standard: a strong first chapter, costly advantages, scene turns, chapter-end continuation, and a wider story engine.
 
-Opening guidance: often promise the big story through a small dramatic unit first. For example, a kingdom-building novel might begin with one room, meal, door, ledger, oath, protected person, or boundary before the prose leans on kingdoms, empires, domains, or future upgrade ladders. These examples are indicators, not hard limits.
+Opening guidance: often show the big story through a small dramatic unit first. For example, a kingdom-building novel might begin with one room, meal, door, ledger, protected person, or boundary before the prose leans on kingdoms, empires, domains, or future upgrade ladders. These examples are indicators, not hard limits. Reader-effect language means expectation and page-turn pressure, not a default push toward literal oath, vow, or contract magic.
 
 ## What The Package Contains
 
@@ -137,6 +180,8 @@ The npm package ships:
 
 The rules and skills are compiled into the binary. The agent does not need to read this repository at runtime.
 
+The setup wizard can copy the bundled skills into `~/.codex/skills` or another target folder. They are crucial for Novel Craft to work correctly in an agent workflow because they teach when to run `agent plan`, when to draft, when to review a chapter, when to compare revisions, and when to extract story memory. You can opt out during setup and install them later with `novel-craft skills install --target <dir>`.
+
 ## What It Does
 
 Novel Craft helps the agent:
@@ -149,11 +194,14 @@ Novel Craft helps the agent:
 - carry required facts into the draft
 - block forbidden claims
 - create scene cards and context packets
+- read back characters, plot threads, open loops, scene cards, and story seed through `matrix build` and `context build`
+- generate draft and next-chapter packets from project state
+- extract reviewable canon changes from a written draft
 - check reader fit
 - flag likely line issues
 - surface trope and novelty signals
 - compare revisions without pretending metrics are taste
-- export bundled, model-neutral skill files
+- export bundled Novel Craft skill files
 
 ## What It Checks
 
@@ -174,7 +222,7 @@ The checks are deterministic signals:
 - weak world-depth signals
 - missing chapter-end continuation reason
 
-These checks tell the agent where to look. They do not replace human or LLM judgement, and they should not force the story into a rigid template.
+These checks tell the agent where to look. They do not replace creative judgement, and they should not force the story into a rigid template.
 
 ## Project State
 
@@ -189,13 +237,26 @@ When state is useful, `novel-craft start` creates `.novel/`:
 - review reports
 - local memory files
 
+Use `story set` to store the real seed after the user clarifies the project:
+
+```bash
+novel-craft story set \
+  --title "Oathspire Climber" \
+  --genre system-isekai \
+  --premise "weak-to-strong isekai tower climbing" \
+  --protagonist "Ren Vale" \
+  --power-system "a floor ledger that charges debt for every shortcut" \
+  --json
+```
+
+`matrix build` hydrates the current project state from scene cards, characters, plot threads, open loops, payoffs, progression notes, and the story seed. `context build` packages that state for the drafting agent.
+
 For one-off prompt-to-draft work, an agent can use `creative brief`, `eval gate`, and `eval compare` without creating a full project.
 
 ## Limits
 
 Novel Craft does not:
 
-- call OpenAI, Anthropic, Ollama, or any hosted model
 - store API keys
 - scrape hosted fiction
 - train on or imitate copyrighted novels

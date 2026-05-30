@@ -58,8 +58,8 @@ npm pack --dry-run
 Create and push a signed tag:
 
 ```bash
-git tag -s v0.1.1 -m "Novel Craft v0.1.1"
-git push origin v0.1.1
+git tag -s v0.1.2 -m "Novel Craft v0.1.2"
+git push origin v0.1.2
 ```
 
 The release workflow should:
@@ -110,4 +110,4 @@ Only unpublish if the package is inside npm's narrow unpublish policy window and
 - local binaries not meant for release
 - credentials, tokens, SSH keys, private notes, or API keys
 - unsupported implementation files
-- hidden network-call or model-call code
+- hidden network-call code

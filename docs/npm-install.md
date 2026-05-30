@@ -24,6 +24,7 @@ From the repository root:
 ```bash
 cargo build --release
 target/release/novel-craft --help
+target/release/novel-craft setup --no-skills --json
 target/release/novel-craft doctor --json
 target/release/novel-craft start --no-input --defaults --json
 target/release/novel --version
@@ -68,8 +69,10 @@ It should not include `.novel/`, `target/`, `node_modules/`, local tarballs, cre
 ## Install Globally From The Local Tarball
 
 ```bash
-npm install -g ./novel-craft-0.1.1.tgz
+npm install -g ./novel-craft-0.1.2.tgz
 novel-craft --help
+novel-craft setup --no-skills --json
+novel-craft setup --yes --target /tmp/novel-craft-skills-smoke --dry-run --json
 novel-craft doctor --json
 novel-craft start --no-input --defaults --json
 novel --version
@@ -79,13 +82,13 @@ npm uninstall -g novel-craft
 ## Test npx From The Local Tarball
 
 ```bash
-npx --yes ./novel-craft-0.1.1.tgz --version
+npx --yes ./novel-craft-0.1.2.tgz --version
 ```
 
 If your npm version does not accept that local tarball syntax, use:
 
 ```bash
-npm exec --yes --package ./novel-craft-0.1.1.tgz -- novel-craft --version
+npm exec --yes --package ./novel-craft-0.1.2.tgz -- novel-craft --version
 ```
 
 ## Add npm To PATH

@@ -45,13 +45,14 @@ cp target/release/novel-craft "npm/bin/novel-craft-${HOST_TRIPLE}"
 chmod +x "npm/bin/novel-craft-${HOST_TRIPLE}"
 npm pack --dry-run
 npm pack
-npm install -g ./novel-craft-0.1.1.tgz
+npm install -g ./novel-craft-0.1.2.tgz
 novel-craft --help
+novel-craft setup --no-skills --json
 novel-craft doctor --json
 novel-craft start --no-input --defaults --json
 novel --version
 npm uninstall -g novel-craft
-npx --yes ./novel-craft-0.1.1.tgz --version
+npx --yes ./novel-craft-0.1.2.tgz --version
 rm -f novel-craft-*.tgz npm/bin/novel-craft-*
 ```
 
@@ -62,8 +63,8 @@ See [npm-install.md](npm-install.md) for PATH troubleshooting and alternate `npm
 Create a signed release tag from `main`:
 
 ```bash
-git tag -s v0.1.1 -m "Novel Craft v0.1.1"
-git push origin v0.1.1
+git tag -s v0.1.2 -m "Novel Craft v0.1.2"
+git push origin v0.1.2
 ```
 
 ## GitHub Actions
@@ -83,6 +84,7 @@ See [npm-publish.md](npm-publish.md) for trusted publishing setup, provenance, a
 ## After Release
 
 - Confirm `npx novel-craft --version`.
+- Confirm `npx novel-craft setup --no-skills --json`.
 - Confirm `npx novel-craft doctor --json`.
 - Confirm `npx novel-craft start --no-input --defaults --json`.
 - Update `CHANGELOG.md` or release notes.
