@@ -1,6 +1,6 @@
 ---
 name: novel-craft-draft-review
-description: Use Novel Craft to review drafted chapters or stories with model-neutral craft checks, gates, reader profiles, and pairwise comparisons.
+description: Use Novel Craft to review drafted chapters or stories with craft checks, gates, reader profiles, and pairwise comparisons.
 ---
 
 # Novel Craft Draft Review

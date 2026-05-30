@@ -20,7 +20,7 @@ novel-craft creative tournament --idea "<seed idea>" --genre <genre-or-profile> 
 
 Each contender should name:
 
-- familiar reader promise
+- familiar genre appeal
 - opening wound
 - first hard choice
 - freshness twist
@@ -35,5 +35,5 @@ Each contender should name:
 - Widen before polishing.
 - Mix ingredients causally instead of stacking labels.
 - Make every power, system, status gain, romance turn, or reveal create a new cost.
-- Usually dramatise macro promise through micro-action first.
+- Usually dramatise macro appeal through micro-action first.
 - Aim for the best novel every time; quality is not a special breakout mode.

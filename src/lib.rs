@@ -9,7 +9,7 @@ use serde_json::json;
 use serde_yaml::{Mapping, Value};
 use std::collections::{BTreeMap, HashMap};
 use std::fs;
-use std::io::{self, Write};
+use std::io::{self, IsTerminal, Write};
 use std::path::{Path, PathBuf};
 use unicode_segmentation::UnicodeSegmentation;
 
@@ -166,7 +166,7 @@ const CREATIVE_METHODS: &[(&str, &str, &str)] = &[
     (
         "diverge_converge",
         "Generate 12-20 distinct versions before choosing.",
-        "Score each option for hook, relatability, novelty, genre promise, and expansion potential.",
+        "Score each option for hook, relatability, novelty, genre fit, and expansion potential.",
     ),
     (
         "morphological_matrix",
@@ -404,7 +404,7 @@ const STORY_ATLAS_SUBTROPES: &[&str] = &[
     "title grants legal burden",
     "curse blocks direct violence",
     "name has power",
-    "map changes after promise",
+    "map changes after boundary crossed",
     "first kill changes soul",
     "first mercy changes faction",
     "auction reveals status",
@@ -441,19 +441,19 @@ const STORY_MIXING_PROTOCOL: &[&str] = &[
     "Start with one genre, one subgenre, two tropes, and one sub-trope.",
     "Fold ingredients together causally: each ingredient should change choices, rules, pressure, or consequences.",
     "Discard combinations that only rename the same plot with more decoration.",
-    "For every familiar promise, add one cost, contradiction, unusual body rule, social price, or world-rule consequence.",
-    "Name the first chapter image, micro-promise, chapter-one turn, and wider story engine before drafting.",
+    "For every familiar genre draw, add one cost, contradiction, unusual body rule, social price, or world-rule consequence.",
+    "Name the first chapter image, micro-scene, chapter-one turn, and wider story engine before drafting.",
     "Generate several mixes, reject the ones with weak causality, then choose with evidence.",
 ];
 
 const NOVEL_EXCELLENCE_STANDARD: &[&str] = &[
     "banger first chapter: open on a wound, injustice, problem, danger, desire, or wonder the reader understands immediately",
-    "micro-promise before macro-roadmap: usually dramatise the smallest working unit of the premise before leaning on kingdoms, empires, domains, future ranks, or upgrade ladders",
-    "reader promise: make the genre reward visible before spending trust on lore",
+    "micro-scene before macro-roadmap: usually dramatise the smallest working unit of the premise before leaning on kingdoms, empires, domains, future ranks, or upgrade ladders",
+    "reader draw: make the genre reward visible before spending trust on lore",
     "fresh familiar: pair recognisable pleasure with one causal twist, cost, contradiction, or unusual body/world rule",
     "costly advantage: every power, secret, bond, system, status, or skill creates a limit, debt, exposure risk, moral cost, or new enemy",
     "scene engine: every scene has a goal, conflict, turn, consequence, and next pressure",
-    "chapter engine: every chapter changes power, knowledge, status, relationship, danger, promise, or territory",
+    "chapter engine: every chapter changes power, knowledge, status, relationship, danger, open question, or territory",
     "wider story engine: track mystery, relationship, status, power, threat, territory, and theme pressure across arcs",
     "continuation reason: end chapters on a fair decision, reveal, unpaid debt, threat, relationship shift, or progress milestone",
     "human texture: concrete wants, shame, hunger, loyalty, fear, pride, tenderness, and contradiction beat abstract destiny",
@@ -492,8 +492,8 @@ const OPENING_MACRO_TERMS: &[&str] = &[
 const OPENING_MICRO_TERMS: &[&str] = &[
     "bread", "coin", "door", "room", "roof", "floor", "hand", "blood", "snow", "cold", "hunger",
     "hungry", "bowl", "water", "fire", "smoke", "lock", "key", "shelter", "meal", "child", "girl",
-    "boy", "debt", "promise", "wound", "fever", "cart", "street", "wall", "knife", "rope", "bell",
-    "ledger", "name", "breath", "mouth",
+    "boy", "debt", "wound", "fever", "cart", "street", "wall", "knife", "rope", "bell", "ledger",
+    "name", "breath", "mouth",
 ];
 
 const OPENING_ACTION_TERMS: &[&str] = &[
@@ -521,7 +521,6 @@ const OPENING_ACTION_TERMS: &[&str] = &[
     "choose",
     "paid",
     "bargained",
-    "promised",
     "broke",
     "kept",
     "saved",
@@ -567,6 +566,8 @@ const SYSTEM_ISEKAI_TROPE_AXES: &[(&str, &[&str])] = &[
             "wakes after being sacrificed",
             "transmigrates into a doomed minor villain",
             "arrives as a nameless extra in a prophecy",
+            "inherits a collapsing settlement nobody else wants",
+            "respawns at the hour a border fort is abandoned",
         ],
     ),
     (
@@ -576,8 +577,10 @@ const SYSTEM_ISEKAI_TROPE_AXES: &[(&str, &[&str])] = &[
             "skill tree that grows from choices, not grinding",
             "class system that mislabels the hero",
             "quest log written by an unreliable patron",
-            "inventory that stores debts, memories, or promises",
+            "inventory that stores debts, memories, or civic obligations",
             "leveling through teaching, repair, cooking, healing, building, or diplomacy",
+            "settlement ledger that upgrades solved local bottlenecks",
+            "reputation board where residents can accept or reject policies",
         ],
     ),
     (
@@ -589,6 +592,8 @@ const SYSTEM_ISEKAI_TROPE_AXES: &[(&str, &[&str])] = &[
             "language barrier",
             "social rank below notice",
             "power works only when helping someone else",
+            "cannot own land directly",
+            "commands fail unless locals consent",
         ],
     ),
     (
@@ -600,6 +605,8 @@ const SYSTEM_ISEKAI_TROPE_AXES: &[(&str, &[&str])] = &[
             "monster ecology knowledge becomes power",
             "trust network becomes a kingdom-scale system",
             "defensive skill turns into territory control",
+            "food, water, and shelter logistics become the real power ladder",
+            "fair laws become defensive infrastructure",
         ],
     ),
     (
@@ -625,17 +632,21 @@ const SYSTEM_ISEKAI_TROPE_AXES: &[(&str, &[&str])] = &[
             "church declares the system heresy",
             "guild hides fatal information from beginners",
             "winter arrives before food does",
+            "tax auditors can legally dissolve the settlement",
+            "refugees arrive faster than shelter can be built",
         ],
     ),
     (
         "freshness_twist",
         &[
-            "the system rewards keeping promises, not kills",
+            "the system rewards solved civic problems, not kills",
             "quests are generated by people who need help, not by gods",
             "leveling makes the hero more responsible, not freer",
             "the weakest class controls supply lines",
             "stats are public, so secrecy matters more than strength",
             "the tutorial is a scam and the monsters know it",
+            "land upgrades through solved disputes, not conquest",
+            "buildings level only when residents actually use them",
         ],
     ),
 ];
@@ -653,7 +664,7 @@ const BREAKOUT_SERIAL_AXES: &[(&str, &[&str])] = &[
         ],
     ),
     (
-        "reader_promise",
+        "reader_draw",
         &[
             "system with visible choices and rewards",
             "weak-to-strong climb with measurable stages",
@@ -884,7 +895,7 @@ const MONSTER_EVOLUTION_AXES: &[(&str, &[&str])] = &[
             "do not explain and show the same emotion twice",
             "romance develops through action before inner summary",
             "grind scenes need discovery, humour, threat, or relationship",
-            "slow start earns patience only if the chapter promise is clear",
+            "slow start earns patience only if the chapter hook is clear",
         ],
     ),
 ];
@@ -918,7 +929,7 @@ const HIGH_DRAMA_ROMANCE_AXES: &[(&str, &[&str])] = &[
             "title states the scandal in one breath",
             "first chapter delivers the betrayal fast",
             "every secret has a reveal audience",
-            "romance promise is tied to justice and status repair",
+            "romance hook is tied to justice and status repair",
             "side antagonists keep pressure visible",
             "happy ending requires accountability, not only attraction",
         ],
@@ -954,7 +965,7 @@ const TECH_FANTASY_CELEBRATION_AXES: &[(&str, &[&str])] = &[
             "the creator wants the tool to prove it was worth shipping",
             "a celebration must stay accurate instead of flattering",
             "the draft has to carry joy without inventing facts",
-            "the tool must help more than an unguided model",
+            "the tool must help more than an unguided draft",
             "public release turns private taste into a standard",
             "quality gates must protect the moment from easy generic magic",
         ],
@@ -964,7 +975,7 @@ const TECH_FANTASY_CELEBRATION_AXES: &[(&str, &[&str])] = &[
         &[
             "the spell works only when the output tells the truth",
             "the victory is measured by repeatable commands, not applause",
-            "the package name becomes a promise to future agents",
+            "the package name becomes a responsibility to future agents",
             "the better story comes from constraints, not decoration",
             "the launch reveals the tool still needs sharper gates",
             "the celebration becomes the first regression test",
@@ -987,7 +998,7 @@ const TECH_FANTASY_CELEBRATION_AXES: &[(&str, &[&str])] = &[
 
 const GENERAL_FICTION_AXES: &[(&str, &[&str])] = &[
     (
-        "promise",
+        "story_draw",
         &[
             "a desire blocked by a specific person",
             "a secret that changes the next choice",
@@ -1030,7 +1041,7 @@ const GENERAL_FICTION_AXES: &[(&str, &[&str])] = &[
             "damaged tool",
             "local ritual",
             "body memory",
-            "unpaid promise",
+            "unpaid debt",
             "ordinary noise at the wrong time",
         ],
     ),
@@ -1097,11 +1108,11 @@ const EVAL_DIMENSIONS: &[(&str, &str)] = &[
         "Does the draft preserve required facts, avoid forbidden claims, and satisfy the user request before style is judged?",
     ),
     (
-        "hook_and_promise",
+        "hook_and_reader_grip",
         "Does the opening quickly create desire, danger, wonder, injustice, or curiosity?",
     ),
     (
-        "opening_micro_promise",
+        "opening_micro_scene",
         "Does the first chapter show the smallest dramatic unit of the macro premise before naming the whole roadmap?",
     ),
     (
@@ -1130,7 +1141,7 @@ const EVAL_DIMENSIONS: &[(&str, &str)] = &[
     ),
     (
         "novelty_and_specificity",
-        "Does the draft mix familiar promise with fresh, concrete details?",
+        "Does the draft mix familiar genre appeal with fresh, concrete details?",
     ),
     (
         "voice_and_language",
@@ -1138,7 +1149,7 @@ const EVAL_DIMENSIONS: &[(&str, &str)] = &[
     ),
     (
         "progression_payoff",
-        "Does the chapter advance capability, knowledge, status, stakes, relationship, or promise state?",
+        "Does the chapter advance capability, knowledge, status, stakes, relationship, or open-question state?",
     ),
     (
         "costly_power",
@@ -1196,6 +1207,7 @@ const EMOTION_WORDS: &[&str] = &[
 #[command(version)]
 #[command(about = "A local fiction-writing CLI for AI agents.")]
 #[command(after_help = "Install:
+  npx novel-craft setup
   npx novel-craft start
 
 Useful agent loop:
@@ -1212,10 +1224,6 @@ Agent-friendly flags:
   --out PATH   write deterministic packets/reports to a file
   --no-input   prevent interactive prompts on guided commands
   --defaults   accept guided-command defaults
-
-Model boundary:
-  Novel Craft emits prompt packets, rubrics, rule guides, and reports only.
-  It does not call models, store API keys, scrape hosted fiction, or publish anything for you.
 
 Important:
   Lexical novelty signals are not story quality scores. Use gates and comparison packets to route judgement.")]
@@ -1234,11 +1242,23 @@ enum Command {
 Agent/non-interactive flow:
   novel-craft start --no-input --defaults --json
 
-The wizard creates .novel/ project state and a model-ready start packet. It does not call an LLM."
+The wizard creates .novel/ project state and a start packet."
     )]
     Start(StartArgs),
     #[command(about = "Create .novel project state without the guided wizard.")]
     Init(InitArgs),
+    #[command(
+        about = "Run first-time setup and optionally install bundled agent skills.",
+        after_help = "Interactive first run:
+  npx novel-craft setup
+
+Unattended install:
+  novel-craft setup --yes --target ~/.codex/skills --json
+
+Opt out of skill installation:
+  novel-craft setup --no-skills --json"
+    )]
+    Setup(SetupArgs),
     #[command(about = "Run read-only install, asset, wrapper, and project checks.")]
     Doctor(DoctorArgs),
     #[command(about = "Build agent-facing story and chapter workflow packets.")]
@@ -1281,6 +1301,11 @@ The wizard creates .novel/ project state and a model-ready start packet. It does
         #[command(subcommand)]
         command: CharacterCommand,
     },
+    #[command(about = "Set core story seed and project-level canon.")]
+    Story {
+        #[command(subcommand)]
+        command: StoryCommand,
+    },
     #[command(about = "Track plot threads, promises, and payoffs.")]
     Plot {
         #[command(subcommand)]
@@ -1291,7 +1316,7 @@ The wizard creates .novel/ project state and a model-ready start packet. It does
         #[command(subcommand)]
         command: MatrixCommand,
     },
-    #[command(about = "Build model-ready context packets.")]
+    #[command(about = "Build agent-ready context packets.")]
     Context {
         #[command(subcommand)]
         command: ContextCommand,
@@ -1371,7 +1396,7 @@ struct StartArgs {
     world: String,
     #[arg(
         long,
-        default_value = "a system that rewards kept promises, useful repairs, and public trust"
+        default_value = "a settlement system that rewards useful repairs, protected resources, and earned public trust"
     )]
     power_system: String,
     #[arg(long, default_value = "balanced")]
@@ -1407,8 +1432,32 @@ struct DoctorArgs {
 }
 
 #[derive(Args, Clone)]
+struct SetupArgs {
+    #[arg(long)]
+    target: Option<PathBuf>,
+    #[arg(long, short = 'y', conflicts_with = "no_skills")]
+    yes: bool,
+    #[arg(long)]
+    no_skills: bool,
+    #[arg(long)]
+    dry_run: bool,
+    #[arg(long)]
+    json: bool,
+}
+
+#[derive(Args, Clone)]
 struct TargetArgs {
     target: Option<String>,
+    #[arg(long)]
+    from: Option<PathBuf>,
+    #[arg(long, default_value = "1200-2500 words")]
+    word_count: String,
+    #[arg(long, default_value = "deep third unless project state says otherwise")]
+    pov: String,
+    #[arg(long)]
+    must_include: Vec<String>,
+    #[arg(long)]
+    avoid: Vec<String>,
     #[arg(long)]
     json: bool,
     #[arg(long)]
@@ -1440,6 +1489,8 @@ struct ReviseArgs {
     path: PathBuf,
     #[arg(long, default_value = "prose")]
     pass: String,
+    #[arg(long)]
+    json: bool,
     #[arg(long)]
     out: Option<PathBuf>,
 }
@@ -1526,7 +1577,7 @@ enum WritingCommand {
         #[arg(long)]
         out: Option<PathBuf>,
     },
-    #[command(about = "Emit a model-ready Novel Craft writing-support guide.")]
+    #[command(about = "Emit a Novel Craft writing-support guide.")]
     Guide {
         #[arg(long)]
         json: bool,
@@ -1542,7 +1593,7 @@ enum RulesCommand {
         #[arg(long)]
         json: bool,
     },
-    #[command(about = "Emit a model-ready rule guide.")]
+    #[command(about = "Emit a rule guide.")]
     Guide {
         #[arg(long)]
         json: bool,
@@ -1580,7 +1631,7 @@ enum CreativeCommand {
         #[arg(long)]
         json: bool,
     },
-    #[command(about = "Build a model-ready creative brief from a user prompt.")]
+    #[command(about = "Build an agent-ready creative brief from a user prompt.")]
     Brief(CreativeBriefArgs),
     #[command(about = "Diagnose readability and word-choice risks in a draft.")]
     Diagnose(FileReportArgs),
@@ -1889,6 +1940,34 @@ struct CharacterArgs {
 }
 
 #[derive(Subcommand)]
+enum StoryCommand {
+    #[command(about = "Set or update the core story seed used by context and draft packets.")]
+    Set(StorySetArgs),
+}
+
+#[derive(Args, Clone)]
+struct StorySetArgs {
+    #[arg(long)]
+    title: Option<String>,
+    #[arg(long)]
+    genre: Option<String>,
+    #[arg(long)]
+    premise: Option<String>,
+    #[arg(long)]
+    protagonist: Option<String>,
+    #[arg(long)]
+    protagonist_want: Option<String>,
+    #[arg(long)]
+    protagonist_wound: Option<String>,
+    #[arg(long)]
+    world: Option<String>,
+    #[arg(long)]
+    power_system: Option<String>,
+    #[arg(long)]
+    json: bool,
+}
+
+#[derive(Subcommand)]
 enum PlotCommand {
     #[command(about = "Create or update a plot thread.")]
     Thread(PlotThreadArgs),
@@ -1990,8 +2069,11 @@ enum AuditCommand {
     Repetition(FileReportArgs),
     #[command(about = "Run the therefore/because causality audit.")]
     Causality {
+        path: Option<PathBuf>,
         #[arg(long)]
         json: bool,
+        #[arg(long)]
+        out: Option<PathBuf>,
     },
 }
 
@@ -2002,6 +2084,10 @@ enum MemoryCommand {
         path: PathBuf,
         #[arg(long)]
         scene_id: Option<String>,
+        #[arg(long)]
+        review: bool,
+        #[arg(long)]
+        json: bool,
         #[arg(long)]
         out: Option<PathBuf>,
     },
@@ -2061,6 +2147,7 @@ fn run(cli: Cli) -> Result<()> {
     match cli.command {
         Command::Start(args) => command_start(args),
         Command::Init(args) => command_init(args),
+        Command::Setup(args) => command_setup(args),
         Command::Doctor(args) => command_doctor(args),
         Command::Agent { command } => command_agent(command),
         Command::Skills { command } => command_skills(command),
@@ -2070,6 +2157,7 @@ fn run(cli: Cli) -> Result<()> {
         Command::Eval { command } => command_eval(command),
         Command::Scene { command } => command_scene(command),
         Command::Character { command } => command_character(command),
+        Command::Story { command } => command_story(command),
         Command::Plot { command } => command_plot(command),
         Command::Matrix { command } => command_matrix(command),
         Command::Context { command } => match command {
@@ -2120,6 +2208,7 @@ fn command_start(mut args: StartArgs) -> Result<()> {
     })?;
 
     let root = project_root()?;
+    write_story_seed_from_start(&root, &args)?;
     let brief = start_packet(&args);
     let out_path = args.out.unwrap_or_else(|| {
         root.join(PROJECT_DIR)
@@ -2133,7 +2222,9 @@ fn command_start(mut args: StartArgs) -> Result<()> {
             "status": "ok",
             "project": root.join(PROJECT_DIR),
             "packet": out_path,
-            "model_boundary": "prompt-packets-only"
+            "title": args.title,
+            "idea": args.idea,
+            "genre": args.genre
         }))
     } else {
         println!(
@@ -2154,6 +2245,77 @@ fn command_init(args: InitArgs) -> Result<()> {
             "Novel Craft project ready: {}",
             project_root()?.join(PROJECT_DIR).display()
         );
+        Ok(())
+    }
+}
+
+fn command_setup(args: SetupArgs) -> Result<()> {
+    let target = args.target.unwrap_or_else(default_skill_target);
+    let primary_skills = primary_skill_names();
+    let install_later_command = format!("novel-craft skills install --target {}", target.display());
+    let can_prompt = !args.json && io::stdin().is_terminal() && io::stdout().is_terminal();
+    let should_install = if args.no_skills {
+        false
+    } else if args.yes {
+        true
+    } else if can_prompt {
+        print_setup_wizard(&target, &primary_skills);
+        confirm("Install these skills now?", true)?
+    } else {
+        false
+    };
+
+    let installed_paths = if should_install {
+        install_skills_to(&target, args.dry_run)?
+    } else {
+        Vec::new()
+    };
+    let note = if should_install && args.dry_run {
+        "Dry run complete. No skill files were written."
+    } else if should_install {
+        "Bundled Novel Craft skills installed."
+    } else {
+        "Bundled Novel Craft skills were not installed. Install them later with the command shown."
+    };
+
+    let data = json!({
+        "status": "ok",
+        "command": "setup",
+        "target": target.display().to_string(),
+        "dry_run": args.dry_run,
+        "install_requested": should_install,
+        "skills_installed": should_install && !args.dry_run,
+        "opted_out": !should_install,
+        "primary_skills": primary_skills,
+        "embedded_skill_count": SKILLS.len(),
+        "deprecated_alias_count": SKILLS.iter().filter(|(name, _)| name.starts_with("aliases/")).count(),
+        "installed_paths": installed_paths,
+        "install_later_command": install_later_command,
+        "why_skills_matter": "The bundled skills are crucial for Novel Craft to work correctly in an agent workflow: they teach planning, drafting, review, continuation, and memory use.",
+        "note": note
+    });
+
+    if args.json {
+        print_json(data)
+    } else {
+        if !can_prompt {
+            println!("Novel Craft setup");
+            println!("Bundled skills:");
+            for skill in primary_skill_names() {
+                println!("- {skill}");
+            }
+            println!();
+        }
+        println!("{note}");
+        if should_install {
+            println!("Skill target: {}", target.display());
+            println!(
+                "Skill files: {}",
+                data["installed_paths"].as_array().map_or(0, Vec::len)
+            );
+        } else {
+            println!("Install later: {install_later_command}");
+        }
         Ok(())
     }
 }
@@ -2197,9 +2359,7 @@ fn command_doctor(args: DoctorArgs) -> Result<()> {
             "wrapper_env": wrapper_env,
             "wrapper_path": wrapper_path
         },
-        "model_boundary": "prompt-packets-only",
-        "llm_calls": false,
-        "network_calls": false
+        "scope": "local project, package, and embedded asset checks"
     });
 
     if args.json {
@@ -2225,7 +2385,6 @@ fn command_doctor(args: DoctorArgs) -> Result<()> {
                 "not detected"
             }
         );
-        println!("Model boundary: prompt packets only; no API keys or model calls.");
         Ok(())
     }
 }
@@ -2297,12 +2456,73 @@ fn init_project(args: &InitArgs) -> Result<()> {
     Ok(())
 }
 
+fn write_story_seed_from_start(root: &Path, args: &StartArgs) -> Result<()> {
+    let path = root.join(PROJECT_DIR).join("state").join("story-seed.yml");
+    let data = json!({
+        "title": args.title,
+        "genre": args.genre,
+        "premise": args.idea,
+        "protagonist_want": args.protagonist_want,
+        "protagonist_wound": args.protagonist_wound,
+        "world": args.world,
+        "power_system": args.power_system,
+        "audience": args.audience,
+        "tone": args.tone,
+        "reading_level": args.reading_level,
+        "updated_at": now()
+    });
+    write_yaml_json(&path, &data)
+}
+
+fn update_project_config_from_story_set(root: &Path, args: &StorySetArgs) -> Result<()> {
+    if args.title.is_none() && args.genre.is_none() {
+        return Ok(());
+    }
+    let path = root.join(PROJECT_DIR).join("project.yml");
+    let mut config: ProjectConfig = read_yaml_value(&path)
+        .and_then(|value| serde_yaml::from_value(value).ok())
+        .unwrap_or_default();
+    if let Some(title) = args.title.as_ref().filter(|value| !value.trim().is_empty()) {
+        config.title = title.clone();
+    }
+    if let Some(genre) = args.genre.as_ref().filter(|value| !value.trim().is_empty()) {
+        config.genre_profile = genre.clone();
+    }
+    if config.created_at.is_empty() {
+        config.created_at = now();
+    }
+    write_yaml(&path, &config)
+}
+
+fn write_story_seed_character(root: &Path, name: &str, args: &StorySetArgs) -> Result<()> {
+    let path = root
+        .join(PROJECT_DIR)
+        .join("characters")
+        .join(format!("{}.yml", slug(name)));
+    if path.exists() {
+        return Ok(());
+    }
+    let data = json!({
+        "name": name,
+        "age": null,
+        "appearance": "",
+        "voice": "",
+        "traits": [],
+        "motives": args.protagonist_want.iter().cloned().collect::<Vec<_>>(),
+        "wounds": args.protagonist_wound.iter().cloned().collect::<Vec<_>>(),
+        "secrets": [],
+        "knowledge": [],
+        "updated_at": now()
+    });
+    write_yaml_json(&path, &data)
+}
+
 fn command_agent(command: AgentCommand) -> Result<()> {
     match command {
         AgentCommand::Plan(args) => {
             let data = agent_plan_json(&args);
             if args.json {
-                print_json(data)
+                write_json_or_print(args.out, &data)
             } else {
                 let packet = agent_plan_packet(&args);
                 write_or_print(args.out, &packet)
@@ -2341,13 +2561,12 @@ fn command_skills(command: SkillsCommand) -> Result<()> {
             Ok(())
         }
         SkillsCommand::Install { target, dry_run } => {
-            for (name, body) in SKILLS {
-                let path = target.join(name);
+            let paths = install_skills_to(&target, dry_run)?;
+            for path in paths {
                 if dry_run {
-                    println!("would write {}", path.display());
+                    println!("would write {path}");
                 } else {
-                    write_text(&path, body)?;
-                    println!("wrote {}", path.display());
+                    println!("wrote {path}");
                 }
             }
             Ok(())
@@ -2357,7 +2576,7 @@ fn command_skills(command: SkillsCommand) -> Result<()> {
                 "embedded_skill_count": SKILLS.len(),
                 "target": target.as_ref().map(|p| p.display().to_string()),
                 "target_exists": target.as_ref().map(|p| p.exists()),
-                "model_boundary": "skills call CLI and produce packets for any model"
+                "scope": "embedded Novel Craft skills"
             });
             if json {
                 print_json(data)
@@ -2370,6 +2589,72 @@ fn command_skills(command: SkillsCommand) -> Result<()> {
             }
         }
     }
+}
+
+fn primary_skill_names() -> Vec<&'static str> {
+    SKILLS
+        .iter()
+        .filter_map(|(name, _)| {
+            if name.starts_with("aliases/") {
+                None
+            } else {
+                name.strip_suffix("/SKILL.md")
+            }
+        })
+        .collect()
+}
+
+fn default_skill_target() -> PathBuf {
+    if let Ok(value) = std::env::var("NOVEL_CRAFT_SKILLS_DIR") {
+        if !value.trim().is_empty() {
+            return PathBuf::from(value);
+        }
+    }
+    if let Ok(value) = std::env::var("CODEX_HOME") {
+        if !value.trim().is_empty() {
+            return PathBuf::from(value).join("skills");
+        }
+    }
+    if let Ok(value) = std::env::var("HOME") {
+        if !value.trim().is_empty() {
+            return PathBuf::from(value).join(".codex").join("skills");
+        }
+    }
+    PathBuf::from(".").join("skills")
+}
+
+fn install_skills_to(target: &Path, dry_run: bool) -> Result<Vec<String>> {
+    let mut paths = Vec::new();
+    for (name, body) in SKILLS {
+        let path = target.join(name);
+        if !dry_run {
+            write_text(&path, body)?;
+        }
+        paths.push(path.display().to_string());
+    }
+    Ok(paths)
+}
+
+fn print_setup_wizard(target: &Path, primary_skills: &[&str]) {
+    println!("Novel Craft setup");
+    println!();
+    println!("This startup wizard can install the bundled Novel Craft skills.");
+    println!(
+        "These skills are crucial for Novel Craft to work correctly in an agent workflow: they teach the agent when to plan, draft, review, continue, and sync story memory with the CLI."
+    );
+    println!();
+    println!("Following skills:");
+    for skill in primary_skills {
+        println!("- {skill}");
+    }
+    println!();
+    println!(
+        "Deprecated alias stubs are also included for one release so older skill names keep working."
+    );
+    println!("Install target: {}", target.display());
+    println!("You can opt out now and install later with:");
+    println!("  novel-craft skills install --target {}", target.display());
+    println!();
 }
 
 fn command_writing(command: WritingCommand) -> Result<()> {
@@ -2387,8 +2672,7 @@ fn command_writing(command: WritingCommand) -> Result<()> {
             if json {
                 print_json(json!({
                     "guide": GENERAL_WRITING_PROFILE.id,
-                    "packet": packet,
-                    "model_boundary": "prompt-packets-only"
+                    "packet": packet
                 }))
             } else {
                 write_or_print(out, &packet)
@@ -2546,8 +2830,9 @@ fn command_creative(command: CreativeCommand) -> Result<()> {
                 &args.must_avoid,
             );
             if args.json {
-                print_json(
-                    json!({"idea": args.idea, "genre": args.genre, "count": args.count, "packet": text}),
+                write_json_or_print(
+                    args.out,
+                    &json!({"idea": args.idea, "genre": args.genre, "count": args.count, "packet": text}),
                 )
             } else {
                 write_or_print(args.out, &text)
@@ -2582,7 +2867,7 @@ fn command_eval(command: EvalCommand) -> Result<()> {
                 "story",
             );
             if args.json {
-                print_json(data)
+                write_json_or_print(args.out, &data)
             } else {
                 write_or_print(
                     args.out,
@@ -2602,7 +2887,7 @@ fn command_eval(command: EvalCommand) -> Result<()> {
                 "chapter",
             );
             if args.json {
-                print_json(data)
+                write_json_or_print(args.out, &data)
             } else {
                 write_or_print(
                     args.out,
@@ -2620,7 +2905,7 @@ fn command_eval(command: EvalCommand) -> Result<()> {
                 &args.must_avoid,
             );
             if args.json {
-                print_json(data)
+                write_json_or_print(args.out, &data)
             } else {
                 write_or_print(
                     args.out,
@@ -2649,15 +2934,18 @@ fn command_eval(command: EvalCommand) -> Result<()> {
                 &must_avoid,
             );
             if json {
-                print_json(compare_json(
-                    &a,
-                    &b,
-                    &a_text,
-                    &b_text,
-                    &profile,
-                    &must_include,
-                    &must_avoid,
-                ))
+                write_json_or_print(
+                    out,
+                    &compare_json(
+                        &a,
+                        &b,
+                        &a_text,
+                        &b_text,
+                        &profile,
+                        &must_include,
+                        &must_avoid,
+                    ),
+                )
             } else {
                 write_or_print(out, &packet)
             }
@@ -2940,6 +3228,56 @@ fn command_character(command: CharacterCommand) -> Result<()> {
     }
 }
 
+fn command_story(command: StoryCommand) -> Result<()> {
+    match command {
+        StoryCommand::Set(args) => {
+            let root = require_project()?;
+            let state_path = root.join(PROJECT_DIR).join("state").join("story-seed.yml");
+            let mut seed =
+                read_yaml_value(&state_path).unwrap_or_else(|| Value::Mapping(Mapping::new()));
+            upsert_yaml_string(&mut seed, "title", args.title.as_deref())?;
+            upsert_yaml_string(&mut seed, "genre", args.genre.as_deref())?;
+            upsert_yaml_string(&mut seed, "premise", args.premise.as_deref())?;
+            upsert_yaml_string(&mut seed, "protagonist", args.protagonist.as_deref())?;
+            upsert_yaml_string(
+                &mut seed,
+                "protagonist_want",
+                args.protagonist_want.as_deref(),
+            )?;
+            upsert_yaml_string(
+                &mut seed,
+                "protagonist_wound",
+                args.protagonist_wound.as_deref(),
+            )?;
+            upsert_yaml_string(&mut seed, "world", args.world.as_deref())?;
+            upsert_yaml_string(&mut seed, "power_system", args.power_system.as_deref())?;
+            upsert_yaml_string(&mut seed, "updated_at", Some(&now()))?;
+            write_yaml_value(&state_path, &seed)?;
+
+            update_project_config_from_story_set(&root, &args)?;
+            if let Some(name) = args
+                .protagonist
+                .as_ref()
+                .filter(|name| !name.trim().is_empty())
+            {
+                write_story_seed_character(&root, name, &args)?;
+            }
+
+            let data = json!({
+                "status": "ok",
+                "path": state_path,
+                "story_seed": yaml_to_json(&seed)
+            });
+            if args.json {
+                print_json(data)
+            } else {
+                println!("Story seed updated: {}", state_path.display());
+                Ok(())
+            }
+        }
+    }
+}
+
 fn command_plot(command: PlotCommand) -> Result<()> {
     match command {
         PlotCommand::Thread(args) => {
@@ -3077,14 +3415,21 @@ fn command_audit(command: AuditCommand) -> Result<()> {
         AuditCommand::Continuity(args) | AuditCommand::Repetition(args) => {
             command_lint(LintCommand::Line(args))
         }
-        AuditCommand::Causality { json } => {
-            let root = require_project()?;
-            let data = matrix_audit_data(&build_matrix(&root)?);
-            if json {
-                print_json(data)
+        AuditCommand::Causality { path, json, out } => {
+            let data = if let Some(path) = path {
+                let text = read_text(&path)?;
+                causality_report(&path, &text)
             } else {
-                println!("{}", serde_yaml::to_string(&data)?);
-                Ok(())
+                let root = require_project()?;
+                matrix_audit_data(&build_matrix(&root)?)
+            };
+            if json {
+                write_json_or_print(out, &data)
+            } else {
+                write_or_print(
+                    out,
+                    &format!("# Causality Audit\n\n{}", serde_yaml::to_string(&data)?),
+                )
             }
         }
     }
@@ -3095,6 +3440,8 @@ fn command_memory(command: MemoryCommand) -> Result<()> {
         MemoryCommand::Extract {
             path,
             scene_id,
+            review,
+            json,
             out,
         } => {
             let text = read_text(&path)?;
@@ -3108,20 +3455,36 @@ fn command_memory(command: MemoryCommand) -> Result<()> {
                 "scene": scene,
                 "source": path,
                 "new_facts": extract_fact_candidates(&text),
-                "open_promises": [],
+                "open_loops": open_loops_report(&text),
+                "scene_change": scene_change_report(&text),
+                "progression_and_power": progression_and_power_report(&text),
+                "review_required": true,
+                "review_notes": if review {
+                    vec![
+                        "Approve only facts that should become canon.",
+                        "Reject accidental prose, speculation, and temporary uncertainty.",
+                        "Commit approved memory with `novel-craft memory commit <diff.yml>`."
+                    ]
+                } else {
+                    Vec::new()
+                },
                 "warnings": ["Review this diff before commit."],
                 "created_at": now()
             });
             let root = require_project()?;
-            let out_path = out.unwrap_or_else(|| {
-                root.join(PROJECT_DIR).join("pending-memory").join(format!(
-                    "{}.diff.yml",
-                    slug(data["scene"].as_str().unwrap_or("scene"))
-                ))
-            });
-            write_yaml_json(&out_path, &data)?;
-            println!("Memory diff written: {}", out_path.display());
-            Ok(())
+            if json {
+                write_json_or_print(out, &data)
+            } else {
+                let out_path = out.unwrap_or_else(|| {
+                    root.join(PROJECT_DIR).join("pending-memory").join(format!(
+                        "{}.diff.yml",
+                        slug(data["scene"].as_str().unwrap_or("scene"))
+                    ))
+                });
+                write_yaml_json(&out_path, &data)?;
+                println!("Memory diff written: {}", out_path.display());
+                Ok(())
+            }
         }
         MemoryCommand::Commit { diff } => {
             let root = require_project()?;
@@ -3155,24 +3518,291 @@ fn command_export(command: ExportCommand) -> Result<()> {
     }
 }
 
+fn next_chapter_from_draft(path: &Path, text: &str) -> serde_json::Value {
+    let lower = text.to_lowercase();
+    json!({
+        "source": path,
+        "summary": {
+            "next_best_action": "Plan the next chapter from the previous ending, open loops, cost, and power/status delta.",
+            "risk_notes": ["Do not simply repeat the context packet; convert the last chapter's consequences into the next scene pressure."]
+        },
+        "what_changed": scene_change_report(text),
+        "new_open_loops": open_loops_report(text),
+        "reader_retention": reader_retention_report(text),
+        "power_status_delta": progression_and_power_report(text),
+        "natural_next_chapter_setup": {
+            "immediate_goal": infer_next_goal(&lower),
+            "immediate_conflict": infer_next_conflict(&lower),
+            "relationship_state": infer_relationship_state(&lower),
+            "new_cost": infer_new_cost(&lower),
+            "next_hook": infer_next_hook(&lower)
+        },
+        "continuity_reminders": [
+            "Carry forward any injury, debt, object, relationship shift, revealed rule, and unanswered question from the source chapter.",
+            "Do not repeat the same opening beat; escalate along a different axis such as social pressure, scarcity, moral cost, location, or relationship leverage.",
+            "Pay off at least one small expectation while opening one larger question."
+        ],
+        "next_chapter_card": {
+            "goal": "Give the POV a visible next objective caused by the previous chapter's turn.",
+            "conflict": "Make the new obstacle specific and active.",
+            "turn": "Change the story state by the end of the chapter.",
+            "cost": "Make the attempted win cost safety, trust, time, status, resources, or certainty.",
+            "exit_hook": "End with a fair reason to read the following chapter."
+        }
+    })
+}
+
+fn infer_next_goal(lower: &str) -> &'static str {
+    if contains_any(lower, &["stair", "stairs", "service stair"]) {
+        "survive the stair and learn what it demands next"
+    } else if contains_any(lower, &["door", "gate", "opened"]) {
+        "cross the newly opened threshold without losing control of the cost"
+    } else if contains_any(lower, &["marked", "brand", "claim"]) {
+        "understand the mark before someone uses it against the protagonist"
+    } else {
+        "pursue the concrete objective caused by the previous chapter's final turn"
+    }
+}
+
+fn infer_next_conflict(lower: &str) -> &'static str {
+    if contains_any(lower, &["debt", "unpaid", "owed", "toll"]) {
+        "the debt comes due before the protagonist understands the rules"
+    } else if contains_any(lower, &["collector", "authority", "guard"]) {
+        "an official or enforcer controls the route forward"
+    } else if contains_any(lower, &["woke", "wake", "bell"]) {
+        "the deadline ends and the dormant danger becomes active"
+    } else {
+        "the previous win creates a sharper obstacle instead of a clean escape"
+    }
+}
+
+fn infer_relationship_state(lower: &str) -> &'static str {
+    if contains_any(lower, &["lio", "ward", "child", "brother", "sister"]) {
+        "the protected person is now a continuing pressure, not a prop"
+    } else if contains_any(lower, &["trusted", "betrayed", "owed", "promised"]) {
+        "trust, debt, or obligation has shifted and should affect the next choice"
+    } else {
+        "carry forward any new trust, leverage, suspicion, or dependency from the last scene"
+    }
+}
+
+fn infer_new_cost(lower: &str) -> &'static str {
+    if contains_any(lower, &["marked", "brand", "claim"]) {
+        "the protagonist is marked or claimable"
+    } else if contains_any(lower, &["debt", "owed", "toll"]) {
+        "the protagonist owes a concrete debt"
+    } else if contains_any(lower, &["blood", "wound", "pain"]) {
+        "the victory has a bodily cost"
+    } else {
+        "name the cost of the previous chapter's apparent progress"
+    }
+}
+
+fn infer_next_hook(lower: &str) -> &'static str {
+    if contains_any(lower, &["wake", "woke", "bell"]) {
+        "what wakes when the bell ends?"
+    } else if contains_any(lower, &["stair", "stairs"]) {
+        "what does the stair demand before it lets them climb?"
+    } else if contains_any(lower, &["system", "ledger", "rank", "skill"]) {
+        "what rule does the system reveal only after it hurts?"
+    } else {
+        "what consequence of the last chapter arrives first?"
+    }
+}
+
 fn command_draft(args: TargetArgs, title: &str) -> Result<()> {
     let root = require_project()?;
     let target = args.target.unwrap_or_else(|| "next-scene".to_string());
     let packet = context_packet(&root, &target)?;
-    let text = format!("# {title}: {target}\n\nUse this context packet to draft model-neutral prose. Do not call any model automatically.\n\n{packet}");
+    let source_signals = if let Some(path) = &args.from {
+        let text = read_text(path)?;
+        Some(next_chapter_from_draft(path, &text))
+    } else {
+        None
+    };
+    let source_review = if let Some(signals) = &source_signals {
+        format!(
+            "\n## Source Draft Signals\n```yaml\n{}\n```\n",
+            serde_yaml::to_string(signals)?
+        )
+    } else {
+        String::new()
+    };
+    let text = format!(
+        "# {title}: {target}\n\n## Prose Brief\n- Target length: {}\n- POV: {}\n- Must include: {}\n- Avoid: {}\n- Opening: start with a present-tense scene pressure before explaining the full roadmap.\n- Scene turn: the chapter must change plot, character, relationship, knowledge, stakes, or reader expectation.\n- Exposition: keep status screens, system rules, lore, and world labels subordinate to action, dialogue, discovery, cost, or consequence.\n- Ending: close with a fair continuation reason, not a fake cliffhanger.\n- Canon: preserve project state unless the scene card explicitly changes it.\n{}\n{packet}",
+        args.word_count,
+        args.pov,
+        join_strings(&args.must_include),
+        join_strings(&args.avoid),
+        source_review
+    );
     if args.json {
-        print_json(json!({"target": target, "prompt": text}))
+        print_json(json!({
+            "target": target,
+            "prompt": text,
+            "source_draft_signals": source_signals
+        }))
     } else {
         write_or_print(args.out, &text)
     }
 }
 
+fn quick_action_summary(text: &str, issues: &[Issue]) -> serde_json::Value {
+    let opening = opening_promise_report(text);
+    let open_loops = open_loops_report(text);
+    let next_best_action = if opening["status"].as_str() == Some("warn") {
+        "Revise the opening so the premise appears through a present choice, cost, or consequence."
+    } else if !issues.is_empty() {
+        "Review line-level signals and keep only the ones that are intentional and effective."
+    } else if open_loops["question_mark_count"].as_u64().unwrap_or(0) == 0 {
+        "Check that the ending leaves a clear continuation question or pressure."
+    } else {
+        "Run a focused review pass for the next craft risk: prose, structure, dialogue, or continuity."
+    };
+    json!({
+        "top_findings": revision_priorities(
+            issues,
+            &constraint_adherence(text, &[], &[]),
+            &opening,
+            &trope_saturation(text, "general-fiction")
+        )["items"],
+        "next_best_action": next_best_action,
+        "risk_notes": [
+            "This is a routing summary; inspect the underlying sections before revising.",
+            "A clean deterministic pass does not prove the chapter is finished."
+        ]
+    })
+}
+
+fn focused_review_report(path: &Path, text: &str, rubric: &str) -> serde_json::Value {
+    let issues = lint_text(text);
+    let rubric_key = normalize_key(rubric);
+    let mut sections = serde_json::Map::new();
+    match rubric_key.as_str() {
+        "prose" | "line" | "line-review" => {
+            sections.insert("prose_review".to_string(), prose_review(text));
+            sections.insert("voice_review".to_string(), voice_review(text));
+            sections.insert("line_lint".to_string(), json!(issues));
+        }
+        "dialogue" | "relationship" => {
+            sections.insert(
+                "relationship_and_dialogue".to_string(),
+                relationship_and_dialogue_report(text),
+            );
+            sections.insert("voice_review".to_string(), voice_review(text));
+        }
+        "structure" | "chapter" | "scene" => {
+            sections.insert("chapter_spine".to_string(), chapter_spine_report(text));
+            sections.insert("scene_change".to_string(), scene_change_report(text));
+            sections.insert(
+                "reader_retention".to_string(),
+                reader_retention_report(text),
+            );
+        }
+        "continuity" | "memory" => {
+            sections.insert("open_loops".to_string(), open_loops_report(text));
+            sections.insert(
+                "progression_and_power".to_string(),
+                progression_and_power_report(text),
+            );
+            sections.insert(
+                "canon_candidates".to_string(),
+                json!(extract_fact_candidates(text)),
+            );
+        }
+        _ => {
+            sections.insert("chapter_spine".to_string(), chapter_spine_report(text));
+            sections.insert("scene_change".to_string(), scene_change_report(text));
+            sections.insert(
+                "reader_retention".to_string(),
+                reader_retention_report(text),
+            );
+            sections.insert("prose_review".to_string(), prose_review(text));
+            sections.insert("voice_review".to_string(), voice_review(text));
+            sections.insert("open_loops".to_string(), open_loops_report(text));
+        }
+    }
+    json!({
+        "path": path,
+        "rubric": rubric,
+        "summary": quick_action_summary(text, &issues),
+        "metrics": metrics(text),
+        "lint": lint_summary(&issues),
+        "sections": sections,
+        "review_questions": focused_review_questions(&rubric_key)
+    })
+}
+
+fn focused_review_questions(rubric: &str) -> Vec<&'static str> {
+    match rubric {
+        "prose" | "line" | "line-review" => vec![
+            "Where does the prose explain an emotion that could be embodied through action, gesture, or sensory detail?",
+            "Which sentences have the same shape and could use rhythm contrast?",
+            "Where does diction become generic instead of belonging to this POV?",
+            "Which paragraph would be clearest if split, trimmed, or re-ordered?",
+        ],
+        "dialogue" | "relationship" => vec![
+            "What does each speaker want underneath the surface topic?",
+            "Who has leverage at the start, and who has it at the end?",
+            "Which line states the feeling too directly?",
+            "What relationship state changes by the end of the exchange?",
+        ],
+        "structure" | "chapter" | "scene" => vec![
+            "What does the POV character want in this chapter?",
+            "What resists them?",
+            "What turns by the end?",
+            "What does the turn cost, and why does the next chapter feel necessary?",
+        ],
+        "continuity" | "memory" => vec![
+            "Which facts should become canon?",
+            "Which questions need payoff windows?",
+            "Which injuries, debts, objects, powers, or relationship shifts must carry forward?",
+            "Which candidate facts are only temporary uncertainty and should not be committed?",
+        ],
+        _ => vec![
+            "What is the highest-impact revision pass?",
+            "Which warning is actually an intentional effect?",
+            "Which scene-level change is weakest?",
+            "What single edit most improves reader grip?",
+        ],
+    }
+}
+
+fn revision_packet(path: &Path, text: &str, pass: &str) -> serde_json::Value {
+    let issues = lint_text(text);
+    let review = focused_review_report(path, text, pass);
+    let optional_priorities = if issues.is_empty() {
+        vec![
+            "Check whether the main relationship turn lands emotionally.",
+            "Check whether named setting/system terms appear because the scene needs them.",
+            "Check whether the ending threat or question is concrete enough to pull the next chapter.",
+        ]
+    } else {
+        Vec::new()
+    };
+    json!({
+        "path": path,
+        "pass": pass,
+        "summary": review["summary"],
+        "deterministic_findings": issues,
+        "focused_review": review["sections"],
+        "optional_priorities": optional_priorities,
+        "next_best_action": if optional_priorities.is_empty() {
+            "Revise the ranked findings first, then run eval chapter again."
+        } else {
+            "No deterministic line issues surfaced for this pass. Use the optional priorities for human-quality review."
+        }
+    })
+}
+
 fn command_analyse(args: FileReportArgs) -> Result<()> {
     let text = read_text(&args.path)?;
+    let issues = lint_text(&text);
     let data = json!({
         "path": args.path,
+        "summary": quick_action_summary(&text, &issues),
         "metrics": metrics(&text),
-        "issues": lint_text(&text),
+        "issues": issues,
         "novelty": novelty_analysis(&text, false),
         "reader_profile": reader_check(&text, "fast-webnovel")
     });
@@ -3188,13 +3818,7 @@ fn command_analyse(args: FileReportArgs) -> Result<()> {
 
 fn command_review(args: ReviewArgs) -> Result<()> {
     let text = read_text(&args.path)?;
-    let data = json!({
-        "rubric": args.rubric,
-        "metrics": metrics(&text),
-        "issues": lint_text(&text),
-        "dimensions": dimensions_json(),
-        "doctrine": "Metrics route attention; author judgement decides whether the effect is useful."
-    });
+    let data = focused_review_report(&args.path, &text, &args.rubric);
     if args.json {
         print_json(data)
     } else {
@@ -3207,18 +3831,24 @@ fn command_review(args: ReviewArgs) -> Result<()> {
 
 fn command_revise(args: ReviseArgs) -> Result<()> {
     let text = read_text(&args.path)?;
-    let report = format!(
-        "# Revision Plan: {}\n\nPass: `{}`\n\nDo not rewrite automatically. Use these findings as a model prompt packet.\n\n{}",
-        args.path.display(),
-        args.pass,
-        serde_yaml::to_string(&lint_text(&text))?
-    );
-    let out = args
-        .out
-        .unwrap_or_else(|| args.path.with_extension(format!("{}.review.md", args.pass)));
-    write_text(&out, &report)?;
-    println!("Revision packet written: {}", out.display());
-    Ok(())
+    let data = revision_packet(&args.path, &text, &args.pass);
+    if args.json {
+        write_json_or_print(args.out, &data)
+    } else {
+        let report = format!(
+            "# Revision Plan: {}\n\nPass: `{}`\n\n{}\n",
+            args.path.display(),
+            args.pass,
+            serde_yaml::to_string(&data)?
+        );
+        let out = args
+            .out
+            .unwrap_or_else(|| args.path.with_extension(format!("{}.review.md", args.pass)));
+        write_text(&out, &report)?;
+        println!("Revision packet written: {}", out.display());
+        print_ignored_project_state_note(&out);
+        Ok(())
+    }
 }
 
 fn command_diff(args: DiffArgs) -> Result<()> {
@@ -3264,6 +3894,23 @@ fn prompt(label: &str, default: &str) -> Result<String> {
         Ok(default.to_string())
     } else {
         Ok(trimmed.to_string())
+    }
+}
+
+fn confirm(label: &str, default: bool) -> Result<bool> {
+    let suffix = if default { "Y/n" } else { "y/N" };
+    loop {
+        print!("{label} [{suffix}]: ");
+        io::stdout().flush()?;
+        let mut input = String::new();
+        io::stdin().read_line(&mut input)?;
+        let trimmed = input.trim().to_ascii_lowercase();
+        match trimmed.as_str() {
+            "" => return Ok(default),
+            "y" | "yes" => return Ok(true),
+            "n" | "no" => return Ok(false),
+            _ => println!("Please answer yes or no."),
+        }
     }
 }
 
@@ -3350,15 +3997,38 @@ fn write_or_print(out: Option<PathBuf>, text: &str) -> Result<()> {
     if let Some(path) = out {
         write_text(&path, text)?;
         println!("Written: {}", path.display());
+        print_ignored_project_state_note(&path);
     } else {
         print!("{text}");
     }
     Ok(())
 }
 
+fn print_ignored_project_state_note(path: &Path) {
+    if path
+        .components()
+        .any(|component| component.as_os_str() == PROJECT_DIR)
+    {
+        println!(
+            "Note: {} is under ignored project state. Export or copy approved work when you need a shareable/tracked artifact.",
+            path.display()
+        );
+    }
+}
+
 fn print_json<T: Serialize>(value: T) -> Result<()> {
     println!("{}", serde_json::to_string_pretty(&value)?);
     Ok(())
+}
+
+fn write_json_or_print(out: Option<PathBuf>, value: &serde_json::Value) -> Result<()> {
+    if let Some(path) = out {
+        write_text(&path, &serde_json::to_string_pretty(value)?)?;
+        println!("Written: {}", path.display());
+        Ok(())
+    } else {
+        print_json(value)
+    }
 }
 
 fn init_memory(path: &Path) -> Result<()> {
@@ -3538,13 +4208,13 @@ fn opening_promise_report(text: &str) -> serde_json::Value {
         "micro_scene_hits": micro_hits,
         "action_hits": action_hits,
         "announcement_hits": announcement_hits,
-        "llm_questions": [
-            "What is the smallest working unit of the story promise in this chapter?",
+        "review_questions": [
+            "What is the smallest working unit of the story appeal in this chapter?",
             "Can the opening show one room, one person, one need, one rule, one cost, or one choice before naming the larger arc?",
             "Which macro labels can be delayed until after the reader has watched the mechanic affect a decision?",
             "Does every early system/world term change the present choice, obstacle, cost, or consequence?"
         ],
-        "revision_hint": "Usually seed the macro promise through micro-action. For kingdom-building, try one protected person, room, rule, meal, door, ledger, oath, or boundary before leaning on kingdoms, domains, empires, or future upgrade ladders."
+        "revision_hint": "Usually seed the macro appeal through micro-action. For kingdom-building, try one protected person, room, rule, meal, door, ledger, oath, or boundary before leaning on kingdoms, domains, empires, or future upgrade ladders."
     })
 }
 
@@ -3556,14 +4226,13 @@ fn profile_json(profile: &WritingProfile) -> serde_json::Value {
         "success_criteria": profile.success_criteria,
         "failure_modes": profile.failure_modes,
         "review_pass": profile.review_pass,
-        "final_gate": profile.final_gate,
-        "model_boundary": "prompt-packets-only"
+        "final_gate": profile.final_gate
     })
 }
 
 fn profile_packet(profile: &WritingProfile) -> String {
     format!(
-        "# Novel Craft Writing Support Guide\n\n## Purpose\n{}\n\n## Reader\n{}\n\n## Success Criteria\n{}\n\n## Failure Modes\n{}\n\n## Review Pass\n{}\n\n## Final Gate\n{}\n\n## Model Boundary\nUse this as a model-neutral instruction packet. Do not treat deterministic checks as final judgement.\n",
+        "# Novel Craft Writing Support Guide\n\n## Purpose\n{}\n\n## Reader\n{}\n\n## Success Criteria\n{}\n\n## Failure Modes\n{}\n\n## Review Pass\n{}\n\n## Final Gate\n{}\n",
         profile.purpose,
         profile.reader,
         bullet_lines(profile.success_criteria),
@@ -3602,8 +4271,8 @@ fn novelty_analysis(text: &str, experimental_score: bool) -> serde_json::Value {
             "cooldown",
             "limitation",
             "debt",
-            "promise",
-            "oath",
+            "constraint",
+            "trade-off",
             "consequence",
             "contract",
             "trust",
@@ -3653,8 +4322,8 @@ fn novelty_analysis(text: &str, experimental_score: bool) -> serde_json::Value {
             }),
         );
     }
-    data.insert("llm_questions".to_string(), json!([
-        "Name the familiar promise.",
+    data.insert("review_questions".to_string(), json!([
+        "Name the familiar genre appeal.",
         "Name the freshness twist.",
         "List three details that could not be swapped into another generic story.",
         "Name any required fact the draft must preserve before style is judged.",
@@ -3671,6 +4340,59 @@ fn lint_summary(issues: &[Issue]) -> serde_json::Value {
     json!({
         "issue_count": issues.len(),
         "by_rule": by_rule
+    })
+}
+
+fn revision_priorities(
+    issues: &[Issue],
+    constraints: &serde_json::Value,
+    opening: &serde_json::Value,
+    trope: &serde_json::Value,
+) -> serde_json::Value {
+    let mut items = Vec::new();
+    if constraints["status"].as_str() == Some("fail") {
+        items.push(json!({
+            "rank": items.len() + 1,
+            "level": "blocker",
+            "focus": "constraint adherence",
+            "action": "Restore required facts and remove forbidden claims before judging style."
+        }));
+    }
+    if opening["status"].as_str() == Some("warn") {
+        items.push(json!({
+            "rank": items.len() + 1,
+            "level": "high-impact craft issue",
+            "focus": "opening motion",
+            "action": "Revise the opening so the macro premise is dramatised through one present choice, cost, obstacle, or consequence."
+        }));
+    }
+    if !issues.is_empty() {
+        items.push(json!({
+            "rank": items.len() + 1,
+            "level": if issues.len() > 12 { "high-impact craft issue" } else { "line polish" },
+            "focus": "line lint",
+            "action": format!("Review {} line-level signals; keep any that are intentional and effective.", issues.len())
+        }));
+    }
+    if trope["saturation_risk"].as_str() == Some("high") {
+        items.push(json!({
+            "rank": items.len() + 1,
+            "level": "needs judgement",
+            "focus": "trope stack",
+            "action": "Decide whether the familiar signals are healthy genre appeal or a generic pile-up; keep only the ones that interact causally."
+        }));
+    }
+    if items.is_empty() {
+        items.push(json!({
+            "rank": 1,
+            "level": "next useful pass",
+            "focus": "agent judgement",
+            "action": "No deterministic blocker surfaced. Review goal, conflict, turn, cost, voice, and ending momentum before finalising."
+        }));
+    }
+    json!({
+        "method": "Action-ranked review leads for an agent revision pass; not an automatic quality verdict.",
+        "items": items
     })
 }
 
@@ -3737,6 +4459,8 @@ fn gate_report(
     let reader = reader_check(text, profile);
     let constraints = constraint_adherence(text, must_include, must_avoid);
     let opening = opening_promise_report(text);
+    let trope = trope_saturation(text, "system-isekai");
+    let priorities = revision_priorities(&issues, &constraints, &opening, &trope);
     let reader_warning_count = reader["warnings"].as_array().map_or(0, Vec::len);
     let constraint_status = constraints["status"].as_str().unwrap_or("unchecked");
     let opening_status = opening["status"].as_str().unwrap_or("pass");
@@ -3757,8 +4481,9 @@ fn gate_report(
         "reader_profile": reader,
         "constraint_adherence": constraints,
         "opening_promise": opening,
+        "revision_priorities": priorities,
         "novelty": novelty_analysis(text, false),
-        "requires_llm_or_human_judgement": true,
+        "requires_reviewer_judgement": true,
         "gate_notes": [
             "pass means deterministic checks did not find configured blockers",
             "warn means review likely issues before calling the draft final",
@@ -3822,13 +4547,13 @@ fn chapter_spine_report(text: &str) -> serde_json::Value {
 fn scene_change_report(text: &str) -> serde_json::Value {
     let lower = text.to_lowercase();
     json!({
-        "method": "A chapter should change plot, character, relationship, knowledge, stakes, or reader promise.",
+        "method": "A chapter should change plot, character, relationship, knowledge, stakes, or reader expectation.",
         "plot_change": craft_signal(&lower, &["because", "therefore", "so", "after", "result", "opened", "closed"], "Check what plot state is different after the chapter."),
         "character_change": craft_signal(&lower, &["decided", "chose", "learned", "admitted", "refused", "promised"], "Check whether the character changes tactic, belief, self-knowledge, or commitment."),
         "relationship_change": craft_signal(&lower, &["trusted", "betrayed", "lied", "kissed", "owed", "friend", "enemy", "ally", "brother", "mother", "father"], "Check whether a relationship shifts in trust, leverage, intimacy, rivalry, debt, or threat."),
         "knowledge_change": craft_signal(&lower, &["learned", "discovered", "revealed", "clue", "secret", "realized", "realised", "truth"], "Check what the reader or POV knows now that they did not know before."),
         "stakes_change": craft_signal(&lower, &["deadline", "risk", "danger", "death", "cost", "lose", "lost", "execute", "hanged", "war"], "Check whether failure is clearer, closer, or more expensive."),
-        "promise_change": craft_signal(&lower, &["question", "promise", "oath", "mystery", "system", "power", "curse", "rank", "kingdom"], "Check what reader promise was paid, opened, escalated, or transformed.")
+        "reader_expectation_change": craft_signal(&lower, &["question", "mystery", "system", "power", "curse", "rank", "kingdom", "reveal", "choice"], "Check what reader expectation was paid, opened, escalated, or transformed.")
     })
 }
 
@@ -3838,7 +4563,7 @@ fn reader_retention_report(text: &str) -> serde_json::Value {
         "method": "Retention signals are prompts for revision. They do not predict real reader behaviour.",
         "open_question": craft_signal(&lower, &["?", "why", "who", "what", "where", "when", "secret", "missing"], "Check what question makes the reader continue."),
         "emotional_attachment": craft_signal(&lower, &["mother", "father", "sister", "brother", "child", "friend", "home", "hunger", "shame", "protect"], "Check what human attachment makes the pressure matter."),
-        "payoff_expectation": craft_signal(&lower, &["promise", "oath", "training", "rank", "clue", "debt", "map", "key", "system"], "Check what future payoff the chapter makes readers anticipate."),
+        "payoff_expectation": craft_signal(&lower, &["training", "rank", "clue", "debt", "map", "key", "system", "reveal", "choice"], "Check what future payoff the chapter makes readers anticipate."),
         "ending_momentum": exit_hook_signal(text),
         "recurring_pleasure": craft_signal(&lower, &["banter", "training", "tactic", "mystery", "romance", "beast", "system", "craft", "duel", "investigation"], "Check what repeatable pleasure the reader can expect in later chapters.")
     })
@@ -3898,7 +4623,7 @@ fn open_loops_report(text: &str) -> serde_json::Value {
         "unresolved_loop_questions": [
             "What question did this chapter open?",
             "What question did it answer?",
-            "Which promise now needs a payoff window?",
+            "Which open question now needs a payoff window?",
             "Is the reader curious, or merely confused?"
         ],
         "needs_agent_or_human_judgement": true
@@ -3975,6 +4700,10 @@ fn story_report(
     document_kind: &str,
 ) -> serde_json::Value {
     let issues = lint_text(text);
+    let constraints = constraint_adherence(text, must_include, must_avoid);
+    let opening = opening_promise_report(text);
+    let trope = trope_saturation(text, genre);
+    let priorities = revision_priorities(&issues, &constraints, &opening, &trope);
     let mode = if document_kind == "chapter" {
         "post_write_chapter_review"
     } else {
@@ -3988,8 +4717,8 @@ fn story_report(
         "guidance_policy": [
             "Treat findings as review leads, not automatic rewrite orders.",
             "Examples are indicators and helpers, not limits on what the story may do.",
-            "The author or LLM should decide whether a pattern is functional for the intended reader effect.",
-            "Prioritise structure, prose clarity, causality, scene movement, reader promise, and revision questions over mechanical compliance."
+            "Decide whether a pattern is functional for the intended reader effect before revising.",
+            "Prioritise structure, prose clarity, causality, scene movement, reader grip, and revision questions over mechanical compliance."
         ],
         "genre": genre,
         "profile": profile,
@@ -3997,8 +4726,9 @@ fn story_report(
         "lint": lint_summary(&issues),
         "issues": issues,
         "reader_profile": reader_check(text, profile),
-        "constraint_adherence": constraint_adherence(text, must_include, must_avoid),
-        "opening_promise": opening_promise_report(text),
+        "constraint_adherence": constraints,
+        "opening_promise": opening,
+        "revision_priorities": priorities,
         "chapter_spine": chapter_spine_report(text),
         "scene_change": scene_change_report(text),
         "reader_retention": reader_retention_report(text),
@@ -4008,10 +4738,10 @@ fn story_report(
         "progression_and_power": progression_and_power_report(text),
         "relationship_and_dialogue": relationship_and_dialogue_report(text),
         "novelty": novelty_analysis(text, false),
-        "trope_saturation": trope_saturation(text, genre),
+        "trope_saturation": trope,
         "dimensions": dimensions_json(),
         "review_questions": [
-            "What is the smallest scene-level promise the opening makes?",
+            "What is the smallest scene-level draw the opening makes?",
             "Does each major scene contain goal, conflict, turn, consequence, and next pressure?",
             "Where does prose become explanation instead of action, dialogue, discovery, cost, or consequence?",
             "Which warnings are useful signals, and which are intentional craft choices?",
@@ -4036,7 +4766,7 @@ fn compare_json(
         "b": b_gate,
         "dimensions": dimensions_json(),
         "winner": null,
-        "winner_policy": "No automatic winner. Use the evidence and record a human or LLM-assisted choice with eval reward-export.",
+        "winner_policy": "No automatic winner. Use the evidence and record the chosen version with eval reward-export.",
         "comparison_questions": [
             "Which draft better preserves the required facts?",
             "Which draft creates the stronger reader effect for the target profile?",
@@ -4116,13 +4846,25 @@ fn trope_saturation(text: &str, genre: &str) -> serde_json::Value {
         }
     }
     let familiar_count: usize = hits.values().map(|v| v.len()).sum();
+    let saturation_risk = if familiar_count >= 5 {
+        "high"
+    } else if familiar_count >= 3 {
+        "medium"
+    } else {
+        "low"
+    };
     json!({
         "genre": resolved_genre,
         "axis_hits": hits,
         "familiar_trope_hit_count": familiar_count,
-        "saturation_risk": if familiar_count >= 5 { "high" } else if familiar_count >= 3 { "medium" } else { "low" },
-        "llm_questions": [
-            "Which trope is intentional reader promise?",
+        "saturation_risk": saturation_risk,
+        "interpretation": {
+            "healthy_genre_signal": "Familiar genre signals are useful when they set reader expectations and then interact with cost, choice, consequence, or character pressure.",
+            "overloaded_trope_stack": "Risk rises when many labels appear before the scene proves why they belong together.",
+            "generic_execution_risk": "The problem is not using common tropes; the problem is using them without a specific causal relationship, fresh cost, or character-level pressure."
+        },
+        "review_questions": [
+            "Which trope is intentional reader appeal?",
             "What cost, limitation, contradiction, or consequence freshens it?",
             "Does the scene dramatise the trope through a choice?"
         ]
@@ -4181,7 +4923,6 @@ fn agent_plan_json(args: &AgentPlanArgs) -> serde_json::Value {
     let (resolved_genre, axes) = trope_axes_for(&args.genre);
     json!({
         "mode": "agent_chapter_plan",
-        "model_boundary": "prompt-packets-only",
         "task_facts": {
             "seed_idea": &args.idea,
             "genre": resolved_genre,
@@ -4192,19 +4933,20 @@ fn agent_plan_json(args: &AgentPlanArgs) -> serde_json::Value {
             "must_avoid": &args.must_avoid
         },
         "missing_story_questions": missing_story_questions(&args.idea, chapter_count),
-        "reader_promise_guidance": [
-            "Treat promise as reader effect: what question, desire, pressure, or pleasure makes the next page feel necessary.",
+        "reader_effect_guidance": [
+            "Treat this as reader-effect guidance, not literal oath magic: what question, desire, pressure, or pleasure makes the next page feel necessary.",
             "Usually dramatise the big premise through one small present-tense choice, cost, danger, hunger, shame, wonder, injustice, or relationship pressure before explaining the full system.",
+            "Do not choose literal oath, vow, or contract-magic systems unless the user asks for them or they beat other options on scene pressure.",
             "Examples are indicators and helpers, not hard limits. Keep them only when they improve the scene."
         ],
         "contender_generation_rules": [
             "Generate 8-12 contenders before drafting unless the user already supplied a locked direction.",
-            "Each contender must name the familiar promise, freshness twist, opening wound, first hard choice, cost of advantage, scene image, wider story engine, and page-turn reason.",
+            "Each contender must name the familiar genre appeal, freshness twist, opening wound, first hard choice, cost of advantage, scene image, wider story engine, and page-turn reason.",
             "Reject or rework contenders that only explain the premise, give power without cost, miss required facts, use forbidden claims, or lack a scene-level turn.",
             "Use the genre axes and atlas as ingredient maps; fold ingredients together causally instead of stacking labels."
         ],
         "comparison_protocol": [
-            "Compare contenders pairwise for hook, desire, pressure, cost, change, genre promise, voice opportunity, world pressure, and chapter-end momentum.",
+            "Compare contenders pairwise for hook, desire, pressure, cost, change, genre fit, voice opportunity, world pressure, and chapter-end momentum.",
             "Choose the best direction with evidence. Do not choose because it has more trope labels or lexical novelty signals.",
             "If two directions tie, prefer the one with clearer scene action and a sharper cost."
         ],
@@ -4261,7 +5003,7 @@ fn agent_plan_packet(args: &AgentPlanArgs) -> String {
         .collect::<Vec<_>>()
         .join("\n");
     format!(
-        "# Agent Chapter Plan\n\n## Task Facts\n- Seed idea: {}\n- Genre/profile: {}\n- Reader profile: {}\n- Chapters: {}\n- Avoid: {}\n- Must include: {}\n- Must avoid: {}\n\n## Missing Story Questions\n{}\n\n## Reader Promise Guidance\n{}\n\n## Contender Rules\n{}\n\n## Comparison Protocol\n{}\n\n## Chapter Cards\n{}\n## Drafting Instructions\n{}\n\n## Revision Loop\n{}\n\n## Post-Write Commands\n{}\n\n## Scope\nThis packet is craft-only. Check platform, award, publishing, rights, monetisation, and AI-disclosure requirements live if the user asks for those decisions.\n",
+        "# Agent Chapter Plan\n\n## Task Facts\n- Seed idea: {}\n- Genre/profile: {}\n- Reader profile: {}\n- Chapters: {}\n- Avoid: {}\n- Must include: {}\n- Must avoid: {}\n\n## Missing Story Questions\n{}\n\n## Reader Effect Guidance\n{}\n\n## Contender Rules\n{}\n\n## Comparison Protocol\n{}\n\n## Chapter Cards\n{}\n## Drafting Instructions\n{}\n\n## Revision Loop\n{}\n\n## Post-Write Commands\n{}\n\n## Scope\nThis packet is craft-only. Check platform, award, publishing, rights, monetisation, and AI-disclosure requirements live if the user asks for those decisions.\n",
         facts["seed_idea"].as_str().unwrap_or(""),
         facts["genre"].as_str().unwrap_or("general-fiction"),
         facts["profile"].as_str().unwrap_or("fast-webnovel"),
@@ -4270,7 +5012,7 @@ fn agent_plan_packet(args: &AgentPlanArgs) -> String {
         join_json_strings(&facts["must_include"]),
         join_json_strings(&facts["must_avoid"]),
         bullet_json_strings(&data["missing_story_questions"]),
-        bullet_json_strings(&data["reader_promise_guidance"]),
+        bullet_json_strings(&data["reader_effect_guidance"]),
         bullet_json_strings(&data["contender_generation_rules"]),
         bullet_json_strings(&data["comparison_protocol"]),
         chapter_text,
@@ -4327,7 +5069,7 @@ fn agent_chapter_cards(chapter_count: usize) -> Vec<serde_json::Value> {
     (1..=chapter_count)
         .map(|index| {
             let job = if index == 1 {
-                "Prove the core promise through the smallest dramatic scene before explaining the full roadmap."
+                "Prove the core appeal through the smallest dramatic scene before explaining the full roadmap."
             } else {
                 "Pay off one prior pressure, escalate another, and make the wider arc feel more necessary."
             };
@@ -4361,6 +5103,14 @@ fn join_json_strings(value: &serde_json::Value) -> String {
             }
         })
         .unwrap_or_else(|| "none".to_string())
+}
+
+fn join_strings(items: &[String]) -> String {
+    if items.is_empty() {
+        "none".to_string()
+    } else {
+        items.join(", ")
+    }
 }
 
 fn bullet_json_strings(value: &serde_json::Value) -> String {
@@ -4398,7 +5148,7 @@ fn voice_drift(paths: &[PathBuf], character: &str) -> Result<serde_json::Value> 
     }
     Ok(json!({
         "records": records,
-        "method": "Lexical dialogue fingerprint; final voice judgement belongs to the LLM/human reviewer."
+        "method": "Lexical dialogue fingerprint; final voice judgement belongs to the reviewer."
     }))
 }
 
@@ -4430,8 +5180,7 @@ fn story_atlas_json() -> serde_json::Value {
         "tropes": STORY_ATLAS_TROPES,
         "subtropes": STORY_ATLAS_SUBTROPES,
         "mixing_protocol": STORY_MIXING_PROTOCOL,
-        "quality_standard": NOVEL_EXCELLENCE_STANDARD,
-    "model_boundary": "Novel Craft supplies planning packets and deterministic checks. The agent or author still judges taste, voice, and final creative merit."
+        "quality_standard": NOVEL_EXCELLENCE_STANDARD
     })
 }
 
@@ -4459,7 +5208,7 @@ fn numbered_lines(items: &[&str]) -> String {
 fn creative_brief(args: &CreativeBriefArgs) -> String {
     let (resolved_genre, axes) = trope_axes_for(&args.genre);
     format!(
-        "# Creative Brief\n\n## Task Facts\n- Seed idea: {idea}\n- Genre/profile: {resolved_genre}\n- Audience: {audience}\n- Reading level target: grade {grade}\n- Required tropes or ingredients: {required}\n- Avoid: {avoid}\n- Must include: {must_include}\n- Must avoid: {must_avoid}\n\n## Always-On Novel Excellence Standard\n{novel_standard}\n\n## Opening Guidance\nPromise the macro experience through micro-action when it helps the reader. For chapter one, prefer the smallest working unit of the premise before the whole roadmap. A kingdom-building story might begin with one room, one meal, one door, one ledger, one oath, one protected child, or one boundary. Treat these as indicators, not hard limits.\n\n## Required Flow\n1. Restate the task facts in plain words.\n2. Use `novel-craft creative atlas --json` if the premise needs more breadth, then generate 8-12 distinct contenders before drafting.\n3. For each contender, name the familiar promise, opening wound, freshness twist, first hard choice, power cost, first-chapter image, micro-promise, wider story engine, and why a reader turns the page.\n4. Flag and rework contenders that miss required facts, use forbidden claims, rely only on decorative objects, over-explain the macro premise before micro-action, or give the hero power without consequence.\n5. Choose one contender with evidence across hook, theme fit, reader promise, world depth, character pressure, serial retention, and chapter structure.\n6. Draft the piece.\n7. Self-critique for constraint adherence, reader effect, costly power, specificity, voice, factual safety, opening micro-promise, chapter-end continuation reason, and long-arc promise.\n8. Revise once.\n9. Run `novel-craft eval story <draft.md> --genre {resolved_genre} --json` for post-writing guidance, then use `eval gate` only when hard facts or forbidden claims need a pass/warn/fail check.\n\n## Profile Axes\n{profile_axes}\n\n## Methods\n{methods}\n",
+        "# Creative Brief\n\n## Task Facts\n- Seed idea: {idea}\n- Genre/profile: {resolved_genre}\n- Audience: {audience}\n- Reading level target: grade {grade}\n- Required tropes or ingredients: {required}\n- Avoid: {avoid}\n- Must include: {must_include}\n- Must avoid: {must_avoid}\n\n## Always-On Novel Excellence Standard\n{novel_standard}\n\n## Opening Guidance\nShow the macro experience through micro-action when it helps the reader. For chapter one, prefer the smallest working unit of the premise before the whole roadmap. A kingdom-building story might begin with one room, one meal, one door, one ledger, one dispute, one protected child, or one boundary. Treat these as indicators, not hard limits.\n\n## Literal Oath/Vow Guardrail\nWhen this packet says reader draw or story appeal, do not turn that into literal oath, vow, or contract magic unless the user asks for it or it wins on scene pressure after comparison.\n\n## Required Flow\n1. Restate the task facts in plain words.\n2. Use `novel-craft creative atlas --json` if the premise needs more breadth, then generate 8-12 distinct contenders before drafting.\n3. For each contender, name the familiar genre appeal, opening wound, freshness twist, first hard choice, power cost, first-chapter image, micro-scene, wider story engine, and why a reader turns the page.\n4. Flag and rework contenders that miss required facts, use forbidden claims, rely only on decorative objects, over-explain the macro premise before micro-action, default to literal oath/vow systems without user request, or give the hero power without consequence.\n5. Choose one contender with evidence across hook, theme fit, reader grip, world depth, character pressure, serial retention, and chapter structure.\n6. Draft the piece.\n7. Self-critique for constraint adherence, reader effect, costly power, specificity, voice, factual safety, opening micro-scene, chapter-end continuation reason, and long-arc engine.\n8. Revise once.\n9. Run `novel-craft eval story <draft.md> --genre {resolved_genre} --json` for post-writing guidance, then use `eval gate` only when hard facts or forbidden claims need a pass/warn/fail check.\n\n## Profile Axes\n{profile_axes}\n\n## Methods\n{methods}\n",
         idea = args.idea,
         audience = args.audience,
         grade = args.reading_grade,
@@ -4497,8 +5246,9 @@ fn tournament_text(
         "## Always-On Novel Excellence Standard".to_string(),
         bullet_lines(NOVEL_EXCELLENCE_STANDARD),
         String::new(),
-        "Opening guidance: promise the macro experience through micro-action when it helps. Avoid leaning on the whole roadmap before the reader sees one concrete need, choice, cost, or consequence.".to_string(),
-        "Required flow: restate facts, use `novel-craft creative atlas --json` if breadth is thin, draft each contender as a 250-400 word opening concept, flag unsafe or consequence-free contenders, compare pairwise across hook, micro-promise, theme fit, costly power, world depth, serial retention, chapter structure, and wider story engine, choose with evidence, then run `novel-craft eval story` on the final draft.".to_string(),
+        "Opening guidance: show the macro experience through micro-action when it helps. Avoid leaning on the whole roadmap before the reader sees one concrete need, choice, cost, or consequence.".to_string(),
+        "Literal oath/vow guardrail: do not default to oath, vow, or contract-magic systems unless the user asks for them or they clearly beat other options on scene pressure.".to_string(),
+        "Required flow: restate facts, use `novel-craft creative atlas --json` if breadth is thin, draft each contender as a 250-400 word opening concept, flag unsafe or consequence-free contenders, compare pairwise across hook, micro-scene, theme fit, costly power, world depth, serial retention, chapter structure, and wider story engine, choose with evidence, then run `novel-craft eval story` on the final draft.".to_string(),
         String::new(),
     ];
     for index in 0..count.max(1) {
@@ -4509,7 +5259,7 @@ fn tournament_text(
                 values[(index + axis_index) % values.len()]
             ));
         }
-        lines.push("- LLM must name familiar promise, opening wound, freshness twist, hard choice, power cost, world-depth signal, wider story engine, first-chapter image, micro-promise, and page-turn reason.".to_string());
+        lines.push("- Name familiar genre appeal, opening wound, freshness twist, hard choice, power cost, world-depth signal, wider story engine, first-chapter image, micro-scene, and page-turn reason.".to_string());
         lines.push(String::new());
     }
     lines.join("\n")
@@ -4517,7 +5267,7 @@ fn tournament_text(
 
 fn start_packet(args: &StartArgs) -> String {
     format!(
-        "# Novel Craft Start Packet\n\n## Project\n- Title: {}\n- Writer level: {}\n- Audience: {}\n- Genre: {}\n- Reading level: {}\n- Tone: {}\n- Desired output: {}\n- Autonomy: {}\n\n## Story Seed\n- Idea: {}\n- Include tropes: {}\n- Avoid: {}\n- Protagonist want: {}\n- Protagonist wound: {}\n- World: {}\n- Power system: {}\n\n## Model Boundary\nNovel Craft does not call an LLM. Give this packet to the model of your choice.\n\n## Always-On Novel Excellence Standard\n{}\n\n## Opening Guidance\nPromise the macro experience through micro-action when it helps. Examples are indicators, not hard limits.\n\n## First Workflow\n1. Run `novel-craft creative atlas --json` when the idea needs more breadth.\n2. Generate 8-12 premise contenders before drafting.\n3. Flag and rework contenders that miss required facts, ignore avoid-list items, lack a banger first chapter, over-explain the macro premise before micro-action, or rely on decorative novelty.\n4. Choose one contender with evidence across hook, micro-promise, constraint adherence, reader effect, specificity, chapter structure, and wider story engine.\n5. Create a scene card with goal, conflict, turn, stakes, promises, and do-not-repeat notes.\n6. Build the context packet.\n7. Draft with the context packet.\n8. Run `novel-craft eval story <draft.md> --json` as the normal post-writing review.\n9. Use `novel-craft eval gate <draft.md> --json` when hard constraints need pass/warn/fail checking.\n10. Compare revisions with `novel-craft eval compare old.md new.md --json`; do not use lexical novelty as a winner.\n11. Extract a memory diff only after the canon change is approved.\n",
+        "# Novel Craft Start Packet\n\n## Project\n- Title: {}\n- Writer level: {}\n- Audience: {}\n- Genre: {}\n- Reading level: {}\n- Tone: {}\n- Desired output: {}\n- Autonomy: {}\n\n## Story Seed\n- Idea: {}\n- Include tropes: {}\n- Avoid: {}\n- Protagonist want: {}\n- Protagonist wound: {}\n- World: {}\n- Power system: {}\n\n## Always-On Novel Excellence Standard\n{}\n\n## Opening Guidance\nShow the macro experience through micro-action when it helps. Examples are indicators, not hard limits.\n\n## Literal Oath/Vow Guardrail\nDo not default to oath, vow, or contract-magic systems unless the user explicitly asks for them or they win after comparison.\n\n## First Workflow\n1. Run `novel-craft creative atlas --json` when the idea needs more breadth.\n2. Generate 8-12 premise contenders before drafting.\n3. Flag and rework contenders that miss required facts, ignore avoid-list items, lack a banger first chapter, over-explain the macro premise before micro-action, or rely on decorative novelty.\n4. Choose one contender with evidence across hook, micro-scene, constraint adherence, reader effect, specificity, chapter structure, and wider story engine.\n5. Create a scene card with goal, conflict, turn, stakes, open questions, and do-not-repeat notes.\n6. Build the context packet.\n7. Draft with the context packet.\n8. Run `novel-craft eval story <draft.md> --json` as the normal post-writing review.\n9. Use `novel-craft eval gate <draft.md> --json` when hard constraints need pass/warn/fail checking.\n10. Compare revisions with `novel-craft eval compare old.md new.md --json`; do not use lexical novelty as a winner.\n11. Extract a memory diff only after the canon change is approved.\n",
         args.title,
         args.writer_level,
         args.audience,
@@ -4621,7 +5371,7 @@ fn rule_guide(json_output: bool) -> Result<String> {
     if json_output {
         return Ok(serde_json::to_string_pretty(&rules_to_json(&rules))?);
     }
-    let mut out = String::from("# Novel Craft LLM Rule Guide\n\nRules are effects, not commandments. Deterministic checks are leads, not verdicts.\n\n");
+    let mut out = String::from("# Novel Craft Rule Guide\n\nRules are effects, not commandments. Deterministic checks are leads, not verdicts.\n\n");
     if let Some(items) = rules.as_sequence() {
         for rule in items {
             out.push_str(&format!(
@@ -4659,6 +5409,20 @@ fn json_yaml_map(key: &str) -> Value {
     let mut map = Mapping::new();
     map.insert(Value::String(key.to_string()), Value::Sequence(vec![]));
     Value::Mapping(map)
+}
+
+fn upsert_yaml_string(value: &mut Value, key: &str, new_value: Option<&str>) -> Result<()> {
+    let Some(new_value) = new_value.map(str::trim).filter(|item| !item.is_empty()) else {
+        return Ok(());
+    };
+    let map = value
+        .as_mapping_mut()
+        .context("state file is not a mapping")?;
+    map.insert(
+        Value::String(key.to_string()),
+        Value::String(new_value.to_string()),
+    );
+    Ok(())
 }
 
 fn push_yaml_entry(value: &mut Value, key: &str, entry: serde_json::Value) -> Result<()> {
@@ -4730,20 +5494,107 @@ fn scene_signal(text: &str, kind: &str) -> String {
     }
 }
 
-fn build_matrix(root: &Path) -> Result<serde_json::Value> {
-    let mut scenes = Vec::new();
-    let dir = root.join(PROJECT_DIR).join("scene-cards");
-    if dir.exists() {
-        for entry in fs::read_dir(dir)? {
-            let path = entry?.path();
-            if path.extension().and_then(|e| e.to_str()) == Some("yml") {
-                if let Some(value) = read_yaml_value(&path) {
-                    scenes.push(yaml_to_json(&value));
-                }
-            }
+fn read_yaml_records(root: &Path, folder: &str) -> Result<Vec<serde_json::Value>> {
+    let dir = root.join(PROJECT_DIR).join(folder);
+    let mut paths = Vec::new();
+    if !dir.exists() {
+        return Ok(Vec::new());
+    }
+    for entry in fs::read_dir(dir)? {
+        let path = entry?.path();
+        if matches!(
+            path.extension().and_then(|e| e.to_str()),
+            Some("yml" | "yaml")
+        ) {
+            paths.push(path);
         }
     }
-    Ok(json!({"scenes": scenes, "promises": [], "plot_threads": []}))
+    paths.sort();
+    Ok(paths
+        .iter()
+        .filter_map(|path| read_yaml_value(path).map(|value| yaml_to_json(&value)))
+        .collect())
+}
+
+fn yaml_sequence_field(value: &Value, key: &str) -> Vec<serde_json::Value> {
+    value
+        .get(key)
+        .and_then(Value::as_sequence)
+        .map(|items| items.iter().map(yaml_to_json).collect())
+        .unwrap_or_default()
+}
+
+fn merge_json_records(
+    mut base: Vec<serde_json::Value>,
+    extra: Vec<serde_json::Value>,
+    key: &str,
+) -> Vec<serde_json::Value> {
+    let mut seen = BTreeMap::new();
+    for (idx, item) in base.iter().enumerate() {
+        if let Some(id) = item.get(key).and_then(|value| value.as_str()) {
+            seen.insert(id.to_string(), idx);
+        }
+    }
+    for item in extra {
+        if let Some(id) = item.get(key).and_then(|value| value.as_str()) {
+            if let Some(idx) = seen.get(id).copied() {
+                base[idx] = item;
+            } else {
+                seen.insert(id.to_string(), base.len());
+                base.push(item);
+            }
+        } else {
+            base.push(item);
+        }
+    }
+    base
+}
+
+fn find_json_record(
+    value: &serde_json::Value,
+    key: &str,
+    wanted: &str,
+) -> Option<serde_json::Value> {
+    let wanted_slug = slug(wanted);
+    value.as_array()?.iter().find_map(|item| {
+        let id = item.get(key).and_then(|value| value.as_str())?;
+        if id == wanted || slug(id) == wanted_slug {
+            Some(item.clone())
+        } else {
+            None
+        }
+    })
+}
+
+fn build_matrix(root: &Path) -> Result<serde_json::Value> {
+    let plot_matrix = read_yaml_value(&root.join(PROJECT_DIR).join("plot-matrix.yml"))
+        .unwrap_or_else(|| Value::Mapping(Mapping::new()));
+    let scenes = merge_json_records(
+        yaml_sequence_field(&plot_matrix, "scenes"),
+        read_yaml_records(root, "scene-cards")?,
+        "id",
+    );
+    let plot_threads = merge_json_records(
+        yaml_sequence_field(&plot_matrix, "plot_threads"),
+        read_yaml_records(root, "plot-threads")?,
+        "id",
+    );
+    let promises = yaml_sequence_field(&plot_matrix, "promises");
+    let payoffs = yaml_sequence_field(&plot_matrix, "payoffs");
+    let progression = yaml_sequence_field(&plot_matrix, "progression");
+    let characters = read_yaml_records(root, "characters")?;
+    let story_seed = read_yaml_value(&root.join(PROJECT_DIR).join("state").join("story-seed.yml"))
+        .map(|value| yaml_to_json(&value))
+        .unwrap_or(serde_json::Value::Null);
+    Ok(json!({
+        "story_seed": story_seed,
+        "characters": characters,
+        "plot_threads": plot_threads,
+        "promises": promises,
+        "payoffs": payoffs,
+        "scenes": scenes,
+        "progression": progression
+    }))
 }
 
 fn matrix_audit_data(matrix: &serde_json::Value) -> serde_json::Value {
@@ -4756,13 +5607,68 @@ fn matrix_audit_data(matrix: &serde_json::Value) -> serde_json::Value {
     json!({
         "scene_count": scenes.len(),
         "warnings": warnings,
-        "doctrine": "Use this audit to guide an LLM review; do not treat it as final taste judgement."
+        "doctrine": "Use this audit as revision evidence; do not treat it as final taste judgement."
+    })
+}
+
+fn causality_report(path: &Path, text: &str) -> serde_json::Value {
+    let lower = text.to_lowercase();
+    let causal_hits = count_hits(
+        &lower,
+        &[
+            "because",
+            "therefore",
+            "so",
+            "after",
+            "result",
+            "forced",
+            "cost",
+            "consequence",
+            "instead",
+        ],
+    );
+    let weak_sequence_hits = count_hits(
+        &lower,
+        &["then", "suddenly", "somehow", "and then", "just as"],
+    );
+    let scene_change = scene_change_report(text);
+    let status = if causal_hits.is_empty() && weak_sequence_hits.values().sum::<usize>() >= 2 {
+        "warn"
+    } else if causal_hits.is_empty() {
+        "needs_review"
+    } else {
+        "likely_signal"
+    };
+    json!({
+        "path": path,
+        "status": status,
+        "summary": {
+            "next_best_action": if status == "warn" {
+                "Replace coincidence or sequence-only movement with because/therefore pressure."
+            } else {
+                "Check whether each major beat causes the next beat rather than merely following it."
+            },
+            "risk_notes": [
+                "Causality is partly semantic; treat this as a routing report.",
+                "A chapter can be causal without using the exact word because."
+            ]
+        },
+        "causal_connector_hits": causal_hits,
+        "weak_sequence_hits": weak_sequence_hits,
+        "scene_change": scene_change,
+        "review_questions": [
+            "Which choice causes the next obstacle?",
+            "Which obstacle forces the next tactic?",
+            "Which success creates a new cost?",
+            "Where does the chapter say then when it should imply because?",
+            "Which event could be cut without changing later events?"
+        ]
     })
 }
 
 fn promise_heatmap(matrix: &serde_json::Value) -> serde_json::Value {
     let scenes = matrix["scenes"].as_array().cloned().unwrap_or_default();
-    let mut promises = Vec::new();
+    let mut promises = matrix["promises"].as_array().cloned().unwrap_or_default();
     for scene in &scenes {
         if let Some(opened) = scene.get("promises_opened").and_then(|v| v.as_array()) {
             for promise in opened {
@@ -4781,22 +5687,132 @@ fn promise_heatmap(matrix: &serde_json::Value) -> serde_json::Value {
 fn context_packet(root: &Path, target: &str) -> Result<String> {
     let project = read_text(&root.join(PROJECT_DIR).join("project.yml")).unwrap_or_default();
     let matrix = build_matrix(root)?;
+    let target_scene =
+        find_json_record(&matrix["scenes"], "id", target).unwrap_or(serde_json::Value::Null);
+    let story_seed = &matrix["story_seed"];
+    let characters = &matrix["characters"];
+    let plot_threads = &matrix["plot_threads"];
+    let promises = &matrix["promises"];
+    let progression = &matrix["progression"];
     Ok(format!(
-        "# Context Packet: {target}\n\n## Project\n```yaml\n{project}\n```\n\n## Story Matrix Summary\n{}\n\n## Instructions\n- Use this packet with the model of your choice.\n- Preserve canon unless the scene card explicitly changes it.\n- Run lint, eval, and memory extraction after drafting.\n",
+        "# Context Packet: {target}\n\n## Project\n```yaml\n{project}\n```\n\n## Story Seed\n```yaml\n{}\n```\n\n## Target Scene Card\n```yaml\n{}\n```\n\n## Characters\n```yaml\n{}\n```\n\n## Open Plot Threads\n```yaml\n{}\n```\n\n## Open Promises / Open Loops\n```yaml\n{}\n```\n\n## Progression And Power Notes\n```yaml\n{}\n```\n\n## Story Matrix Summary\n```yaml\n{}\n```\n\n## Instructions\n- Preserve canon unless the scene card explicitly changes it.\n- Bring character motives, open threads, open loops, power-system costs, do-not-repeat notes, and previous scene state into the draft.\n- Run `novel-craft eval chapter <draft.md>`, then extract a reviewable memory diff after drafting.\n",
+        serde_yaml::to_string(story_seed)?,
+        serde_yaml::to_string(&target_scene)?,
+        serde_yaml::to_string(characters)?,
+        serde_yaml::to_string(plot_threads)?,
+        serde_yaml::to_string(promises)?,
+        serde_yaml::to_string(progression)?,
         serde_yaml::to_string(&matrix)?
     ))
 }
 
 fn extract_fact_candidates(text: &str) -> Vec<serde_json::Value> {
-    text.lines()
-        .filter(|line| {
-            line.contains(" learned ")
-                || line.contains(" discovered ")
-                || line.contains(" promised ")
-        })
-        .take(10)
-        .map(|line| json!({"fact": line.trim(), "confidence": "candidate"}))
-        .collect()
+    let mut facts = Vec::new();
+    let categories: &[(&str, &[&str])] = &[
+        (
+            "power_or_skill",
+            &[
+                "unlocked",
+                "gained",
+                "learned",
+                "skill",
+                "rank",
+                "class",
+                "interpose",
+            ],
+        ),
+        (
+            "status_or_mark",
+            &[
+                "became",
+                "marked",
+                "brand",
+                "claim",
+                "claimable",
+                "debt-bearing",
+                "first claim",
+            ],
+        ),
+        (
+            "character_role",
+            &[
+                "ward",
+                "named",
+                "confirmed",
+                "bound",
+                "protected",
+                "guardian",
+            ],
+        ),
+        (
+            "world_rule",
+            &[
+                "recognises",
+                "recognizes",
+                "witnessed",
+                "rule",
+                "ledger",
+                "authority",
+                "toll",
+            ],
+        ),
+        (
+            "location_or_route",
+            &[
+                "exists",
+                "service stair",
+                "gate",
+                "door",
+                "floor one",
+                "oathspire",
+            ],
+        ),
+        (
+            "open_loop_or_timer",
+            &[
+                "wake", "wakes", "bell", "deadline", "unpaid", "missing", "secret",
+            ],
+        ),
+    ];
+
+    for raw in text.split(['.', '!', '?', '\n']) {
+        let sentence = raw.trim().trim_matches('"').trim();
+        if sentence.len() < 8 {
+            continue;
+        }
+        let lower = sentence.to_lowercase();
+        for (category, needles) in categories {
+            if contains_any(&lower, needles) {
+                facts.push(json!({
+                    "fact": sentence,
+                    "category": category,
+                    "confidence": "candidate",
+                    "reason": "Matched a canon-change signal; review before committing."
+                }));
+                break;
+            }
+        }
+        if facts.len() >= 20 {
+            break;
+        }
+    }
+
+    dedupe_json_facts(facts)
+}
+
+fn dedupe_json_facts(facts: Vec<serde_json::Value>) -> Vec<serde_json::Value> {
+    let mut seen = BTreeMap::new();
+    let mut out = Vec::new();
+    for fact in facts {
+        let key = fact["fact"]
+            .as_str()
+            .unwrap_or_default()
+            .to_ascii_lowercase();
+        if seen.insert(key, true).is_none() {
+            out.push(fact);
+        }
+    }
+    out
 }
 
 fn collect_text_files(path: &Path, out: &mut Vec<PathBuf>) -> Result<()> {

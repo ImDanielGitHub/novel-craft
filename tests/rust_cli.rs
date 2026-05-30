@@ -18,6 +18,98 @@ The story was counted as a triumph because trust shimmered in the prompt.
 "#;
 
 #[test]
+fn setup_lists_bundled_skills_and_allows_opt_out() {
+    let mut cmd = Command::cargo_bin("novel-craft").expect("binary exists");
+    let output = cmd
+        .args(["setup", "--no-skills", "--json"])
+        .assert()
+        .success()
+        .get_output()
+        .stdout
+        .clone();
+    let data: Value = serde_json::from_slice(&output).expect("valid json");
+    assert_eq!(data["status"], "ok");
+    assert_eq!(data["skills_installed"], false);
+    assert_eq!(data["opted_out"], true);
+    assert!(data["primary_skills"]
+        .as_array()
+        .expect("primary skills")
+        .iter()
+        .any(|skill| skill.as_str() == Some("novel-craft-agentic-writer")));
+    assert!(data["why_skills_matter"]
+        .as_str()
+        .unwrap_or("")
+        .contains("planning, drafting, review"));
+    assert!(data["install_later_command"]
+        .as_str()
+        .unwrap_or("")
+        .contains("skills install"));
+}
+
+#[test]
+fn setup_installs_bundled_skills_when_confirmed() {
+    let temp = assert_fs::TempDir::new().expect("temp dir");
+    let target = temp.child("skills");
+    let mut cmd = Command::cargo_bin("novel-craft").expect("binary exists");
+    let output = cmd
+        .args([
+            "setup",
+            "--yes",
+            "--target",
+            target.path().to_str().unwrap(),
+            "--json",
+        ])
+        .assert()
+        .success()
+        .get_output()
+        .stdout
+        .clone();
+    let data: Value = serde_json::from_slice(&output).expect("valid json");
+    assert_eq!(data["skills_installed"], true);
+    assert_eq!(data["install_requested"], true);
+    assert!(
+        data["installed_paths"]
+            .as_array()
+            .expect("installed paths")
+            .len()
+            >= 13
+    );
+    target
+        .child("novel-craft-agentic-writer/SKILL.md")
+        .assert(predicate::path::exists());
+    target
+        .child("aliases/novel-creativity-architect/SKILL.md")
+        .assert(predicate::path::exists());
+}
+
+#[test]
+fn setup_dry_run_does_not_write_skills() {
+    let temp = assert_fs::TempDir::new().expect("temp dir");
+    let target = temp.child("skills");
+    let mut cmd = Command::cargo_bin("novel-craft").expect("binary exists");
+    let output = cmd
+        .args([
+            "setup",
+            "--yes",
+            "--dry-run",
+            "--target",
+            target.path().to_str().unwrap(),
+            "--json",
+        ])
+        .assert()
+        .success()
+        .get_output()
+        .stdout
+        .clone();
+    let data: Value = serde_json::from_slice(&output).expect("valid json");
+    assert_eq!(data["install_requested"], true);
+    assert_eq!(data["skills_installed"], false);
+    target
+        .child("novel-craft-agentic-writer/SKILL.md")
+        .assert(predicate::path::missing());
+}
+
+#[test]
 fn creative_tournament_outputs_json_for_agents() {
     let mut cmd = Command::cargo_bin("novel-craft").expect("binary exists");
     cmd.args([
@@ -175,10 +267,42 @@ fn creative_brief_uses_always_on_excellence_standard() {
         "Always-On Novel Excellence Standard",
     ))
     .stdout(predicate::str::contains("banger first chapter"))
-    .stdout(predicate::str::contains("micro-promise"))
+    .stdout(predicate::str::contains("micro-scene"))
+    .stdout(predicate::str::contains("Literal Oath/Vow Guardrail"))
     .stdout(predicate::str::contains("eval story"))
     .stdout(predicate::str::contains("wider story engine"))
     .stdout(predicate::str::contains("creative atlas"));
+}
+
+#[test]
+fn system_isekai_tournament_does_not_seed_literal_promise_as_default() {
+    let mut cmd = Command::cargo_bin("novel-craft").expect("binary exists");
+    let output = cmd
+        .args([
+            "creative",
+            "tournament",
+            "--idea",
+            "cool unique weak to strong system for a kingdom-building novel",
+            "--count",
+            "8",
+            "--json",
+        ])
+        .assert()
+        .success()
+        .get_output()
+        .stdout
+        .clone();
+    let rendered = String::from_utf8(output).expect("utf8");
+    assert!(rendered.contains("Literal oath/vow guardrail"));
+    for forbidden in [
+        "system rewards keeping promises",
+        "rewards kept promises",
+        "memories, or promises",
+        "familiar promise",
+        "micro-promise",
+    ] {
+        assert!(!rendered.contains(forbidden), "found {forbidden}");
+    }
 }
 
 #[test]
@@ -207,7 +331,7 @@ fn gate_warns_when_opening_announces_macro_premise_too_early() {
 }
 
 #[test]
-fn gate_accepts_micro_promise_opening_before_macro_scale() {
+fn gate_accepts_micro_scene_opening_before_macro_scale() {
     let temp = assert_fs::TempDir::new().expect("temp dir");
     let draft = temp.child("micro.md");
     draft
@@ -312,6 +436,393 @@ fn start_no_input_creates_project_and_packet() {
         .assert(predicate::path::exists());
     temp.child(".novel/rules/default.yml")
         .assert(predicate::path::exists());
+
+    let packet = std::fs::read_to_string(temp.path().join(".novel/context/start-packet.md"))
+        .expect("read start packet");
+    assert!(packet.contains("Literal Oath/Vow Guardrail"));
+    for forbidden in [
+        "system that rewards kept promises",
+        "system rewards keeping promises",
+        "micro-promise",
+    ] {
+        assert!(!packet.contains(forbidden), "found {forbidden}");
+    }
+}
+
+#[test]
+fn start_story_matrix_and_context_read_back_project_state() {
+    let temp = assert_fs::TempDir::new().expect("temp dir");
+
+    Command::cargo_bin("novel-craft")
+        .expect("binary exists")
+        .current_dir(temp.path())
+        .args([
+            "start",
+            "--no-input",
+            "--title",
+            "Oathspire Climber",
+            "--idea",
+            "weak-to-strong isekai tower climbing",
+            "--genre",
+            "system-isekai",
+            "--power-system",
+            "a floor ledger that charges debt for every shortcut",
+            "--json",
+        ])
+        .assert()
+        .success();
+
+    Command::cargo_bin("novel-craft")
+        .expect("binary exists")
+        .current_dir(temp.path())
+        .args([
+            "story",
+            "set",
+            "--protagonist",
+            "Ren Vale",
+            "--protagonist-want",
+            "protect Lio and survive Floor One",
+            "--world",
+            "Oathspire tower",
+            "--json",
+        ])
+        .assert()
+        .success();
+
+    Command::cargo_bin("novel-craft")
+        .expect("binary exists")
+        .current_dir(temp.path())
+        .args([
+            "character",
+            "add",
+            "Lio",
+            "--trait",
+            "hungry",
+            "--motive",
+            "reach the service stair",
+            "--json",
+        ])
+        .assert()
+        .success();
+
+    Command::cargo_bin("novel-craft")
+        .expect("binary exists")
+        .current_dir(temp.path())
+        .args([
+            "plot",
+            "thread",
+            "floor_one_toll",
+            "--owner",
+            "Ren Vale",
+            "--stage",
+            "introduced",
+            "--json",
+        ])
+        .assert()
+        .success();
+
+    Command::cargo_bin("novel-craft")
+        .expect("binary exists")
+        .current_dir(temp.path())
+        .args([
+            "plot",
+            "add-promise",
+            "What does the tower want from unpaid debts?",
+            "--source",
+            "ch01s01",
+            "--thread",
+            "floor_one_toll",
+            "--json",
+        ])
+        .assert()
+        .success();
+
+    Command::cargo_bin("novel-craft")
+        .expect("binary exists")
+        .current_dir(temp.path())
+        .args([
+            "scene",
+            "create",
+            "ch01s01",
+            "--pov",
+            "Ren Vale",
+            "--goal",
+            "protect Lio at the service stair",
+            "--conflict",
+            "the toll collector blocks the stair",
+            "--thread",
+            "floor_one_toll",
+            "--promise",
+            "What does the tower want from unpaid debts?",
+            "--json",
+        ])
+        .assert()
+        .success();
+
+    let output = Command::cargo_bin("novel-craft")
+        .expect("binary exists")
+        .current_dir(temp.path())
+        .args(["matrix", "build", "--json"])
+        .assert()
+        .success()
+        .get_output()
+        .stdout
+        .clone();
+    let data: Value = serde_json::from_slice(&output).expect("valid json");
+    assert_eq!(data["scenes"].as_array().expect("scenes").len(), 1);
+    assert_eq!(
+        data["plot_threads"].as_array().expect("plot threads").len(),
+        1
+    );
+    assert_eq!(data["promises"].as_array().expect("promises").len(), 1);
+    assert_eq!(data["characters"].as_array().expect("characters").len(), 2);
+    assert_eq!(
+        data["story_seed"]["premise"].as_str().unwrap_or(""),
+        "weak-to-strong isekai tower climbing"
+    );
+
+    Command::cargo_bin("novel-craft")
+        .expect("binary exists")
+        .current_dir(temp.path())
+        .args(["context", "build", "ch01s01"])
+        .assert()
+        .success()
+        .stdout(predicate::str::contains("## Characters"))
+        .stdout(predicate::str::contains("Ren Vale"))
+        .stdout(predicate::str::contains("floor_one_toll"))
+        .stdout(predicate::str::contains(
+            "What does the tower want from unpaid debts?",
+        ));
+}
+
+#[test]
+fn draft_next_memory_and_json_out_support_agent_workflow() {
+    let temp = assert_fs::TempDir::new().expect("temp dir");
+    Command::cargo_bin("novel-craft")
+        .expect("binary exists")
+        .current_dir(temp.path())
+        .args(["start", "--no-input", "--defaults", "--json"])
+        .assert()
+        .success();
+    temp.child("chapter-01.md")
+        .write_str("Ren learned that unpaid debts woke after the bell. Lio found the service stair, but the toll collector marked Ren's wrist before letting them pass.")
+        .expect("write chapter");
+
+    Command::cargo_bin("novel-craft")
+        .expect("binary exists")
+        .current_dir(temp.path())
+        .args([
+            "draft",
+            "ch01s01",
+            "--word-count",
+            "1800 words",
+            "--must-include",
+            "service stair",
+            "--avoid",
+            "status dump",
+            "--json",
+        ])
+        .assert()
+        .success()
+        .stdout(predicate::str::contains("Prose Brief"))
+        .stdout(predicate::str::contains("1800 words"))
+        .stdout(predicate::str::contains("status dump"));
+
+    Command::cargo_bin("novel-craft")
+        .expect("binary exists")
+        .current_dir(temp.path())
+        .args(["next", "chapter-02", "--from", "chapter-01.md", "--json"])
+        .assert()
+        .success()
+        .stdout(predicate::str::contains("Source Draft Signals"))
+        .stdout(predicate::str::contains("natural_next_chapter_setup"))
+        .stdout(predicate::str::contains("survive the stair"));
+
+    let memory_output = Command::cargo_bin("novel-craft")
+        .expect("binary exists")
+        .current_dir(temp.path())
+        .args(["memory", "extract", "chapter-01.md", "--review", "--json"])
+        .assert()
+        .success()
+        .get_output()
+        .stdout
+        .clone();
+    let memory: Value = serde_json::from_slice(&memory_output).expect("valid memory json");
+    assert_eq!(memory["review_required"], true);
+    assert!(memory["new_facts"]
+        .as_array()
+        .expect("new facts")
+        .iter()
+        .any(|fact| fact["fact"].as_str().unwrap_or("").contains("Ren learned")));
+    assert!(memory["new_facts"]
+        .as_array()
+        .expect("new facts")
+        .iter()
+        .any(|fact| fact["fact"]
+            .as_str()
+            .unwrap_or("")
+            .contains("service stair")));
+
+    let out = temp.child("planning/agent-plan.json");
+    Command::cargo_bin("novel-craft")
+        .expect("binary exists")
+        .current_dir(temp.path())
+        .args([
+            "agent",
+            "plan",
+            "--idea",
+            "weak-to-strong tower climbing",
+            "--json",
+            "--out",
+            out.path().to_str().unwrap(),
+        ])
+        .assert()
+        .success()
+        .stdout(predicate::str::contains("Written:"));
+    out.assert(predicate::path::exists());
+    let data: Value = serde_json::from_str(&std::fs::read_to_string(out.path()).expect("read out"))
+        .expect("valid json");
+    assert_eq!(data["mode"], "agent_chapter_plan");
+}
+
+#[test]
+fn memory_review_revise_and_causality_are_agent_readable() {
+    let temp = assert_fs::TempDir::new().expect("temp dir");
+    Command::cargo_bin("novel-craft")
+        .expect("binary exists")
+        .current_dir(temp.path())
+        .args(["start", "--no-input", "--defaults", "--json"])
+        .assert()
+        .success();
+    let draft = temp.child("chapter-01.md");
+    draft
+        .write_str("Ren unlocked Interpose I. Ren became a debt-bearing climber. Floor One Toll Authority got first claim. Lio became the named ward. The Oathspire Ledger recognises witnessed promises. The service stair exists. Unpaid debts wake when the bell ends.")
+        .expect("write chapter");
+
+    let memory_output = Command::cargo_bin("novel-craft")
+        .expect("binary exists")
+        .current_dir(temp.path())
+        .args([
+            "memory",
+            "extract",
+            draft.path().to_str().unwrap(),
+            "--json",
+        ])
+        .assert()
+        .success()
+        .get_output()
+        .stdout
+        .clone();
+    let memory: Value = serde_json::from_slice(&memory_output).expect("valid json");
+    let facts = memory["new_facts"].as_array().expect("facts");
+    for expected in [
+        "Interpose I",
+        "debt-bearing",
+        "first claim",
+        "named ward",
+        "service stair",
+        "Unpaid debts wake",
+    ] {
+        assert!(
+            facts
+                .iter()
+                .any(|fact| fact["fact"].as_str().unwrap_or("").contains(expected)),
+            "missing {expected}"
+        );
+    }
+
+    let review_output = Command::cargo_bin("novel-craft")
+        .expect("binary exists")
+        .current_dir(temp.path())
+        .args([
+            "review",
+            draft.path().to_str().unwrap(),
+            "--rubric",
+            "prose",
+            "--json",
+        ])
+        .assert()
+        .success()
+        .get_output()
+        .stdout
+        .clone();
+    let review: Value = serde_json::from_slice(&review_output).expect("valid json");
+    assert!(review["sections"]["prose_review"].is_object());
+    assert!(review["sections"]["voice_review"].is_object());
+    assert!(review["sections"]["chapter_spine"].is_null());
+
+    let revise_output = Command::cargo_bin("novel-craft")
+        .expect("binary exists")
+        .current_dir(temp.path())
+        .args([
+            "revise",
+            draft.path().to_str().unwrap(),
+            "--pass",
+            "prose",
+            "--json",
+        ])
+        .assert()
+        .success()
+        .get_output()
+        .stdout
+        .clone();
+    let revise: Value = serde_json::from_slice(&revise_output).expect("valid json");
+    assert!(revise["optional_priorities"].is_array());
+    assert!(revise["next_best_action"]
+        .as_str()
+        .unwrap_or("")
+        .contains("optional priorities"));
+
+    Command::cargo_bin("novel-craft")
+        .expect("binary exists")
+        .current_dir(temp.path())
+        .args([
+            "audit",
+            "causality",
+            draft.path().to_str().unwrap(),
+            "--json",
+        ])
+        .assert()
+        .success()
+        .stdout(predicate::str::contains("causal_connector_hits"))
+        .stdout(predicate::str::contains("review_questions"));
+}
+
+#[test]
+fn chapter_review_ranks_actions_and_interprets_trope_saturation() {
+    let temp = assert_fs::TempDir::new().expect("temp dir");
+    let draft = temp.child("chapter.md");
+    draft
+        .write_str("This is a kingdom-building system novel. The system is for building a kingdom. Class: Kingmaker. Rank: sovereign. Citizens: 0. Domain seed detected. The reincarnated hero entered the tutorial dungeon with a status window, skill, guild, quest, and monster core.")
+        .expect("write fixture");
+
+    let output = Command::cargo_bin("novel-craft")
+        .expect("binary exists")
+        .args([
+            "eval",
+            "chapter",
+            draft.path().to_str().unwrap(),
+            "--genre",
+            "system-isekai",
+            "--json",
+        ])
+        .assert()
+        .success()
+        .get_output()
+        .stdout
+        .clone();
+    let data: Value = serde_json::from_slice(&output).expect("valid json");
+    assert!(data["revision_priorities"]["items"]
+        .as_array()
+        .expect("priorities")
+        .iter()
+        .any(|item| item["focus"].as_str().unwrap_or("") == "opening motion"));
+    assert!(
+        data["trope_saturation"]["interpretation"]["healthy_genre_signal"]
+            .as_str()
+            .unwrap_or("")
+            .contains("reader expectations")
+    );
 }
 
 #[test]
@@ -326,12 +837,14 @@ fn embedded_skills_are_listable() {
 }
 
 #[test]
-fn doctor_reports_install_and_model_boundary() {
+fn doctor_reports_install_and_scope() {
     let mut cmd = Command::cargo_bin("novel-craft").expect("binary exists");
     cmd.args(["doctor", "--json"])
         .assert()
         .success()
-        .stdout(predicate::str::contains("prompt-packets-only"))
+        .stdout(predicate::str::contains(
+            "local project, package, and embedded asset checks",
+        ))
         .stdout(predicate::str::contains("target_triple"));
 }
 

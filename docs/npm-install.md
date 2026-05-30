@@ -24,6 +24,7 @@ From the repository root:
 ```bash
 cargo build --release
 target/release/novel-craft --help
+target/release/novel-craft setup --no-skills --json
 target/release/novel-craft doctor --json
 target/release/novel-craft start --no-input --defaults --json
 target/release/novel --version
@@ -70,6 +71,8 @@ It should not include `.novel/`, `target/`, `node_modules/`, local tarballs, cre
 ```bash
 npm install -g ./novel-craft-0.1.1.tgz
 novel-craft --help
+novel-craft setup --no-skills --json
+novel-craft setup --yes --target /tmp/novel-craft-skills-smoke --dry-run --json
 novel-craft doctor --json
 novel-craft start --no-input --defaults --json
 novel --version

@@ -22,13 +22,13 @@ Opening guidance is micro before macro when it improves reader grip: agents shou
 
 Good writing is not one universal voice. Good writing fits the reader, purpose, constraints, evidence, and desired effect.
 
-Novel Craft should therefore encode effect-first rule cards, purpose profiles, examples, counterexamples, rubrics, comparison prompts, and revision passes. Those tools should guide any model toward better writing without treating metrics as taste.
+Novel Craft should therefore encode effect-first rule cards, purpose profiles, examples, counterexamples, rubrics, comparison prompts, and revision passes. Those tools should guide better writing without treating metrics as taste.
 
 ## Users
 
 - A writer drafting serial chapters.
 - An AI agent helping with next-chapter planning, line editing, continuity sync, or whole-book review.
-- A maintainer extending craft rule cards, genre profiles, purpose profiles, or LLM-facing packet generation.
+- A maintainer extending craft rule cards, genre profiles, purpose profiles, or packet generation.
 
 ## Non-Goals
 
@@ -49,7 +49,7 @@ Novel Craft should therefore encode effect-first rule cards, purpose profiles, e
 5. `novel-craft plot thread` maintains state-machine records for mysteries, powers, debts, rivalries, and long-running promises.
 6. `novel-craft matrix build/audit` maintains story progression and checks repetition, promise load, and therefore/because causality.
 7. `novel-craft matrix heatmap` shows hot, stale, or unpaid promises and threads.
-8. `novel-craft creative atlas/brief/tournament/novelty/trope-check` widens premise options, audits genericity, and gives the LLM creativity questions before drafting.
+8. `novel-craft creative atlas/brief/tournament/novelty/trope-check` widens premise options, audits genericity, and gives creativity questions before drafting.
 9. `novel-craft eval chapter/story/gate/compare/reader-check/voice-drift/feedback/calibrate/reward` checks drafted Markdown, hard constraints, reader fit, voice consistency, beta feedback, taste anchors, and pairwise preference records.
 10. `novel-craft context build` creates a layered context packet for long-context drafting.
 11. `novel-craft draft` prepares a drafting prompt from the packet.
@@ -72,15 +72,15 @@ Novel Craft may use hosted fiction as browser-observed reference for high-level 
 - A user can add/update character sheets with appearance, dress, smell, motives, powers, wounds, secrets, voice, knowledge, and advanced dynamic-state fields.
 - A user can create scene cards and plot-thread state machines.
 - A user can run high-variance creative premise generation before drafting, including a broad story atlas, trope matrices, tournament prompts, novelty/specificity checks, and trope-saturation checks.
-- Every creative brief and tournament packet carries the always-on novel excellence standard: first-chapter pull, reader promise, costly advantage, scene turns, chapter structure, wider story engine, and fair continuation pressure.
-- A user can run `eval gate` and see opening-promise warnings when a first chapter front-loads macro-scale labels before scene-level action, choice, cost, or consequence.
+- Every creative brief and tournament packet carries the always-on novel excellence standard: first-chapter pull, reader draw, costly advantage, scene turns, chapter structure, wider story engine, and fair continuation pressure.
+- A user can run `eval gate` and see opening-guidance warnings when a first chapter front-loads macro-scale labels before scene-level action, choice, cost, or consequence.
 - A user can run `agent plan --idea "<prompt>" --chapters 1 --json` and receive task facts, missing story questions, contender rules, chapter cards, drafting instructions, revision loop, and post-write commands.
 - A user can run `eval chapter <draft.md>` or `eval story <draft.md>` after writing an existing Markdown file and receive structured review guidance without pass/fail gate language.
-- A user can use reader-profile matrices to test opening wound, reader promise, costly power, world-depth signal, and serial-retention hook before drafting.
+- A user can use reader-profile matrices to test opening wound, reader draw, costly power, world-depth signal, and serial-retention hook before drafting.
 - A user can check a draft against reader-level profiles, storing warnings about readability, paragraph length, dialogue ratio, and profile-specific review focus.
-- A user can compare dialogue voice fingerprints across chapters and hand the output to the LLM for voice-matrix review.
+- A user can compare dialogue voice fingerprints across chapters for voice-matrix review.
 - A user can store beta-reader feedback and liked/disliked taste samples instead of losing reader evidence in chat history.
-- A user can export pairwise preference records for external evaluator experiments without claiming automatic model training.
+- A user can export pairwise preference records for external evaluator experiments without claiming automatic training or judgement.
 - A user can produce a promise heat map from the story matrix so the writer can escalate, pay off, reframe, or intentionally defer open loops.
 - A user can lint a draft at line, scene, and plot levels.
 - A user can run full analysis with agency, narrative distance, motivation-reaction order, scene function, dialogue power/subtext, rhythm, paragraphing, exposition, and repetition signals.

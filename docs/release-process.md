@@ -47,6 +47,7 @@ npm pack --dry-run
 npm pack
 npm install -g ./novel-craft-0.1.1.tgz
 novel-craft --help
+novel-craft setup --no-skills --json
 novel-craft doctor --json
 novel-craft start --no-input --defaults --json
 novel --version
@@ -83,6 +84,7 @@ See [npm-publish.md](npm-publish.md) for trusted publishing setup, provenance, a
 ## After Release
 
 - Confirm `npx novel-craft --version`.
+- Confirm `npx novel-craft setup --no-skills --json`.
 - Confirm `npx novel-craft doctor --json`.
 - Confirm `npx novel-craft start --no-input --defaults --json`.
 - Update `CHANGELOG.md` or release notes.

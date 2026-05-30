@@ -37,13 +37,9 @@ Supporting prose should:
 
 - start with the command, output, or decision the reader needs
 - explain what is packaged and what runs locally
-- separate deterministic checks from human or LLM judgement
+- separate deterministic checks from creative judgement
 - use concrete claims instead of broad product vision
-- keep model, network, and publishing boundaries explicit
+- keep network and publishing boundaries explicit
 - use natural language without over-polishing
 
-## Model Boundary
-
-Novel Craft does not call a model. It emits packets, checks, reports, and skills that an agent can use with the model of its choice.
-
-That boundary applies to general writing too. The CLI can point out likely issues, required facts, forbidden claims, and awkward wording patterns, but the agent still decides how to revise.
+The CLI can point out likely issues, required facts, forbidden claims, and awkward wording patterns, but the agent still decides how to revise.

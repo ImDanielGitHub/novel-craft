@@ -110,4 +110,4 @@ Only unpublish if the package is inside npm's narrow unpublish policy window and
 - local binaries not meant for release
 - credentials, tokens, SSH keys, private notes, or API keys
 - unsupported implementation files
-- hidden network-call or model-call code
+- hidden network-call code

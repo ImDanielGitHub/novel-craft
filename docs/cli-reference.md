@@ -7,18 +7,27 @@ The usual pattern is:
 1. read the user request
 2. run `agent plan`
 3. generate and compare directions
-4. draft finished prose with the model
+4. draft finished prose
 5. save the draft as Markdown
 6. run `eval chapter`
-7. revise and compare
+7. revise, extract approved canon, and compare
 
 Prefer `--json` when the output will be read by an agent. Prefer `--out` when a packet should be saved and reused.
 
 ## Install And Health Check
 
 ```bash
+npx novel-craft setup
+npx novel-craft setup --yes --target ~/.codex/skills --json
+npx novel-craft setup --no-skills --json
 npx novel-craft doctor --json
 novel-craft doctor --json
+```
+
+`setup` is the first-run wizard. It lists the bundled `novel-craft-*` skills, explains that they are crucial for Novel Craft to work correctly in an agent workflow, and asks before installing them. Use `--yes` for unattended installs, `--no-skills` to opt out, and `--target` to choose a skills directory. If you opt out, install later with:
+
+```bash
+novel-craft skills install --target ~/.codex/skills
 ```
 
 `doctor` is read-only. It reports version, platform, embedded rules, embedded skills, npm wrapper state, and whether a `.novel/` project is present.
@@ -36,7 +45,7 @@ novel-craft agent plan \
   --json
 ```
 
-The plan returns task facts, missing story questions, reader-promise guidance, contender rules, comparison protocol, chapter cards, drafting instructions, revision loop, and post-write commands. It does not call a model or write prose.
+The plan returns task facts, missing story questions, reader-effect guidance, contender rules, comparison protocol, chapter cards, drafting instructions, revision loop, and post-write commands.
 
 For several chapters:
 
@@ -52,7 +61,7 @@ novel-craft creative atlas --json
 
 The atlas returns 50 genres, 50 subgenres, 50 tropes, 50 sub-tropes, a mixing protocol, and the always-on novel excellence standard. It is an ingredient map for the agent, not a recipe to copy mechanically.
 
-Opening guidance is micro before macro when it helps. The agent should usually dramatise the smallest working unit of the premise before naming the full roadmap. For kingdom-building, that might be one door, meal, ledger, protected person, oath, or boundary before any talk of kingdoms, domains, empires, or upgrade ladders. These are indicators, not hard limits.
+Opening guidance is micro before macro when it helps. The agent should usually dramatise the smallest working unit of the premise before naming the full roadmap. For kingdom-building, that might be one door, meal, ledger, protected person, dispute, or boundary before any talk of kingdoms, domains, empires, or upgrade ladders. These are indicators, not hard limits.
 
 Use `creative brief` when the user gives a prompt and the agent needs a better drafting instruction.
 
@@ -122,7 +131,7 @@ novel-craft eval story draft.md \
   --json
 ```
 
-`eval chapter` and `eval story` are not pass/fail gates. They return metrics, lint leads, reader-profile checks, constraint checks, chapter spine, scene change, reader-retention signals, prose review, voice review, open loops, progression/power checks, dialogue/relationship checks, opening-promise guidance, lexical signals, trope saturation, rubric dimensions, and review questions.
+`eval chapter` and `eval story` are not pass/fail gates. They return metrics, lint leads, reader-profile checks, constraint checks, action-ranked revision priorities, chapter spine, scene change, reader-retention signals, prose review, voice review, open loops, progression/power checks, dialogue/relationship checks, opening guidance, lexical signals, trope saturation, rubric dimensions, and review questions.
 
 Use `eval gate` when hard facts or forbidden claims need a pass/warn/fail status:
 
@@ -140,9 +149,9 @@ Gate status:
 - `warn`: review line issues or reader-fit warnings before finalising.
 - `fail`: a required fact is missing or a forbidden claim appears.
 
-The gate includes metrics, lint summary, reader-profile warnings, constraint adherence, opening-promise guidance, lexical novelty signals, and review notes.
+The gate includes metrics, lint summary, reader-profile warnings, constraint adherence, opening guidance, lexical novelty signals, action-ranked revision priorities, and review notes.
 
-The gate also includes `opening_promise`, a heuristic warning for first chapters that may announce macro-scale labels too early. Treat this as a review lead, not a rule. The fix is often to move world/system explanation into a present-tense choice, obstacle, cost, or consequence.
+The JSON field is still called `opening_promise` for compatibility, but treat it as opening guidance: a heuristic warning for first chapters that may announce macro-scale labels too early. The fix is often to move world/system explanation into a present-tense choice, obstacle, cost, or consequence.
 
 ## Compare Revisions
 
@@ -156,7 +165,7 @@ novel-craft eval compare old.md new.md \
 
 `eval compare` returns evidence for both drafts and `winner: null`. The agent should not treat metrics as taste.
 
-To store a final human or LLM-assisted choice:
+To store a final reviewer choice:
 
 ```bash
 novel-craft eval reward-export old.md new.md --winner b --dimension overall --note "<why>"
@@ -184,15 +193,58 @@ novel-craft eval voice-drift chapter01.md chapter02.md --character Mara --json
 Use project state when the agent is continuing a longer work.
 
 ```bash
-novel-craft start --no-input --defaults --json
+novel-craft start \
+  --no-input \
+  --title "Oathspire Climber" \
+  --idea "weak-to-strong isekai tower climbing" \
+  --genre system-isekai \
+  --json
+novel-craft story set \
+  --protagonist "Ren Vale" \
+  --protagonist-want "protect Lio and survive Floor One" \
+  --world "Oathspire tower" \
+  --power-system "a floor ledger that charges debt for every shortcut" \
+  --json
 novel-craft scene create chapter_01_scene_01 --goal "Find shelter" --conflict "No one trusts her"
 novel-craft character add Mara --trait guarded --motive "clear her family name"
 novel-craft plot thread missing_brother --owner Mara --stage clue
 novel-craft plot add-promise "Who opened the western gate?" --source chapter_01_scene_01 --json
-novel-craft matrix build
+novel-craft matrix build --json
 novel-craft matrix heatmap --json
 novel-craft context build chapter_01_scene_01 --out .novel/context/ch01s01.md
 ```
+
+`matrix build` reads back the actual `.novel/` state: story seed, characters, plot threads, open loops, payoffs, scene cards, and progression notes. `context build` then packages that state for a drafting agent instead of only repeating the scene card.
+
+## Draft And Continue From State
+
+Use `draft` when the agent wants a prose brief from project state:
+
+```bash
+novel-craft draft chapter_01_scene_01 \
+  --word-count "1800 words" \
+  --must-include "service stair" \
+  --avoid "status dump" \
+  --json
+```
+
+Use `next` after a chapter exists:
+
+```bash
+novel-craft next chapter_02 \
+  --from .novel/drafts/chapter-01.md \
+  --json
+```
+
+The next packet includes source-draft signals, likely changes, open loops, power/status deltas, continuity reminders, and a suggested next chapter card.
+
+After a draft is approved, extract a reviewable canon diff:
+
+```bash
+novel-craft memory extract .novel/drafts/chapter-01.md --review --json
+```
+
+The agent should review the extracted facts before committing anything to memory.
 
 ## Supporting Writing
 

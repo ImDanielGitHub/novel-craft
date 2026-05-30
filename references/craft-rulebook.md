@@ -33,11 +33,11 @@ The newer rule cards are effect-first. A finding should be classified before rev
 
 Example: passive voice is a likely mistake in `The blade was swung by Kael` because the actor and physical action matter. It may be functional in `Mara was dragged through the ash` because the sentence focuses helplessness and victimhood. It may also be useful for mystery (`The door had been unlocked`) or dehumanising bureaucracy (`The prisoner was processed, catalogued, and transferred`).
 
-## LLM-First Rule Use
+## Agent Rule Use
 
-Novel Craft's deterministic checks are approximations. They are meant to guide the user's LLM, not replace it. A regex can find a possible passive construction, filter word, repeated opening, or long paragraph; it cannot know the author's intended effect by itself.
+Novel Craft's deterministic checks are approximations. They are meant to guide revision, not replace judgement. A regex can find a possible passive construction, filter word, repeated opening, or long paragraph; it cannot know the author's intended effect by itself.
 
-Every rule guide entry should give the LLM:
+Every rule guide entry should give the agent:
 
 - the reader/story effect being protected
 - what the detector approximates
@@ -52,11 +52,11 @@ Use:
 novel-craft rules guide
 ```
 
-The LLM should follow this decision path:
+The agent should follow this decision path:
 
 1. Read the scene card and intended effect.
 2. Treat detected issues as leads.
-3. Ask the rule's LLM questions.
+3. Ask the rule's review questions.
 4. Compare the flagged passage to the example and counterexample.
 5. Classify the pattern as `likely_mistake`, `possibly_intentional`, or `clearly_functional`.
 6. Revise only if the change improves the intended effect without flattening voice, genre, rhythm, or character.
@@ -71,7 +71,7 @@ novel-craft creative tropes --genre system-isekai
 novel-craft creative methods
 ```
 
-The LLM should generate several alternatives before committing. It should check:
+The agent should generate several alternatives before committing. It should check:
 
 - Does the first page offer wonder, danger, injustice, desire, or a concrete problem?
 - Does the first chapter show the smallest working unit of the premise before leaning on the whole roadmap, if that would improve reader grip?
@@ -97,7 +97,7 @@ The executable rulebook now covers these modules:
 - **Sentence rhythm:** track length variance, fragments, repeated openings, and monotony clusters.
 - **Paragraphing as camera:** use paragraph breaks for emphasis, suspense, mobile readability, and attention control.
 - **Exposition function:** exposition should attach to conflict, decision, discovery, danger, contradiction, object, ritual, or place.
-- **Opening micro-promise:** the first chapter often works best when it seeds the macro premise through a small dramatic unit before leaning on future scale, category, rank ladders, or world history.
+- **Opening micro-scene:** the first chapter often works best when it seeds the macro premise through a small dramatic unit before leaning on future scale, category, rank ladders, or world history.
 - **Functional repetition:** distinguish lexical, syntactic, imagery, emotional, and story-function repetition.
 - **Therefore/because plotting:** prefer causal chains over additive `and then` scene lists.
 

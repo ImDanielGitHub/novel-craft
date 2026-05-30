@@ -1,6 +1,6 @@
 # Creative Generation Guide
 
-Novel Craft should help the user's LLM generate better story options before drafting. The deterministic analyzer can find friction, but the LLM is the main creative engine.
+Novel Craft should help an agent generate better story options before drafting. The deterministic analyzer can find friction, but the agent still has to choose and revise well.
 
 ## Principle
 
@@ -8,11 +8,11 @@ Do not let the first workable premise become the book. Generate a wide option po
 
 The tool should aim high by default. "Breakout" is not a special mode; every fiction packet should ask for a strong first chapter, costly advantages, meaningful scene turns, chapter-end continuation, and a wider story engine.
 
-The opening often works best when it promises the macro experience through micro-action. A first chapter does not need to announce the whole roadmap. It can show the smallest living unit of the story: one wound, one need, one rule, one cost, one choice, one room, one relationship, or one boundary. Treat examples as indicators and helpers, not hard limits.
+The opening often works best when it shows the macro experience through micro-action. A first chapter does not need to announce the whole roadmap. It can show the smallest living unit of the story: one wound, one need, one rule, one cost, one choice, one room, one relationship, or one boundary. Treat examples as indicators and helpers, not hard limits.
 
 A good story seed usually balances:
 
-- familiar genre promise
+- familiar genre appeal
 - fresh twist
 - relatable desire
 - clear pressure
@@ -47,15 +47,15 @@ novel-craft eval compare old.md new.md
 novel-craft eval reader-profiles
 novel-craft eval reader-check chapter.md --profile breakout-serial
 novel-craft eval voice-drift chapter01.md chapter02.md --character Mara
-novel-craft eval feedback-add chapter01 --dimension hook_and_promise --rating 4 --comment "Wanted chapter two."
+novel-craft eval feedback-add chapter01 --dimension hook_and_reader_grip --rating 4 --comment "Wanted chapter two."
 novel-craft eval feedback-report
 novel-craft eval calibrate-add sample.md --label liked --reason "simple hook with a sharp cost"
 novel-craft eval calibrate-report
-novel-craft eval reward-export old.md new.md --winner b --dimension hook_and_promise
+novel-craft eval reward-export old.md new.md --winner b --dimension hook_and_reader_grip
 novel-craft matrix heatmap
 ```
 
-## LLM Creativity Methods
+## Creativity Methods
 
 - Diverge then converge: make 12-20 ideas before choosing.
 - Morphological matrix: mix protagonist, wound, world, system rule, power cost, social arena, and antagonist pressure.
@@ -81,26 +81,26 @@ Use `novel-craft creative atlas --json` when the prompt is thin, over-familiar, 
 - a mixing protocol
 - the always-on novel excellence standard
 
-The agent should pick one genre, one subgenre, two tropes, and one sub-trope, then make the ingredients affect causality. A trope is useful only when it changes choices, world rules, social pressure, power cost, chapter structure, or the next promised payoff.
+The agent should pick one genre, one subgenre, two tropes, and one sub-trope, then make the ingredients affect causality. A trope is useful only when it changes choices, world rules, social pressure, power cost, chapter structure, or the next expected payoff.
 
 ## Always-On Novel Excellence Standard
 
 Every brief and tournament should check:
 
 - banger first chapter
-- visible reader promise
+- visible reader draw
 - familiar pleasure plus fresh causal twist
 - power, bond, system, status, or secret with a cost
 - scene goal, conflict, turn, consequence, and next pressure
-- chapter change in power, knowledge, status, relationship, danger, promise, or territory
+- chapter change in power, knowledge, status, relationship, danger, open question, or territory
 - wider story engine across mystery, relationship, status, power, threat, territory, and theme
 - fair chapter-end continuation reason
 - concrete human texture instead of abstract destiny
 - revision loop before final judgement
 
-## First-Chapter Micro-Promise
+## First-Chapter Micro-Scene
 
-Research and craft guidance converge on a practical rule: story first, context second. The opening should set tone, character, conflict, curiosity, and promise without stopping to explain the whole system or world.
+Research and craft guidance converge on a practical rule: story first, context second. The opening should set tone, character, conflict, curiosity, and reader expectation without stopping to explain the whole system or world.
 
 For agents:
 
@@ -109,9 +109,9 @@ For agents:
 - For progression, show one painful use of the mechanic before listing ranks.
 - For magic systems, show a rule biting someone before explaining theory.
 - For politics, show one official, contract, toll, taboo, queue, punishment, or bribe before summarising history.
-- Let the first chapter promise the larger experience through a smaller scene.
+- Let the first chapter show the larger experience through a smaller scene.
 
-Use `novel-craft eval story` to review the `opening_promise` section after drafting. A warning does not prove the opening is bad, but it means the agent should ask whether macro labels can move later or become action, dialogue, discovery, cost, or consequence.
+Use `novel-craft eval story` to review the opening-guidance section after drafting. The JSON compatibility field is `opening_promise`, but a warning does not prove the opening is bad; it means the agent should ask whether macro labels can move later or become action, dialogue, discovery, cost, or consequence.
 
 ## System-Isekai Trope Axes
 
@@ -123,13 +123,13 @@ Use tropes as mixable parts, not clichés to copy.
 - Growth: weak skill gains depth, support class becomes strategic core, crafting/logistics beat brute force, monster ecology as power.
 - Arena: guild, frontier village, caravan, academy, dungeon town, shrine city, floating market, border fort.
 - Pressure: rival reincarnator, monster wave timer, noble ownership, church heresy, hidden beginner trap, winter before food.
-- Freshness: system rewards promises, quests come from needy people, leveling creates responsibility, stats are public, tutorial is a scam.
+- Freshness: system rewards solved civic problems, quests come from needy people, levelling creates responsibility, stats are public, tutorial is a scam.
 
 ## Serial Grip Profiles
 
 These profiles are derived from public ranking, synopsis, and review patterns. They are not instructions to imitate any title.
 
-- `breakout-serial`: umbrella profile for hard opening wound, visible reader promise, costly power, serial-retention engine, and breakout-quality gates.
+- `breakout-serial`: umbrella profile for hard opening wound, visible reader draw, costly power, serial-retention engine, and breakout-quality gates.
 - `nightmare-survival`: dark progression with survival trials, mythic ruins, binding flaws, and trust under ownership pressure.
 - `rational-magus`: western fantasy progression where magic has rules, power is studied, morality is complex, and side characters keep changing.
 - `beast-bond-progression`: first-path beast taming, companion partnership, evolution mystery, and emotional stakes inside the progression loop.
@@ -137,7 +137,7 @@ These profiles are derived from public ranking, synopsis, and review patterns. T
 - `monster-evolution`: nonhuman body problem, resource grind, visible evolution loop, and data/prose balance.
 - `high-drama-romance`: public rejection, secret identity, pregnancy or heir stakes, status repair, and accountability before reconciliation.
 
-Use these profiles with `creative brief`, `creative tournament`, `creative trope-check`, and `eval rubric`. A strong contender should name its opening wound, familiar promise, freshness twist, power cost, world-depth signal, and chapter-end continuation reason.
+Use these profiles with `creative brief`, `creative tournament`, `creative trope-check`, and `eval rubric`. A strong contender should name its opening wound, familiar genre appeal, freshness twist, power cost, world-depth signal, and chapter-end continuation reason.
 
 ## Reading And Word Choice
 
@@ -161,7 +161,7 @@ Target for broad webnovel readability:
 
 Creative writing should not be judged by one total score. Use separate dimensions:
 
-- hook and genre promise
+- hook and genre appeal
 - readability and flow
 - causal coherence
 - character agency
@@ -179,22 +179,22 @@ Use `novel-craft eval sheet` for one draft and `novel-craft eval compare` for re
 
 ## High-Value Gap Checks
 
-Use these before asking the LLM to revise:
+Use these before revising:
 
 - `novel-craft creative novelty`: finds generic phrase traps, concrete specificity signals, freshness signals, office/niche framing traps, and trope saturation risk. It is a lexical signal report, not a final originality verdict or quality score.
 - `novel-craft eval story`: reviews an existing chapter or story file after drafting. It gives structured guidance without pass/fail gate language.
-- `novel-craft eval gate`: combines constraints, lint, reader fit, opening-promise risk, and lexical novelty signals into a pass/warn/fail report when hard requirements need that status.
+- `novel-craft eval gate`: combines constraints, lint, reader fit, opening guidance, and lexical novelty signals into a pass/warn/fail report when hard requirements need that status.
 - `novel-craft creative trope-check`: shows which familiar trope axes are visible and whether the draft has cost, limitation, contradiction, or consequence attached.
 - `novel-craft creative tournament`: creates a prompt pack for A/B premise generation, so the agent explores multiple hooks before drafting.
 - `novel-craft eval reader-check`: checks reading-level fit for fast webnovel, adult progression, middle-grade clear, or literary dense profiles.
-- `novel-craft eval voice-drift`: compares dialogue fingerprints across chapters and asks the LLM to check voice matrix fit.
+- `novel-craft eval voice-drift`: compares dialogue fingerprints across chapters and asks for a voice-matrix check.
 - `novel-craft eval feedback-*`: stores beta-reader reactions as evidence instead of losing them in chat history.
-- `novel-craft eval calibrate-*`: stores liked/disliked samples as local taste anchors for future LLM judges.
+- `novel-craft eval calibrate-*`: stores liked/disliked samples as local taste anchors for future comparisons.
 - `novel-craft eval reward-*`: exports pairwise preference records for future reward/evaluator adapters.
 - `novel-craft matrix heatmap`: shows which promises and threads are getting hot, stale, or ready for payoff.
 
-The key idea is not that every check is deterministic. The CLI supplies evidence and review questions; the user's LLM remains the creative judge.
+The key idea is not that every check is deterministic. The CLI supplies evidence and review questions; the agent still owns the creative judgement.
 
 ## High-Aim But Not Popularity-Guaranteeing
 
-Novel Craft can help an agent aim at known reader-grip factors: clear English, memorable characters, world depth, theme fit, update-friendly chapter promises, community-discussion hooks, clear promise, and adaptation-friendly images. It cannot guarantee popularity, reader votes, platform support, contract status, editor taste, or prize outcomes.
+Novel Craft can help an agent aim at known reader-grip factors: clear English, memorable characters, world depth, theme fit, update-friendly chapter hooks, community-discussion hooks, clear reader draw, and adaptation-friendly images. It cannot guarantee popularity, reader votes, platform support, contract status, editor taste, or prize outcomes.
