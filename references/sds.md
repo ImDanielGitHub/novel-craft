@@ -21,7 +21,7 @@ The CLI is intentionally local-first. Project state lives inside each writing pr
 
 Architecturally, Novel Craft should be treated as a fiction-first writing engine for agents. The reusable core is rule cards, purpose profiles, context packets, deterministic approximations, review guides, comparison reports, feedback memory, and targeted revision passes.
 
-Fiction-specific state such as characters, scene cards, promises, and plot threads should stay isolated. Supporting prose outside fiction is currently limited to the `novel-craft-writing-support` skill for names, docs, release notes, and claim checks.
+Fiction-specific state such as characters, scene cards, open loops, and plot threads should stay isolated. Supporting prose outside fiction is currently limited to the `novel-craft-writing-support` skill for names, docs, release notes, and claim checks.
 
 Serial-success research is represented as abstract genre/profile matrices, not as copied source text. The matrices should push agents toward opening wounds, costly powers, world-depth signals, and serial-retention hooks while preserving source-policy boundaries.
 
@@ -31,9 +31,9 @@ Project files:
 
 - `.novel/project.yml`: title, genre profile, POV mode, source policy, style anchors, token budget.
 - `.novel/characters/*.yml`: durable and dynamic character facts, including surface, sensory signature, psychology, behaviour, voice matrix, relationships, continuity, current state, and do-not-overuse gestures.
-- `.novel/scene-cards/*.yml`: one card per scene with goal, conflict, turn, entry/exit state, open threads, promises, emotional beat, scene shape, causality, and do-not-repeat items.
-- `.novel/plot-threads/*.yml`: state-machine records for mysteries, promises, arcs, powers, debts, rivalries, and other long-running threads.
-- `.novel/plot-matrix.yml`: arcs, scenes, promises, payoffs, progression beats, and compatibility rows for older projects.
+- `.novel/scene-cards/*.yml`: one card per scene with goal, conflict, turn, entry/exit state, open threads, open loops, emotional beat, scene shape, causality, and do-not-repeat items.
+- `.novel/plot-threads/*.yml`: state-machine records for mysteries, open loops, arcs, powers, obligations, rivalries, and other long-running threads.
+- `.novel/plot-matrix.yml`: arcs, scenes, open loops, payoffs, progression beats, and compatibility rows for older projects.
 - `.novel/story-matrix.yml`: generated matrix built from scene cards, plot rows, and plot threads.
 - `.novel/state/knowledge-state.yml`: who knows what, including reader knowledge.
 - `.novel/state/dynamic-state.yml`: current scene, character state, objects, injuries, locations, and volatile state.
@@ -41,7 +41,7 @@ Project files:
 - `.novel/state/beta-feedback.yml`: stored beta-reader or human feedback, grouped later by target and dimension.
 - `.novel/state/taste-profile.yml`: liked/disliked/mixed sample records used to calibrate future comparisons.
 - `.novel/rules/default.yml`: copied rule cards so projects can customise rules.
-- `.novel/memory.sqlite`: extracted names, wounds, promises, choices, progression events.
+- `.novel/memory.sqlite`: extracted names, wounds, open loops, choices, progression events.
 - `.novel/evals/reward-pairs.jsonl`: optional pairwise preference records for future evaluator/reward adapters.
 - `.novel/pending-memory/*.diff.yml`: reviewable state changes before canon commit.
 - `.novel/context/*.md`: layered context packets for a target scene or chapter.
@@ -116,7 +116,7 @@ Plot checks use project state:
 - Gesture repetition.
 - Progression signal checks.
 - Plot-matrix repeated scene function checks.
-- Open promise count checks.
+- Open-loop count checks.
 - Therefore/because scene-transition audit.
 - Knowledge-state and plot-thread review.
 - Emotional-beat repetition and stalled arc warnings.
@@ -136,13 +136,13 @@ Primary commands use `novel-craft`; `novel` is a convenience alias where the ins
 - `novel-craft analyse`: run deterministic writing-quality analysis for fiction projects.
 - `novel-craft review --rubric`: write a focused prose, scene, character, dialogue, continuity, or all-pass review packet.
 - `novel-craft matrix build`: generate `.novel/story-matrix.yml`.
-- `novel-craft matrix audit`: find repeated functions, weak causality, and promise load.
-- `novel-craft matrix heatmap`: show open promise/thread heat, stale mentions, and payoff risk.
+- `novel-craft matrix audit`: find repeated functions, weak causality, and open-loop load.
+- `novel-craft matrix heatmap`: show open-loop/thread heat, stale mentions, and payoff risk.
 - `novel-craft audit continuity`: check a draft against character facts and knowledge state.
 - `novel-craft audit repetition`: check text and the recent matrix for repeated words, gestures, functions, locations, endings, and emotional beats.
 - `novel-craft audit causality`: run the therefore/because plot test.
 - `novel-craft memory extract`: produce a reviewable memory diff.
-- `novel-craft memory commit`: commit an approved diff to SQLite, dynamic state, and promise tracking.
+- `novel-craft memory commit`: commit an approved diff to SQLite, dynamic state, and open-loop tracking.
 - `novel-craft rules list`: inspect active project-local rule cards.
 - `novel-craft rules guide`: emit a rule guide with examples, counterexamples, and approximation warnings.
 - `novel-craft rules refresh`: replace a project's copied rule cards with CLI defaults.
@@ -178,7 +178,7 @@ Supported public profile names include `system-isekai`, `breakout-serial`, `nigh
 
 `breakout-serial` is a reader-profile matrix, not the only high-quality mode. The shared novel excellence standard is injected into brief, tournament, and start packets so agents always check first-chapter pull, chapter structure, wider story engine, costly advantages, and continuation pressure.
 
-Opening-promise checks run inside `eval chapter`, `eval story`, and `eval gate`. They inspect the opening window for macro-scale announcement risk and ask the agent whether early world/system explanation would work better as scene-level action, choice, cost, or consequence.
+Opening-guidance checks run inside `eval chapter`, `eval story`, and `eval gate`. They inspect the opening window for macro-scale announcement risk and ask the agent whether early world/system explanation would work better as scene-level action, choice, cost, or consequence.
 
 ## Extension Boundary
 
@@ -197,10 +197,10 @@ The context packet is the main long-context defence. It carries:
 - Character state, psychology, sensory signatures, voice matrices, injuries, possessions, secrets, and do-not-overuse lists.
 - Knowledge state for characters and reader.
 - Relationship state.
-- Open plot threads and promise/payoff windows.
+- Open plot threads and open-loop/payoff windows.
 - Recent scene chain with goal, conflict, turn, outcome, and progression.
 - Required scene turn and do-not-do list from the scene card.
 - Style profile and recent memory events.
 - Token budget.
 
-Full-book review chunks files and reports aggregate rule counts rather than loading every chapter into one context window. Long novels should move from raw manuscript to scene summaries, chapter summaries, arc summaries, story bible, state ledgers, and target-specific context packets.
+Full-book review chunks files and reports aggregate rule counts rather than loading every chapter into one context window. Long novels should move from raw manuscript to scene summaries, chapter summaries, arc summaries, story bible, state tables, and target-specific context packets.

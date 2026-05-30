@@ -1,22 +1,22 @@
 # Writing Craft Engine
 
-Novel Craft's public craft engine helps an agent turn a user prompt into stronger fiction. It is not a publishing, award, contract, platform, monetisation, or eligibility rulebook. Those facts change and should be checked live when the user asks for them.
+Novel Craft's public craft engine helps an agent turn a user prompt into stronger fiction. It is not a publishing, award, platform, monetisation, rights, or eligibility rulebook. Those facts change and should be checked live when the user asks for them.
 
 ## Foundation
 
-- Promise: the reader effect the story offers, such as survival, power, truth, romance, revenge, healing, wonder, or dread.
+- Reader draw: the reader effect the story offers, such as survival, power, truth, romance, revenge, healing, wonder, or dread.
 - Desire: the protagonist wants something visible.
 - Pressure: something forces action now.
-- Cost: every meaningful gain creates loss, risk, debt, exposure, guilt, injury, time pressure, or moral compromise.
-- Change: each chapter or scene should leave plot, character, relationship, knowledge, stakes, or promise different.
+- Cost: every meaningful gain creates loss, risk, exposure, guilt, injury, time pressure, resource pressure, or moral compromise.
+- Change: each chapter or scene should leave plot, character, relationship, knowledge, stakes, or reader expectation different.
 
 ## Premise
 
 A strong premise combines character, desire, obstacle, stakes, and irony. It should imply conflict, genre, scenes, emotional stakes, and enough pressure to carry many chapters.
 
-## Genre Promise
+## Genre Expectation
 
-Genre is a reader contract, not a cage. The agent should know what the target reader expects before bending it: progression needs measurable growth, mystery needs fair clues, romance needs relationship movement, thriller needs pressure, horror needs dread, fantasy needs wonder and world logic.
+Genre is a reader expectation, not a cage. The agent should know what the target reader expects before bending it: progression needs measurable growth, mystery needs fair clues, romance needs relationship movement, thriller needs pressure, horror needs dread, fantasy needs wonder and world logic.
 
 ## Character Pressure
 
@@ -114,7 +114,7 @@ Power needs limits, costs, training, trade-offs, specialisation, failure states,
 1. Structure: plot, arcs, causality, missing scenes, motivation.
 2. Scene quality: goals, tension, turns, openings, endings.
 3. Prose: voice, clarity, rhythm, dialogue, description.
-4. Continuity: names, timeline, rules, injuries, geography, promises.
+4. Continuity: names, timeline, rules, injuries, geography, open loops.
 5. Copyedit: grammar, punctuation, repetition, spelling.
 
 Fix structure before line-editing scenes that may not belong.

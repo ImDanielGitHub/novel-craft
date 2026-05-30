@@ -7,7 +7,7 @@ use rusqlite::Connection;
 use serde::{Deserialize, Serialize};
 use serde_json::json;
 use serde_yaml::{Mapping, Value};
-use std::collections::{BTreeMap, HashMap};
+use std::collections::{BTreeMap, BTreeSet, HashMap};
 use std::fs;
 use std::io::{self, IsTerminal, Write};
 use std::path::{Path, PathBuf};
@@ -349,7 +349,7 @@ const STORY_ATLAS_TROPES: &[&str] = &[
     "talking companion",
     "trial by combat",
     "academy tournament",
-    "guild contract",
+    "guild rivalry",
     "secret identity",
     "double life",
     "prophecy misunderstood",
@@ -385,12 +385,12 @@ const STORY_ATLAS_TROPES: &[&str] = &[
 ];
 
 const STORY_ATLAS_SUBTROPES: &[&str] = &[
-    "truth-binding flaw",
+    "overlooked flaw becomes leverage",
     "power reveals location",
     "skill grows through use",
     "rank hides forbidden branch",
     "quest log lies",
-    "inventory stores debt",
+    "inventory stores consequences",
     "companion evolves from care",
     "beast mirrors wound",
     "mentor tests loyalty",
@@ -414,7 +414,7 @@ const STORY_ATLAS_SUBTROPES: &[&str] = &[
     "monster food unlocks trait",
     "nonhuman body changes desire",
     "flashback changes present choice",
-    "chapter ends on unpaid debt",
+    "chapter ends on a hard choice",
     "side character advances off page",
     "romance creates tactical risk",
     "family secret changes inheritance",
@@ -429,11 +429,11 @@ const STORY_ATLAS_SUBTROPES: &[&str] = &[
     "dream realm leaves real scar",
     "enemy saves hero for selfish reason",
     "betrayal protects wrong person",
-    "prophecy is a contract",
+    "prophecy is misunderstood evidence",
     "victory creates owner",
     "level up attracts hunter",
     "lawful villain controls resources",
-    "small kindness becomes oath",
+    "small kindness changes allegiance",
     "final scene reverses first image",
 ];
 
@@ -451,11 +451,11 @@ const NOVEL_EXCELLENCE_STANDARD: &[&str] = &[
     "micro-scene before macro-roadmap: usually dramatise the smallest working unit of the premise before leaning on kingdoms, empires, domains, future ranks, or upgrade ladders",
     "reader draw: make the genre reward visible before spending trust on lore",
     "fresh familiar: pair recognisable pleasure with one causal twist, cost, contradiction, or unusual body/world rule",
-    "costly advantage: every power, secret, bond, system, status, or skill creates a limit, debt, exposure risk, moral cost, or new enemy",
+    "costly advantage: every power, secret, bond, system, status, or skill creates a limit, exposure risk, moral cost, resource pressure, or new enemy",
     "scene engine: every scene has a goal, conflict, turn, consequence, and next pressure",
     "chapter engine: every chapter changes power, knowledge, status, relationship, danger, open question, or territory",
     "wider story engine: track mystery, relationship, status, power, threat, territory, and theme pressure across arcs",
-    "continuation reason: end chapters on a fair decision, reveal, unpaid debt, threat, relationship shift, or progress milestone",
+    "continuation reason: end chapters on a fair decision, reveal, threat, relationship shift, consequence, or progress milestone",
     "human texture: concrete wants, shame, hunger, loyalty, fear, pride, tenderness, and contradiction beat abstract destiny",
     "revision loop: draft, self-critique, revise once, gate, compare alternatives, then decide with judgement",
 ];
@@ -492,8 +492,8 @@ const OPENING_MACRO_TERMS: &[&str] = &[
 const OPENING_MICRO_TERMS: &[&str] = &[
     "bread", "coin", "door", "room", "roof", "floor", "hand", "blood", "snow", "cold", "hunger",
     "hungry", "bowl", "water", "fire", "smoke", "lock", "key", "shelter", "meal", "child", "girl",
-    "boy", "debt", "wound", "fever", "cart", "street", "wall", "knife", "rope", "bell", "ledger",
-    "name", "breath", "mouth",
+    "boy", "wound", "fever", "cart", "street", "wall", "knife", "rope", "bell", "name", "breath",
+    "mouth",
 ];
 
 const OPENING_ACTION_TERMS: &[&str] = &[
@@ -577,9 +577,9 @@ const SYSTEM_ISEKAI_TROPE_AXES: &[(&str, &[&str])] = &[
             "skill tree that grows from choices, not grinding",
             "class system that mislabels the hero",
             "quest log written by an unreliable patron",
-            "inventory that stores debts, memories, or civic obligations",
+            "inventory that stores consequences, memories, or civic obligations",
             "leveling through teaching, repair, cooking, healing, building, or diplomacy",
-            "settlement ledger that upgrades solved local bottlenecks",
+            "settlement map that upgrades solved local bottlenecks",
             "reputation board where residents can accept or reject policies",
         ],
     ),
@@ -625,7 +625,7 @@ const SYSTEM_ISEKAI_TROPE_AXES: &[(&str, &[&str])] = &[
     (
         "pressure",
         &[
-            "debt collector with legal authority",
+            "border official with legal authority",
             "rival reincarnator with a louder cheat",
             "monster wave timer",
             "noble family wants the hero as property",
@@ -660,7 +660,7 @@ const BREAKOUT_SERIAL_AXES: &[(&str, &[&str])] = &[
             "public rejection destroys status in one scene",
             "family betrayal turns home into enemy territory",
             "a useless label is placed on a secretly valuable person",
-            "debt, contract, or law makes the hero owned by someone else",
+            "status, law, or family pressure makes the hero controlled by someone else",
         ],
     ),
     (
@@ -688,7 +688,7 @@ const BREAKOUT_SERIAL_AXES: &[(&str, &[&str])] = &[
     (
         "retention_engine",
         &[
-            "chapter ends on a decision, reveal, debt, or threat",
+            "chapter ends on a decision, reveal, consequence, or threat",
             "progress bar advances in power, status, knowledge, or relationship",
             "short-term goal feeds a long-term mystery",
             "reader can predict the next reward but not the cost",
@@ -727,7 +727,7 @@ const NIGHTMARE_SURVIVAL_AXES: &[(&str, &[&str])] = &[
             "cannot lie when secrecy is survival",
             "power reveals location to enemies",
             "shadow, reflection, or memory can betray the hero",
-            "every boon creates an owner, oath, or dependency",
+            "every boon creates an owner, dependency, exposure risk, or harder choice",
             "the hero wins by cunning but loses trust",
             "the system rewards survival without explaining the price",
         ],
@@ -936,6 +936,165 @@ const HIGH_DRAMA_ROMANCE_AXES: &[(&str, &[&str])] = &[
     ),
 ];
 
+const TOWER_CLIMB_AXES: &[(&str, &[&str])] = &[
+    (
+        "vertical_pressure",
+        &[
+            "first floor hazard must be solved with a weak support skill",
+            "route ownership is contested by stronger climbers",
+            "floor ecology changes how people move, rest, and fight",
+            "party roles matter more than raw solo power",
+            "safe handholds become scarce under time pressure",
+            "a failed climb strands someone below the next gate",
+        ],
+    ),
+    (
+        "progression_loop",
+        &[
+            "learn floor rule, test weak skill, pay cost, open route",
+            "small technique becomes reliable only after public pressure",
+            "floor rank politics punish unregistered discoveries",
+            "repeatable mechanic escalates differently on each floor",
+            "support skill creates team dependence and status risk",
+            "climbing knowledge helps only when adapted to impossible terrain",
+        ],
+    ),
+    (
+        "first_chapter_image",
+        &[
+            "hands slipping on a wet wall while someone below panics",
+            "a gate opening above while the weak climber is still below",
+            "a rope, root, mark, or hold failing at the worst moment",
+            "ranked climbers abandoning a slower group at a hazard",
+            "a route nobody owns becoming valuable because people use it",
+            "cold, hunger, height, or exhaustion turning a simple move lethal",
+        ],
+    ),
+    (
+        "avoid_drift",
+        &[
+            "do not turn tower climb into settlement administration too early",
+            "do not explain Earth backstory before present danger needs it",
+            "do not use route jargon before grounding the physical action",
+            "do not declare competence before the reader watches it work",
+            "do not make the system more interesting than the scene",
+            "do not let forbidden framing leak back through generic templates",
+        ],
+    ),
+];
+
+const PROGRESSION_FANTASY_AXES: &[(&str, &[&str])] = &[
+    (
+        "growth_currency",
+        &[
+            "power",
+            "skill precision",
+            "status",
+            "knowledge",
+            "resources",
+            "relationships",
+            "territory access",
+            "body adaptation",
+        ],
+    ),
+    (
+        "earned_advancement",
+        &[
+            "practice under pressure changes the next choice",
+            "failure teaches a usable rule",
+            "mentor advice works only after the hero pays attention",
+            "new ability solves one problem and exposes a weakness",
+            "advancement creates attention from a rival faction",
+            "training cost lands in body, time, trust, or status",
+        ],
+    ),
+    (
+        "serial_payoff",
+        &[
+            "visible milestone",
+            "new rule",
+            "stronger opponent",
+            "resource bottleneck",
+            "relationship test",
+            "hidden branch",
+            "public recognition",
+            "next-floor access",
+        ],
+    ),
+];
+
+const ISEKAI_SURVIVAL_AXES: &[(&str, &[&str])] = &[
+    (
+        "entry_pressure",
+        &[
+            "arrives during a local emergency",
+            "old-world knowledge is useful only after adaptation",
+            "the new body has a weakness that matters immediately",
+            "language, custom, or status blocks the obvious solution",
+            "first ally is vulnerable and inconvenient",
+            "survival depends on reading the local rule fast",
+        ],
+    ),
+    (
+        "grounding_rule",
+        &[
+            "present danger before Earth memory",
+            "sensory action before system explanation",
+            "local person before lore",
+            "small choice before destiny",
+            "known skill shown through behaviour before naming the old job",
+            "one concrete object before a status screen",
+        ],
+    ),
+    (
+        "fresh_cost",
+        &[
+            "helping exposes the hero",
+            "old expertise misfires in the new world's physics",
+            "weak skill needs another person to matter",
+            "survival choice damages a future alliance",
+            "public success attracts ownership pressure",
+            "first escape creates a moral obligation",
+        ],
+    ),
+];
+
+const DUNGEON_CORE_AXES: &[(&str, &[&str])] = &[
+    (
+        "core_constraint",
+        &[
+            "cannot move, but can shape one room",
+            "must protect invaders to grow differently",
+            "resources arrive through ecology rather than loot",
+            "every trap changes local politics",
+            "growth depends on visitors surviving long enough to return",
+            "the core's first ally misunderstands what it is",
+        ],
+    ),
+    (
+        "room_engine",
+        &[
+            "one chamber with a clear function",
+            "one rule that makes exploration risky",
+            "one creature whose behaviour changes the room",
+            "one reward that creates a future problem",
+            "one shortcut with a moral cost",
+            "one invader choice that teaches the core people are not numbers",
+        ],
+    ),
+    (
+        "serial_escalation",
+        &[
+            "new room opens a new type of visitor",
+            "local faction responds to the dungeon's pattern",
+            "ecology becomes economy",
+            "defence becomes diplomacy",
+            "power growth creates ethical pressure",
+            "the dungeon becomes a place people need, fear, and argue over",
+        ],
+    ),
+];
+
 const TECH_FANTASY_CELEBRATION_AXES: &[(&str, &[&str])] = &[
     (
         "launch_signal",
@@ -1012,7 +1171,7 @@ const GENERAL_FICTION_AXES: &[(&str, &[&str])] = &[
         "pressure",
         &[
             "deadline",
-            "debt",
+            "scarcity",
             "public shame",
             "misunderstanding",
             "physical danger",
@@ -1041,7 +1200,7 @@ const GENERAL_FICTION_AXES: &[(&str, &[&str])] = &[
             "damaged tool",
             "local ritual",
             "body memory",
-            "unpaid debt",
+            "unresolved obligation",
             "ordinary noise at the wrong time",
         ],
     ),
@@ -1161,7 +1320,7 @@ const EVAL_DIMENSIONS: &[(&str, &str)] = &[
     ),
     (
         "serial_retention",
-        "Does the chapter leave a fair reason to continue: decision, reveal, debt, threat, relationship shift, or progress milestone?",
+        "Does the chapter leave a fair reason to continue: decision, reveal, threat, consequence, relationship shift, or progress milestone?",
     ),
 ];
 
@@ -1306,7 +1465,7 @@ Opt out of skill installation:
         #[command(subcommand)]
         command: StoryCommand,
     },
-    #[command(about = "Track plot threads, promises, and payoffs.")]
+    #[command(about = "Track plot threads, open loops, and payoffs.")]
     Plot {
         #[command(subcommand)]
         command: PlotCommand,
@@ -1361,7 +1520,7 @@ Opt out of skill installation:
 struct StartArgs {
     #[arg(long, default_value = "Untitled Novel")]
     title: String,
-    #[arg(long, default_value = "weak-to-strong kingdom-building fantasy")]
+    #[arg(long, default_value = "weak-to-strong fantasy")]
     idea: String,
     #[arg(long, default_value = "system-isekai")]
     genre: String,
@@ -1384,19 +1543,19 @@ struct StartArgs {
     avoid: Vec<String>,
     #[arg(
         long,
-        default_value = "protect someone weaker without becoming owned by stronger people"
+        default_value = "protect someone vulnerable while proving a weak skill matters"
     )]
     protagonist_want: String,
-    #[arg(long, default_value = "believes asking for help creates debt")]
+    #[arg(long, default_value = "believes asking for help makes them weak")]
     protagonist_wound: String,
     #[arg(
         long,
-        default_value = "frontier settlement on the edge of a failing kingdom"
+        default_value = "dangerous frontier where status and survival depend on useful work"
     )]
     world: String,
     #[arg(
         long,
-        default_value = "a settlement system that rewards useful repairs, protected resources, and earned public trust"
+        default_value = "a weak utility ability that becomes useful through cost, clever use, and pressure"
     )]
     power_system: String,
     #[arg(long, default_value = "balanced")]
@@ -1772,7 +1931,11 @@ enum EvalCommand {
     #[command(about = "Store beta-reader or human feedback as evidence.")]
     FeedbackAdd {
         target: String,
-        #[arg(long)]
+        #[arg(
+            long,
+            value_name = "1-5",
+            help = "Numeric rating from 1 (poor) to 5 (strong)."
+        )]
         rating: u8,
         #[arg(long)]
         comment: String,
@@ -1785,6 +1948,8 @@ enum EvalCommand {
     FeedbackReport {
         #[arg(long)]
         json: bool,
+        #[arg(long)]
+        out: Option<PathBuf>,
     },
     #[command(about = "Add a liked, disliked, or mixed sample for calibration.")]
     CalibrateAdd {
@@ -1852,6 +2017,10 @@ struct GateArgs {
     #[arg(long)]
     must_avoid: Vec<String>,
     #[arg(long)]
+    min_words: Option<usize>,
+    #[arg(long)]
+    max_words: Option<usize>,
+    #[arg(long)]
     json: bool,
     #[arg(long)]
     out: Option<PathBuf>,
@@ -1902,6 +2071,8 @@ struct SceneCreateArgs {
     promise: Vec<String>,
     #[arg(long)]
     do_not_repeat: Vec<String>,
+    #[arg(long)]
+    background_only: Vec<String>,
     #[arg(long)]
     force: bool,
     #[arg(long)]
@@ -1971,9 +2142,13 @@ struct StorySetArgs {
 enum PlotCommand {
     #[command(about = "Create or update a plot thread.")]
     Thread(PlotThreadArgs),
-    #[command(about = "Record an open promise.")]
-    AddPromise(PlotPromiseArgs),
-    #[command(about = "Record a promise payoff.")]
+    #[command(
+        name = "add-loop",
+        visible_alias = "add-promise",
+        about = "Record an open loop or setup."
+    )]
+    AddLoop(PlotPromiseArgs),
+    #[command(about = "Record an open-loop payoff.")]
     Payoff(PlotPayoffArgs),
 }
 
@@ -1998,6 +2173,7 @@ struct PlotThreadArgs {
 
 #[derive(Args, Clone)]
 struct PlotPromiseArgs {
+    #[arg(value_name = "OPEN_LOOP")]
     promise: String,
     #[arg(long, default_value = "")]
     source: String,
@@ -2029,7 +2205,7 @@ enum MatrixCommand {
         #[arg(long)]
         json: bool,
     },
-    #[command(about = "Audit matrix repetition, causality, and promise load.")]
+    #[command(about = "Audit matrix repetition, causality, and open-loop load.")]
     Audit {
         #[arg(long)]
         json: bool,
@@ -2296,7 +2472,7 @@ fn command_setup(args: SetupArgs) -> Result<()> {
     });
 
     if args.json {
-        print_json(data)
+        write_json_or_print(None, &data)
     } else {
         if !can_prompt {
             println!("Novel Craft setup");
@@ -2793,7 +2969,7 @@ fn command_creative(command: CreativeCommand) -> Result<()> {
                 "novelty": novelty_analysis(&text, args.experimental_score)
             });
             if args.json {
-                print_json(data)
+                write_json_or_print(args.out, &data)
             } else {
                 write_or_print(
                     args.out,
@@ -2812,7 +2988,7 @@ fn command_creative(command: CreativeCommand) -> Result<()> {
                 "trope_saturation": trope_saturation(&text, &args.genre)
             });
             if args.json {
-                print_json(data)
+                write_json_or_print(args.out, &data)
             } else {
                 write_or_print(
                     args.out,
@@ -2848,8 +3024,9 @@ fn command_eval(command: EvalCommand) -> Result<()> {
             let text = read_text(&args.path)?;
             let packet = eval_sheet(&args.path, &text);
             if args.json {
-                print_json(
-                    json!({"path": args.path, "metrics": metrics(&text), "dimensions": dimensions_json()}),
+                write_json_or_print(
+                    args.out,
+                    &json!({"path": args.path, "metrics": metrics(&text), "dimensions": dimensions_json()}),
                 )
             } else {
                 write_or_print(args.out, &packet)
@@ -2903,6 +3080,8 @@ fn command_eval(command: EvalCommand) -> Result<()> {
                 &args.profile,
                 &args.must_include,
                 &args.must_avoid,
+                args.min_words,
+                args.max_words,
             );
             if args.json {
                 write_json_or_print(args.out, &data)
@@ -2968,7 +3147,7 @@ fn command_eval(command: EvalCommand) -> Result<()> {
             let text = read_text(&path)?;
             let data = reader_check(&text, &profile);
             if json {
-                print_json(data)
+                write_json_or_print(out, &data)
             } else {
                 write_or_print(
                     out,
@@ -2987,7 +3166,7 @@ fn command_eval(command: EvalCommand) -> Result<()> {
         } => {
             let data = voice_drift(&paths, &character)?;
             if json {
-                print_json(data)
+                write_json_or_print(out, &data)
             } else {
                 write_or_print(
                     out,
@@ -3027,7 +3206,9 @@ fn command_eval(command: EvalCommand) -> Result<()> {
             println!("Feedback stored.");
             Ok(())
         }
-        EvalCommand::FeedbackReport { json } => state_report("beta-feedback.yml", "feedback", json),
+        EvalCommand::FeedbackReport { json, out } => {
+            state_report("beta-feedback.yml", "feedback", json, out)
+        }
         EvalCommand::CalibrateAdd {
             path,
             label,
@@ -3057,7 +3238,9 @@ fn command_eval(command: EvalCommand) -> Result<()> {
             println!("Taste sample stored.");
             Ok(())
         }
-        EvalCommand::CalibrateReport { json } => state_report("taste-profile.yml", "samples", json),
+        EvalCommand::CalibrateReport { json } => {
+            state_report("taste-profile.yml", "samples", json, None)
+        }
         EvalCommand::RewardExport {
             a,
             b,
@@ -3141,6 +3324,7 @@ fn command_scene(command: SceneCommand) -> Result<()> {
                 "promises_opened": args.promise,
                 "promises_paid": [],
                 "do_not_repeat": args.do_not_repeat,
+                "background_only": args.background_only,
                 "updated_at": now()
             });
             write_yaml_json(&path, &data)?;
@@ -3310,11 +3494,11 @@ fn command_plot(command: PlotCommand) -> Result<()> {
                 Ok(())
             }
         }
-        PlotCommand::AddPromise(args) => {
+        PlotCommand::AddLoop(args) => {
             let root = require_project()?;
             let path = root.join(PROJECT_DIR).join("plot-matrix.yml");
             let mut data = read_yaml_value(&path).unwrap_or_else(|| json_yaml_map("promises"));
-            let id = format!("promise-{}", Utc::now().timestamp_millis());
+            let id = unique_promise_id(&data);
             let entry = json!({
                 "id": id,
                 "promise": args.promise,
@@ -3329,7 +3513,7 @@ fn command_plot(command: PlotCommand) -> Result<()> {
             if args.json {
                 print_json(entry)
             } else {
-                println!("Promise added: {id}");
+                println!("Open loop added: {id}");
                 Ok(())
             }
         }
@@ -3389,7 +3573,7 @@ fn command_matrix(command: MatrixCommand) -> Result<()> {
             } else {
                 write_or_print(
                     out,
-                    &format!("# Promise Heat Map\n\n{}", serde_yaml::to_string(&data)?),
+                    &format!("# Open Loop Heat Map\n\n{}", serde_yaml::to_string(&data)?),
                 )
             }
         }
@@ -3403,7 +3587,10 @@ fn command_lint(command: LintCommand) -> Result<()> {
     let text = read_text(&args.path)?;
     let issues = lint_text(&text);
     if args.json {
-        print_json(json!({"metrics": metrics(&text), "issues": issues}))
+        write_json_or_print(
+            args.out,
+            &json!({"metrics": metrics(&text), "issues": issues}),
+        )
     } else {
         let body = format!("# Lint Report\n\n{}\n", serde_yaml::to_string(&issues)?);
         write_or_print(args.out, &body)
@@ -3455,6 +3642,7 @@ fn command_memory(command: MemoryCommand) -> Result<()> {
                 "scene": scene,
                 "source": path,
                 "new_facts": extract_fact_candidates(&text),
+                "discard_likely": discard_likely_memory_candidates(&text),
                 "open_loops": open_loops_report(&text),
                 "scene_change": scene_change_report(&text),
                 "progression_and_power": progression_and_power_report(&text),
@@ -3538,7 +3726,7 @@ fn next_chapter_from_draft(path: &Path, text: &str) -> serde_json::Value {
             "next_hook": infer_next_hook(&lower)
         },
         "continuity_reminders": [
-            "Carry forward any injury, debt, object, relationship shift, revealed rule, and unanswered question from the source chapter.",
+            "Carry forward any injury, object, relationship shift, revealed rule, resource pressure, and unanswered question from the source chapter.",
             "Do not repeat the same opening beat; escalate along a different axis such as social pressure, scarcity, moral cost, location, or relationship leverage.",
             "Pay off at least one small expectation while opening one larger question."
         ],
@@ -3555,6 +3743,8 @@ fn next_chapter_from_draft(path: &Path, text: &str) -> serde_json::Value {
 fn infer_next_goal(lower: &str) -> &'static str {
     if contains_any(lower, &["stair", "stairs", "service stair"]) {
         "survive the stair and learn what it demands next"
+    } else if contains_any(lower, &["route", "claim line", "anchor"]) {
+        "defend or improve the route before stronger climbers control it"
     } else if contains_any(lower, &["door", "gate", "opened"]) {
         "cross the newly opened threshold without losing control of the cost"
     } else if contains_any(lower, &["marked", "brand", "claim"]) {
@@ -3565,9 +3755,7 @@ fn infer_next_goal(lower: &str) -> &'static str {
 }
 
 fn infer_next_conflict(lower: &str) -> &'static str {
-    if contains_any(lower, &["debt", "unpaid", "owed", "toll"]) {
-        "the debt comes due before the protagonist understands the rules"
-    } else if contains_any(lower, &["collector", "authority", "guard"]) {
+    if contains_any(lower, &["collector", "authority", "guard"]) {
         "an official or enforcer controls the route forward"
     } else if contains_any(lower, &["woke", "wake", "bell"]) {
         "the deadline ends and the dormant danger becomes active"
@@ -3580,7 +3768,7 @@ fn infer_relationship_state(lower: &str) -> &'static str {
     if contains_any(lower, &["lio", "ward", "child", "brother", "sister"]) {
         "the protected person is now a continuing pressure, not a prop"
     } else if contains_any(lower, &["trusted", "betrayed", "owed", "promised"]) {
-        "trust, debt, or obligation has shifted and should affect the next choice"
+        "trust, leverage, or obligation has shifted and should affect the next choice"
     } else {
         "carry forward any new trust, leverage, suspicion, or dependency from the last scene"
     }
@@ -3589,8 +3777,6 @@ fn infer_relationship_state(lower: &str) -> &'static str {
 fn infer_new_cost(lower: &str) -> &'static str {
     if contains_any(lower, &["marked", "brand", "claim"]) {
         "the protagonist is marked or claimable"
-    } else if contains_any(lower, &["debt", "owed", "toll"]) {
-        "the protagonist owes a concrete debt"
     } else if contains_any(lower, &["blood", "wound", "pain"]) {
         "the victory has a bodily cost"
     } else {
@@ -3603,10 +3789,40 @@ fn infer_next_hook(lower: &str) -> &'static str {
         "what wakes when the bell ends?"
     } else if contains_any(lower, &["stair", "stairs"]) {
         "what does the stair demand before it lets them climb?"
-    } else if contains_any(lower, &["system", "ledger", "rank", "skill"]) {
+    } else if contains_any(lower, &["system", "rank", "skill"]) {
         "what rule does the system reveal only after it hurts?"
     } else {
         "what consequence of the last chapter arrives first?"
+    }
+}
+
+fn apply_avoid_terms(value: &mut serde_json::Value, avoid: &[String]) {
+    let avoid: Vec<String> = avoid
+        .iter()
+        .map(|item| item.trim().to_lowercase())
+        .filter(|item| !item.is_empty())
+        .collect();
+    if avoid.is_empty() {
+        return;
+    }
+    match value {
+        serde_json::Value::String(text) => {
+            let lower = text.to_lowercase();
+            if avoid.iter().any(|term| lower.contains(term)) {
+                *text = "[filtered by avoid list]".to_string();
+            }
+        }
+        serde_json::Value::Array(items) => {
+            for item in items {
+                apply_avoid_terms(item, &avoid);
+            }
+        }
+        serde_json::Value::Object(map) => {
+            for item in map.values_mut() {
+                apply_avoid_terms(item, &avoid);
+            }
+        }
+        _ => {}
     }
 }
 
@@ -3614,12 +3830,15 @@ fn command_draft(args: TargetArgs, title: &str) -> Result<()> {
     let root = require_project()?;
     let target = args.target.unwrap_or_else(|| "next-scene".to_string());
     let packet = context_packet(&root, &target)?;
-    let source_signals = if let Some(path) = &args.from {
+    let mut source_signals = if let Some(path) = &args.from {
         let text = read_text(path)?;
         Some(next_chapter_from_draft(path, &text))
     } else {
         None
     };
+    if let Some(signals) = &mut source_signals {
+        apply_avoid_terms(signals, &args.avoid);
+    }
     let source_review = if let Some(signals) = &source_signals {
         format!(
             "\n## Source Draft Signals\n```yaml\n{}\n```\n",
@@ -3637,18 +3856,21 @@ fn command_draft(args: TargetArgs, title: &str) -> Result<()> {
         source_review
     );
     if args.json {
-        print_json(json!({
-            "target": target,
-            "prompt": text,
-            "source_draft_signals": source_signals
-        }))
+        write_json_or_print(
+            args.out,
+            &json!({
+                "target": target,
+                "prompt": text,
+                "source_draft_signals": source_signals
+            }),
+        )
     } else {
         write_or_print(args.out, &text)
     }
 }
 
 fn quick_action_summary(text: &str, issues: &[Issue]) -> serde_json::Value {
-    let opening = opening_promise_report(text);
+    let opening = opening_guidance_report(text);
     let open_loops = open_loops_report(text);
     let next_best_action = if opening["status"].as_str() == Some("warn") {
         "Revise the opening so the premise appears through a present choice, cost, or consequence."
@@ -3756,7 +3978,7 @@ fn focused_review_questions(rubric: &str) -> Vec<&'static str> {
         "continuity" | "memory" => vec![
             "Which facts should become canon?",
             "Which questions need payoff windows?",
-            "Which injuries, debts, objects, powers, or relationship shifts must carry forward?",
+            "Which injuries, objects, powers, resource pressures, or relationship shifts must carry forward?",
             "Which candidate facts are only temporary uncertainty and should not be committed?",
         ],
         _ => vec![
@@ -3807,7 +4029,7 @@ fn command_analyse(args: FileReportArgs) -> Result<()> {
         "reader_profile": reader_check(&text, "fast-webnovel")
     });
     if args.json {
-        print_json(data)
+        write_json_or_print(args.out, &data)
     } else {
         write_or_print(
             args.out,
@@ -3820,7 +4042,7 @@ fn command_review(args: ReviewArgs) -> Result<()> {
     let text = read_text(&args.path)?;
     let data = focused_review_report(&args.path, &text, &args.rubric);
     if args.json {
-        print_json(data)
+        write_json_or_print(args.out, &data)
     } else {
         write_or_print(
             args.out,
@@ -3875,7 +4097,7 @@ fn command_full_book(args: FullBookArgs) -> Result<()> {
     }
     let data = json!({"files": files, "total_words": total_words, "issue_count": issue_count});
     if args.json {
-        print_json(data)
+        write_json_or_print(args.out, &data)
     } else {
         write_or_print(
             args.out,
@@ -4177,7 +4399,7 @@ fn opening_window(text: &str, word_limit: usize) -> String {
         .join(" ")
 }
 
-fn opening_promise_report(text: &str) -> serde_json::Value {
+fn opening_guidance_report(text: &str) -> serde_json::Value {
     let opening = opening_window(text, 260).to_lowercase();
     let macro_hits = count_hits(&opening, OPENING_MACRO_TERMS);
     let micro_hits = count_hits(&opening, OPENING_MICRO_TERMS);
@@ -4214,7 +4436,7 @@ fn opening_promise_report(text: &str) -> serde_json::Value {
             "Which macro labels can be delayed until after the reader has watched the mechanic affect a decision?",
             "Does every early system/world term change the present choice, obstacle, cost, or consequence?"
         ],
-        "revision_hint": "Usually seed the macro appeal through micro-action. For kingdom-building, try one protected person, room, rule, meal, door, ledger, oath, or boundary before leaning on kingdoms, domains, empires, or future upgrade ladders."
+        "revision_hint": "Usually seed the macro appeal through micro-action. For kingdom-building, try one protected person, room, rule, meal, door, boundary, dispute, or scarce resource before leaning on kingdoms, domains, empires, or future upgrade ladders."
     })
 }
 
@@ -4251,9 +4473,29 @@ fn bullet_lines(items: &[&str]) -> String {
 }
 
 fn count_hits(text: &str, terms: &[&str]) -> BTreeMap<String, usize> {
+    let tokens: Vec<String> = text
+        .unicode_words()
+        .map(|word| word.to_lowercase())
+        .collect();
     let mut map = BTreeMap::new();
     for term in terms {
-        let count = text.matches(term).count();
+        let term_tokens: Vec<String> = term
+            .unicode_words()
+            .map(|word| word.to_lowercase())
+            .collect();
+        let count = if term_tokens.is_empty() {
+            text.matches(term).count()
+        } else if term_tokens.len() == 1 {
+            tokens
+                .iter()
+                .filter(|token| token.as_str() == term_tokens[0])
+                .count()
+        } else {
+            tokens
+                .windows(term_tokens.len())
+                .filter(|window| window.iter().zip(term_tokens.iter()).all(|(a, b)| a == b))
+                .count()
+        };
         if count > 0 {
             map.insert((*term).to_string(), count);
         }
@@ -4270,11 +4512,9 @@ fn novelty_analysis(text: &str, experimental_score: bool) -> serde_json::Value {
             "cost",
             "cooldown",
             "limitation",
-            "debt",
             "constraint",
             "trade-off",
             "consequence",
-            "contract",
             "trust",
             "reputation",
             "mislabel",
@@ -4448,25 +4688,59 @@ fn contains_case_insensitive(text: &str, needle: &str) -> bool {
     text.to_lowercase().contains(&needle.to_lowercase())
 }
 
+fn word_count_gate(
+    text: &str,
+    min_words: Option<usize>,
+    max_words: Option<usize>,
+) -> serde_json::Value {
+    let word_count = count_words(text);
+    let below_min = min_words.is_some_and(|min| word_count < min);
+    let above_max = max_words.is_some_and(|max| word_count > max);
+    let status = if below_min || above_max {
+        "warn"
+    } else if min_words.is_some() || max_words.is_some() {
+        "pass"
+    } else {
+        "unchecked"
+    };
+    json!({
+        "status": status,
+        "word_count": word_count,
+        "min_words": min_words,
+        "max_words": max_words,
+        "below_min": below_min,
+        "above_max": above_max,
+        "note": "Novel Craft counts Unicode word tokens; this can differ slightly from shell wc output."
+    })
+}
+
 fn gate_report(
     path: &Path,
     text: &str,
     profile: &str,
     must_include: &[String],
     must_avoid: &[String],
+    min_words: Option<usize>,
+    max_words: Option<usize>,
 ) -> serde_json::Value {
     let issues = lint_text(text);
     let reader = reader_check(text, profile);
     let constraints = constraint_adherence(text, must_include, must_avoid);
-    let opening = opening_promise_report(text);
+    let opening = opening_guidance_report(text);
     let trope = trope_saturation(text, "system-isekai");
     let priorities = revision_priorities(&issues, &constraints, &opening, &trope);
     let reader_warning_count = reader["warnings"].as_array().map_or(0, Vec::len);
     let constraint_status = constraints["status"].as_str().unwrap_or("unchecked");
     let opening_status = opening["status"].as_str().unwrap_or("pass");
+    let word_count_gate = word_count_gate(text, min_words, max_words);
+    let word_count_status = word_count_gate["status"].as_str().unwrap_or("unchecked");
     let status = if constraint_status == "fail" {
         "fail"
-    } else if !issues.is_empty() || reader_warning_count > 0 || opening_status == "warn" {
+    } else if !issues.is_empty()
+        || reader_warning_count > 0
+        || opening_status == "warn"
+        || word_count_status == "warn"
+    {
         "warn"
     } else {
         "pass"
@@ -4480,7 +4754,8 @@ fn gate_report(
         "issues": issues,
         "reader_profile": reader,
         "constraint_adherence": constraints,
-        "opening_promise": opening,
+        "word_count_gate": word_count_gate,
+        "opening_guidance": opening,
         "revision_priorities": priorities,
         "novelty": novelty_analysis(text, false),
         "requires_reviewer_judgement": true,
@@ -4488,14 +4763,14 @@ fn gate_report(
             "pass means deterministic checks did not find configured blockers",
             "warn means review likely issues before calling the draft final",
             "fail means a required fact is missing or a forbidden claim appears",
-            "opening_promise is guidance; it warns when the opening may be announcing the macro premise before dramatising the smallest useful scene"
+            "opening_guidance warns when the opening may be announcing the macro premise before dramatising the smallest useful scene"
         ]
     })
 }
 
 fn chapter_spine_report(text: &str) -> serde_json::Value {
     let lower = text.to_lowercase();
-    let opening = opening_promise_report(text);
+    let opening = opening_guidance_report(text);
     let opening_status = opening["status"].as_str().unwrap_or("pass");
     let exposition_warning = if opening_status == "warn" {
         vec!["Consider exposition pressure and delayed story motion: the opening may be explaining the macro premise before the reader sees a present choice, cost, or consequence."]
@@ -4506,7 +4781,7 @@ fn chapter_spine_report(text: &str) -> serde_json::Value {
         "method": "Heuristic chapter-spine review. Treat this as a checklist for agent/human judgement, not a verdict.",
         "hook": craft_signal(
             &lower,
-            &["blood", "deadline", "danger", "debt", "stole", "missing", "woke", "kill", "hanged", "choice", "?"],
+            &["blood", "deadline", "danger", "stole", "missing", "woke", "kill", "hanged", "choice", "?"],
             "Check whether the first page creates unresolved tension, desire, danger, mystery, voice, or contradiction.",
         ),
         "orientation": craft_signal(
@@ -4521,7 +4796,7 @@ fn chapter_spine_report(text: &str) -> serde_json::Value {
         ),
         "obstacle": craft_signal(
             &lower,
-            &["but", "refused", "blocked", "guard", "rival", "enemy", "debt", "law", "curse", "danger", "couldn't", "could not"],
+            &["but", "refused", "blocked", "guard", "rival", "enemy", "law", "curse", "danger", "couldn't", "could not"],
             "Check what resists the goal: person, rule, scarcity, danger, wound, lie, or missing information.",
         ),
         "escalation": craft_signal(
@@ -4536,7 +4811,7 @@ fn chapter_spine_report(text: &str) -> serde_json::Value {
         ),
         "cost": craft_signal(
             &lower,
-            &["cost", "price", "debt", "blood", "wound", "injury", "lost", "sacrifice", "trust", "reputation", "guilt"],
+            &["cost", "price", "blood", "wound", "injury", "lost", "sacrifice", "trust", "reputation", "guilt"],
             "Check what the chapter costs in safety, trust, time, status, morality, money, body, or future options.",
         ),
         "exit_hook": exit_hook_signal(text),
@@ -4550,7 +4825,7 @@ fn scene_change_report(text: &str) -> serde_json::Value {
         "method": "A chapter should change plot, character, relationship, knowledge, stakes, or reader expectation.",
         "plot_change": craft_signal(&lower, &["because", "therefore", "so", "after", "result", "opened", "closed"], "Check what plot state is different after the chapter."),
         "character_change": craft_signal(&lower, &["decided", "chose", "learned", "admitted", "refused", "promised"], "Check whether the character changes tactic, belief, self-knowledge, or commitment."),
-        "relationship_change": craft_signal(&lower, &["trusted", "betrayed", "lied", "kissed", "owed", "friend", "enemy", "ally", "brother", "mother", "father"], "Check whether a relationship shifts in trust, leverage, intimacy, rivalry, debt, or threat."),
+        "relationship_change": craft_signal(&lower, &["trusted", "betrayed", "lied", "kissed", "owed", "friend", "enemy", "ally", "brother", "mother", "father"], "Check whether a relationship shifts in trust, leverage, intimacy, rivalry, obligation, or threat."),
         "knowledge_change": craft_signal(&lower, &["learned", "discovered", "revealed", "clue", "secret", "realized", "realised", "truth"], "Check what the reader or POV knows now that they did not know before."),
         "stakes_change": craft_signal(&lower, &["deadline", "risk", "danger", "death", "cost", "lose", "lost", "execute", "hanged", "war"], "Check whether failure is clearer, closer, or more expensive."),
         "reader_expectation_change": craft_signal(&lower, &["question", "mystery", "system", "power", "curse", "rank", "kingdom", "reveal", "choice"], "Check what reader expectation was paid, opened, escalated, or transformed.")
@@ -4563,7 +4838,7 @@ fn reader_retention_report(text: &str) -> serde_json::Value {
         "method": "Retention signals are prompts for revision. They do not predict real reader behaviour.",
         "open_question": craft_signal(&lower, &["?", "why", "who", "what", "where", "when", "secret", "missing"], "Check what question makes the reader continue."),
         "emotional_attachment": craft_signal(&lower, &["mother", "father", "sister", "brother", "child", "friend", "home", "hunger", "shame", "protect"], "Check what human attachment makes the pressure matter."),
-        "payoff_expectation": craft_signal(&lower, &["training", "rank", "clue", "debt", "map", "key", "system", "reveal", "choice"], "Check what future payoff the chapter makes readers anticipate."),
+        "payoff_expectation": craft_signal(&lower, &["training", "rank", "clue", "map", "key", "system", "reveal", "choice"], "Check what future payoff the chapter makes readers anticipate."),
         "ending_momentum": exit_hook_signal(text),
         "recurring_pleasure": craft_signal(&lower, &["banter", "training", "tactic", "mystery", "romance", "beast", "system", "craft", "duel", "investigation"], "Check what repeatable pleasure the reader can expect in later chapters.")
     })
@@ -4616,9 +4891,9 @@ fn voice_review(text: &str) -> serde_json::Value {
 fn open_loops_report(text: &str) -> serde_json::Value {
     let lower = text.to_lowercase();
     json!({
-        "method": "Heuristic open-loop prompts. Track promises manually for serious long-form projects.",
+        "method": "Heuristic open-loop prompts. Track important setups manually for serious long-form projects.",
         "question_mark_count": text.matches('?').count(),
-        "likely_introduced_signals": count_hits(&lower, &["missing", "secret", "why", "who", "map", "key", "curse", "oath", "prophecy", "clue", "door"]),
+        "likely_introduced_signals": count_hits(&lower, &["missing", "secret", "why", "who", "map", "key", "curse", "prophecy", "clue", "door"]),
         "likely_payoff_signals": count_hits(&lower, &["because", "revealed", "answered", "finally", "truth", "found", "opened", "paid"]),
         "unresolved_loop_questions": [
             "What question did this chapter open?",
@@ -4635,7 +4910,7 @@ fn progression_and_power_report(text: &str) -> serde_json::Value {
     json!({
         "method": "Power/progression checks are about earned change, limits, costs, trade-offs, and consequences.",
         "progression_signals": count_hits(&lower, &["level", "rank", "class", "skill", "system", "power", "training", "upgrade", "cultivation", "domain"]),
-        "cost_signals": count_hits(&lower, &["cost", "cooldown", "limit", "debt", "pain", "hunger", "memory", "trust", "exposure", "risk"]),
+        "cost_signals": count_hits(&lower, &["cost", "cooldown", "limit", "pain", "hunger", "memory", "trust", "exposure", "risk"]),
         "review_questions": [
             "What did the protagonist gain?",
             "Why was the gain earned rather than handed over?",
@@ -4685,9 +4960,147 @@ fn exit_hook_signal(text: &str) -> serde_json::Value {
         .to_lowercase();
     craft_signal(
         &tail,
-        &["?", "but", "until", "then", "door", "arrived", "revealed", "decided", "opened", "blood", "debt", "tomorrow"],
+        &["?", "but", "until", "then", "door", "arrived", "revealed", "decided", "opened", "blood", "tomorrow"],
         "Check whether the ending creates forward pull through question, threat, decision, reveal, consequence, relationship crack, or new objective.",
     )
+}
+
+fn opening_authenticity_report(text: &str) -> serde_json::Value {
+    json!({
+        "method": "Heuristic first-page authenticity checks. These catch likely review points, not objective bad writing.",
+        "backstory_density": opening_backstory_density_report(text),
+        "invented_noun_grounding": invented_noun_grounding_report(text),
+        "declared_competence": declared_competence_report(text),
+        "review_questions": [
+            "Could this old-life or background fact be delayed until the present scene forces it?",
+            "Does an invented noun get grounded through familiar physical action before the prose relies on the term?",
+            "Would a reader believe this competence because they watched it work?",
+            "Where does the prose sound like craft scaffolding instead of a frightened or desiring POV?"
+        ]
+    })
+}
+
+fn opening_backstory_density_report(text: &str) -> serde_json::Value {
+    let opening = opening_window(text, 320);
+    let lower = opening.to_lowercase();
+    let markers = count_hits(
+        &lower,
+        &[
+            "earth",
+            "gym",
+            "office",
+            "school",
+            "climbing gym",
+            "used to",
+            "had been",
+            "before the tower",
+            "old life",
+            "remembered",
+            "memory",
+        ],
+    );
+    let status = if markers.values().sum::<usize>() >= 2 {
+        "warn"
+    } else {
+        "pass"
+    };
+    json!({
+        "status": status,
+        "signals": markers,
+        "check": "First-page backstory is risky when it interrupts immediate danger, desire, or choice before the reader trusts the scene.",
+        "revision_hint": "Delay background facts until they change a present decision, tactic, cost, or relationship."
+    })
+}
+
+fn invented_noun_grounding_report(text: &str) -> serde_json::Value {
+    let opening = opening_window(text, 360);
+    let lower = opening.to_lowercase();
+    let risky_terms = [
+        "glass moss",
+        "swallow wasp",
+        "swallow-wasp",
+        "gripseed",
+        "skyladder",
+        "status screen",
+        "domain seed",
+    ];
+    let mut warnings = Vec::new();
+    for term in risky_terms {
+        if lower.contains(term) {
+            let grounded = lower.contains(&format!("{term},"))
+                || lower.contains(&format!("called {term}"))
+                || lower.contains("like glass")
+                || lower.contains("as brittle")
+                || lower.contains("broke under")
+                || lower.contains("cut his")
+                || lower.contains("cut her")
+                || lower.contains("stuck to")
+                || lower.contains("held because");
+            if !grounded {
+                warnings.push(json!({
+                    "term": term,
+                    "check": "Invented or specialised term appears before the opening physically teaches it."
+                }));
+            }
+        }
+    }
+    json!({
+        "status": if warnings.is_empty() { "pass" } else { "warn" },
+        "warnings": warnings,
+        "revision_hint": "First use should pair the invented noun with familiar physical behaviour, apposition, contrast, or consequence."
+    })
+}
+
+fn declared_competence_report(text: &str) -> serde_json::Value {
+    let opening = opening_window(text, 520).to_lowercase();
+    let signals = count_hits(
+        &opening,
+        &[
+            "the shape of the problem",
+            "good at one thing",
+            "was good at",
+            "this was familiar",
+            "the problem was familiar",
+            "he knew exactly",
+            "she knew exactly",
+        ],
+    );
+    json!({
+        "status": if signals.is_empty() { "pass" } else { "warn" },
+        "signals": signals,
+        "check": "Declared competence can feel trope-operated if the scene explains the skill before the reader watches it solve a live problem.",
+        "revision_hint": "Show the tactic first; name the expertise later if the reader still needs it."
+    })
+}
+
+fn review_status(
+    issues: &[Issue],
+    constraints: &serde_json::Value,
+    opening: &serde_json::Value,
+    reader: &serde_json::Value,
+    authenticity: &serde_json::Value,
+) -> &'static str {
+    if constraints["status"].as_str() == Some("fail") {
+        return "fail";
+    }
+    let reader_warning_count = reader["warnings"].as_array().map_or(0, Vec::len);
+    let authenticity_warn = authenticity
+        .as_object()
+        .map(|sections| {
+            sections.values().any(|section| {
+                section.get("status").and_then(serde_json::Value::as_str) == Some("warn")
+            })
+        })
+        .unwrap_or(false);
+    if !issues.is_empty()
+        || reader_warning_count > 0
+        || opening["status"].as_str() == Some("warn")
+        || authenticity_warn
+    {
+        "warn"
+    } else {
+        "pass"
+    }
 }
 
 fn story_report(
@@ -4701,9 +5114,12 @@ fn story_report(
 ) -> serde_json::Value {
     let issues = lint_text(text);
     let constraints = constraint_adherence(text, must_include, must_avoid);
-    let opening = opening_promise_report(text);
+    let opening = opening_guidance_report(text);
     let trope = trope_saturation(text, genre);
+    let reader = reader_check(text, profile);
+    let authenticity = opening_authenticity_report(text);
     let priorities = revision_priorities(&issues, &constraints, &opening, &trope);
+    let status = review_status(&issues, &constraints, &opening, &reader, &authenticity);
     let mode = if document_kind == "chapter" {
         "post_write_chapter_review"
     } else {
@@ -4713,6 +5129,7 @@ fn story_report(
         "path": path,
         "mode": mode,
         "document_kind": document_kind,
+        "status": status,
         "not_a_gate": true,
         "guidance_policy": [
             "Treat findings as review leads, not automatic rewrite orders.",
@@ -4725,9 +5142,10 @@ fn story_report(
         "metrics": metrics(text),
         "lint": lint_summary(&issues),
         "issues": issues,
-        "reader_profile": reader_check(text, profile),
+        "reader_profile": reader,
         "constraint_adherence": constraints,
-        "opening_promise": opening,
+        "opening_guidance": opening,
+        "opening_authenticity": authenticity,
         "revision_priorities": priorities,
         "chapter_spine": chapter_spine_report(text),
         "scene_change": scene_change_report(text),
@@ -4759,8 +5177,8 @@ fn compare_json(
     must_include: &[String],
     must_avoid: &[String],
 ) -> serde_json::Value {
-    let a_gate = gate_report(a, a_text, profile, must_include, must_avoid);
-    let b_gate = gate_report(b, b_text, profile, must_include, must_avoid);
+    let a_gate = gate_report(a, a_text, profile, must_include, must_avoid, None, None);
+    let b_gate = gate_report(b, b_text, profile, must_include, must_avoid, None, None);
     json!({
         "a": a_gate,
         "b": b_gate,
@@ -4802,12 +5220,36 @@ fn trope_axes_for(genre: &str) -> (&'static str, TropeAxes) {
         "high-drama-romance" | "rejected-bond-romance" | "secret-baby-romance" => {
             ("high-drama-romance", HIGH_DRAMA_ROMANCE_AXES)
         }
+        "tower-climb" | "tower-climbing" | "tower-progression" | "climbing-tower" => {
+            ("tower-climb", TOWER_CLIMB_AXES)
+        }
+        "progression-fantasy" | "progression" | "weak-to-strong" => {
+            ("progression-fantasy", PROGRESSION_FANTASY_AXES)
+        }
+        "isekai-survival" | "survival-isekai" => ("isekai-survival", ISEKAI_SURVIVAL_AXES),
+        "dungeon-core" | "dungeon-builder" => ("dungeon-core", DUNGEON_CORE_AXES),
         "tech-fantasy-celebration" | "tech-fantasy" | "launch-story" => {
             ("tech-fantasy-celebration", TECH_FANTASY_CELEBRATION_AXES)
         }
         "general-fiction" | "fiction" => ("general-fiction", GENERAL_FICTION_AXES),
         "general-writing" | "writing" | "nonfiction" => ("general-writing", GENERAL_WRITING_AXES),
         _ => ("system-isekai", SYSTEM_ISEKAI_TROPE_AXES),
+    }
+}
+
+fn trope_axes_for_task(genre: &str, idea: &str) -> (&'static str, TropeAxes) {
+    let normalized = normalize_key(genre);
+    let lower = idea.to_lowercase();
+    if matches!(normalized.as_str(), "system-isekai" | "isekai" | "fantasy")
+        && contains_any(&lower, &["tower", "climb", "climbing", "floor"])
+    {
+        ("tower-climb", TOWER_CLIMB_AXES)
+    } else if matches!(normalized.as_str(), "system-isekai" | "isekai" | "fantasy")
+        && contains_any(&lower, &["dungeon core", "dungeon-core"])
+    {
+        ("dungeon-core", DUNGEON_CORE_AXES)
+    } else {
+        trope_axes_for(genre)
     }
 }
 
@@ -4920,7 +5362,7 @@ fn reader_check(text: &str, profile: &str) -> serde_json::Value {
 
 fn agent_plan_json(args: &AgentPlanArgs) -> serde_json::Value {
     let chapter_count = args.chapters.max(1);
-    let (resolved_genre, axes) = trope_axes_for(&args.genre);
+    let (resolved_genre, axes) = trope_axes_for_task(&args.genre, &args.idea);
     json!({
         "mode": "agent_chapter_plan",
         "task_facts": {
@@ -4934,10 +5376,10 @@ fn agent_plan_json(args: &AgentPlanArgs) -> serde_json::Value {
         },
         "missing_story_questions": missing_story_questions(&args.idea, chapter_count),
         "reader_effect_guidance": [
-            "Treat this as reader-effect guidance, not literal oath magic: what question, desire, pressure, or pleasure makes the next page feel necessary.",
+            "Name the question, desire, pressure, or pleasure that makes the next page feel necessary.",
             "Usually dramatise the big premise through one small present-tense choice, cost, danger, hunger, shame, wonder, injustice, or relationship pressure before explaining the full system.",
-            "Do not choose literal oath, vow, or contract-magic systems unless the user asks for them or they beat other options on scene pressure.",
-            "Examples are indicators and helpers, not hard limits. Keep them only when they improve the scene."
+            "Use examples as loose indicators only; do not turn example objects, costs, or mechanics into the premise unless the user supplied them.",
+            "Prefer a scene-specific action over a labelled concept when both would communicate the same idea."
         ],
         "contender_generation_rules": [
             "Generate 8-12 contenders before drafting unless the user already supplied a locked direction.",
@@ -4952,7 +5394,7 @@ fn agent_plan_json(args: &AgentPlanArgs) -> serde_json::Value {
         ],
         "chapter_cards": agent_chapter_cards(chapter_count),
         "drafting_instructions": [
-            "Write finished prose in Markdown after planning; Novel Craft does not write it for you.",
+            "Write finished prose in Markdown after planning.",
             "For every chapter, make the POV character want something visible, meet resistance, make or face a turn, pay a cost, and leave a fair reason to continue.",
             "Keep explanations subordinate to action, dialogue, discovery, cost, or consequence.",
             "For a first chapter, make the reader trust the story before asking them to care about the whole roadmap."
@@ -4962,7 +5404,7 @@ fn agent_plan_json(args: &AgentPlanArgs) -> serde_json::Value {
             "Run `novel-craft eval chapter <draft.md> --genre <genre-or-profile> --profile <profile> --json`.",
             "Revise for the most important structure/prose/retention leads; ignore warnings that are clearly intentional and effective.",
             "If there are hard facts, run `novel-craft eval gate <draft.md> --must-include <fact> --must-avoid <bad claim> --json`.",
-            "Compare revisions with `novel-craft eval compare old.md new.md --json`; final judgement remains with the agent/human."
+            "Compare revisions with `novel-craft eval compare old.md new.md --json`; make the final call from the user's intent and the draft on the page."
         ],
         "post_write_commands": [
             format!("novel-craft eval chapter <draft.md> --genre {resolved_genre} --profile {} --json", args.profile),
@@ -4973,7 +5415,7 @@ fn agent_plan_json(args: &AgentPlanArgs) -> serde_json::Value {
         "profile_axes": trope_axis_map(axes),
         "craft_only_scope": [
             "This public packet covers story craft and chapter review.",
-            "Platform rules, award eligibility, contracts, rights, monetisation, and disclosure requirements are out of scope for bundled defaults and should be checked live when needed."
+            "Platform rules, award eligibility, rights agreements, monetisation, and disclosure requirements are out of scope for bundled defaults and should be checked live when needed."
         ]
     })
 }
@@ -5033,16 +5475,11 @@ fn missing_story_questions(idea: &str, chapter_count: usize) -> Vec<String> {
     }
     if !contains_any(
         &lower,
-        &[
-            "but", "enemy", "rival", "danger", "debt", "curse", "war", "blocked",
-        ],
+        &["but", "enemy", "rival", "danger", "curse", "war", "blocked"],
     ) {
         questions.push("What resists them immediately?".to_string());
     }
-    if !contains_any(
-        &lower,
-        &["cost", "price", "debt", "sacrifice", "wound", "risk"],
-    ) {
+    if !contains_any(&lower, &["cost", "price", "sacrifice", "wound", "risk"]) {
         questions.push("What does the first useful gain cost?".to_string());
     }
     if !contains_any(
@@ -5079,7 +5516,7 @@ fn agent_chapter_cards(chapter_count: usize) -> Vec<serde_json::Value> {
                 "goal": if index == 1 { "Give the POV character one visible, urgent want." } else { "Give the POV a next-step objective caused by the previous chapter." },
                 "conflict": "Make resistance specific: person, rule, scarcity, danger, wound, lie, social cost, or missing information.",
                 "turn": "Something must change by the end: reveal, choice, betrayal, loss, gain, relationship shift, or new danger.",
-                "cost": "Victory should cost something: debt, injury, exposure, guilt, obligation, time pressure, or a harder future choice.",
+                "cost": "Victory should cost something: injury, exposure, guilt, obligation, scarcity, time pressure, or a harder future choice.",
                 "exit_hook": if index == chapter_count { "End with a fair continuation reason, not a fake cliffhanger." } else { "End by answering one question and opening the next chapter's continuation pressure." },
                 "open_loop_guidance": "Track what question is opened, escalated, paid off, or transformed."
             })
@@ -5206,9 +5643,9 @@ fn numbered_lines(items: &[&str]) -> String {
 }
 
 fn creative_brief(args: &CreativeBriefArgs) -> String {
-    let (resolved_genre, axes) = trope_axes_for(&args.genre);
+    let (resolved_genre, axes) = trope_axes_for_task(&args.genre, &args.idea);
     format!(
-        "# Creative Brief\n\n## Task Facts\n- Seed idea: {idea}\n- Genre/profile: {resolved_genre}\n- Audience: {audience}\n- Reading level target: grade {grade}\n- Required tropes or ingredients: {required}\n- Avoid: {avoid}\n- Must include: {must_include}\n- Must avoid: {must_avoid}\n\n## Always-On Novel Excellence Standard\n{novel_standard}\n\n## Opening Guidance\nShow the macro experience through micro-action when it helps the reader. For chapter one, prefer the smallest working unit of the premise before the whole roadmap. A kingdom-building story might begin with one room, one meal, one door, one ledger, one dispute, one protected child, or one boundary. Treat these as indicators, not hard limits.\n\n## Literal Oath/Vow Guardrail\nWhen this packet says reader draw or story appeal, do not turn that into literal oath, vow, or contract magic unless the user asks for it or it wins on scene pressure after comparison.\n\n## Required Flow\n1. Restate the task facts in plain words.\n2. Use `novel-craft creative atlas --json` if the premise needs more breadth, then generate 8-12 distinct contenders before drafting.\n3. For each contender, name the familiar genre appeal, opening wound, freshness twist, first hard choice, power cost, first-chapter image, micro-scene, wider story engine, and why a reader turns the page.\n4. Flag and rework contenders that miss required facts, use forbidden claims, rely only on decorative objects, over-explain the macro premise before micro-action, default to literal oath/vow systems without user request, or give the hero power without consequence.\n5. Choose one contender with evidence across hook, theme fit, reader grip, world depth, character pressure, serial retention, and chapter structure.\n6. Draft the piece.\n7. Self-critique for constraint adherence, reader effect, costly power, specificity, voice, factual safety, opening micro-scene, chapter-end continuation reason, and long-arc engine.\n8. Revise once.\n9. Run `novel-craft eval story <draft.md> --genre {resolved_genre} --json` for post-writing guidance, then use `eval gate` only when hard facts or forbidden claims need a pass/warn/fail check.\n\n## Profile Axes\n{profile_axes}\n\n## Methods\n{methods}\n",
+        "# Creative Brief\n\n## Task Facts\n- Seed idea: {idea}\n- Genre/profile: {resolved_genre}\n- Audience: {audience}\n- Reading level target: grade {grade}\n- Required tropes or ingredients: {required}\n- Avoid: {avoid}\n- Must include: {must_include}\n- Must avoid: {must_avoid}\n\n## Always-On Novel Excellence Standard\n{novel_standard}\n\n## Opening Guidance\nShow the macro experience through micro-action when it helps the reader. For chapter one, prefer the smallest working unit of the premise before the whole roadmap. A kingdom-building story might begin with one room, one meal, one door, one dispute, one protected child, one boundary, or one scarce resource. These are loose indicators, not premise seeds.\n\n## Required Flow\n1. Restate the task facts in plain words.\n2. Use `novel-craft creative atlas --json` if the premise needs more breadth, then generate 8-12 distinct contenders before drafting.\n3. For each contender, name the familiar genre appeal, opening wound, freshness twist, first hard choice, power cost, first-chapter image, micro-scene, wider story engine, and why a reader turns the page.\n4. Flag and rework contenders that miss required facts, use forbidden claims, rely only on decorative objects, over-explain the macro premise before micro-action, copy an example object into the premise without cause, or give the hero power without consequence.\n5. Choose one contender with evidence across hook, theme fit, reader grip, world depth, character pressure, serial retention, and chapter structure.\n6. Draft the piece.\n7. Self-critique for constraint adherence, reader effect, costly power, specificity, voice, factual safety, opening micro-scene, chapter-end continuation reason, and long-arc engine.\n8. Revise once.\n9. Run `novel-craft eval story <draft.md> --genre {resolved_genre} --json` for post-writing guidance, then use `eval gate` only when hard facts or forbidden claims need a pass/warn/fail check.\n\n## Profile Axes\n{profile_axes}\n\n## Methods\n{methods}\n",
         idea = args.idea,
         audience = args.audience,
         grade = args.reading_grade,
@@ -5233,7 +5670,7 @@ fn tournament_text(
     must_include: &[String],
     must_avoid: &[String],
 ) -> String {
-    let (resolved_genre, axes) = trope_axes_for(genre);
+    let (resolved_genre, axes) = trope_axes_for_task(genre, idea);
     let mut lines = vec![
         "# Prompt Tournament Pack".to_string(),
         String::new(),
@@ -5247,7 +5684,7 @@ fn tournament_text(
         bullet_lines(NOVEL_EXCELLENCE_STANDARD),
         String::new(),
         "Opening guidance: show the macro experience through micro-action when it helps. Avoid leaning on the whole roadmap before the reader sees one concrete need, choice, cost, or consequence.".to_string(),
-        "Literal oath/vow guardrail: do not default to oath, vow, or contract-magic systems unless the user asks for them or they clearly beat other options on scene pressure.".to_string(),
+        "Example guardrail: do not copy example objects, costs, or mechanics into the premise unless the user supplied them or the contender needs them causally.".to_string(),
         "Required flow: restate facts, use `novel-craft creative atlas --json` if breadth is thin, draft each contender as a 250-400 word opening concept, flag unsafe or consequence-free contenders, compare pairwise across hook, micro-scene, theme fit, costly power, world depth, serial retention, chapter structure, and wider story engine, choose with evidence, then run `novel-craft eval story` on the final draft.".to_string(),
         String::new(),
     ];
@@ -5267,7 +5704,7 @@ fn tournament_text(
 
 fn start_packet(args: &StartArgs) -> String {
     format!(
-        "# Novel Craft Start Packet\n\n## Project\n- Title: {}\n- Writer level: {}\n- Audience: {}\n- Genre: {}\n- Reading level: {}\n- Tone: {}\n- Desired output: {}\n- Autonomy: {}\n\n## Story Seed\n- Idea: {}\n- Include tropes: {}\n- Avoid: {}\n- Protagonist want: {}\n- Protagonist wound: {}\n- World: {}\n- Power system: {}\n\n## Always-On Novel Excellence Standard\n{}\n\n## Opening Guidance\nShow the macro experience through micro-action when it helps. Examples are indicators, not hard limits.\n\n## Literal Oath/Vow Guardrail\nDo not default to oath, vow, or contract-magic systems unless the user explicitly asks for them or they win after comparison.\n\n## First Workflow\n1. Run `novel-craft creative atlas --json` when the idea needs more breadth.\n2. Generate 8-12 premise contenders before drafting.\n3. Flag and rework contenders that miss required facts, ignore avoid-list items, lack a banger first chapter, over-explain the macro premise before micro-action, or rely on decorative novelty.\n4. Choose one contender with evidence across hook, micro-scene, constraint adherence, reader effect, specificity, chapter structure, and wider story engine.\n5. Create a scene card with goal, conflict, turn, stakes, open questions, and do-not-repeat notes.\n6. Build the context packet.\n7. Draft with the context packet.\n8. Run `novel-craft eval story <draft.md> --json` as the normal post-writing review.\n9. Use `novel-craft eval gate <draft.md> --json` when hard constraints need pass/warn/fail checking.\n10. Compare revisions with `novel-craft eval compare old.md new.md --json`; do not use lexical novelty as a winner.\n11. Extract a memory diff only after the canon change is approved.\n",
+        "# Novel Craft Start Packet\n\n## Project\n- Title: {}\n- Writer level: {}\n- Audience: {}\n- Genre: {}\n- Reading level: {}\n- Tone: {}\n- Desired output: {}\n- Autonomy: {}\n\n## Story Seed\n- Idea: {}\n- Include tropes: {}\n- Avoid: {}\n- Protagonist want: {}\n- Protagonist wound: {}\n- World: {}\n- Power system: {}\n\n## Always-On Novel Excellence Standard\n{}\n\n## Opening Guidance\nShow the macro experience through micro-action when it helps. Examples are loose indicators, not hard limits or premise seeds.\n\n## First Workflow\n1. Run `novel-craft creative atlas --json` when the idea needs more breadth.\n2. Generate 8-12 premise contenders before drafting.\n3. Flag and rework contenders that miss required facts, ignore avoid-list items, lack a banger first chapter, over-explain the macro premise before micro-action, copy example objects into the premise, or rely on decorative novelty.\n4. Choose one contender with evidence across hook, micro-scene, constraint adherence, reader effect, specificity, chapter structure, and wider story engine.\n5. Create a scene card with goal, conflict, turn, stakes, open questions, and do-not-repeat notes.\n6. Build the context packet.\n7. Draft with the context packet.\n8. Run `novel-craft eval story <draft.md> --json` as the normal post-writing review.\n9. Use `novel-craft eval gate <draft.md> --json` when hard constraints need pass/warn/fail checking.\n10. Compare revisions with `novel-craft eval compare old.md new.md --json`; do not use lexical novelty as a winner.\n11. Extract a memory diff only after the canon change is approved.\n",
         args.title,
         args.writer_level,
         args.audience,
@@ -5331,8 +5768,8 @@ fn compare_text(
     must_include: &[String],
     must_avoid: &[String],
 ) -> String {
-    let a_gate = gate_report(a, a_text, profile, must_include, must_avoid);
-    let b_gate = gate_report(b, b_text, profile, must_include, must_avoid);
+    let a_gate = gate_report(a, a_text, profile, must_include, must_avoid, None, None);
+    let b_gate = gate_report(b, b_text, profile, must_include, must_avoid, None, None);
     let a_novelty = &a_gate["novelty"];
     let b_novelty = &b_gate["novelty"];
     format!(
@@ -5439,7 +5876,38 @@ fn push_yaml_entry(value: &mut Value, key: &str, entry: serde_json::Value) -> Re
     Ok(())
 }
 
-fn state_report(file: &str, key: &str, json_output: bool) -> Result<()> {
+fn unique_promise_id(matrix: &Value) -> String {
+    unique_promise_id_with_base(
+        matrix,
+        &format!("promise-{}", Utc::now().timestamp_millis()),
+    )
+}
+
+fn unique_promise_id_with_base(matrix: &Value, base: &str) -> String {
+    let existing: BTreeSet<String> = matrix
+        .get("promises")
+        .and_then(Value::as_sequence)
+        .map(|items| {
+            items
+                .iter()
+                .filter_map(|item| item.get("id").and_then(Value::as_str))
+                .map(ToString::to_string)
+                .collect()
+        })
+        .unwrap_or_default();
+    if !existing.contains(base) {
+        return base.to_string();
+    }
+    for suffix in 2.. {
+        let candidate = format!("{base}-{suffix}");
+        if !existing.contains(&candidate) {
+            return candidate;
+        }
+    }
+    unreachable!("unbounded suffix search always returns")
+}
+
+fn state_report(file: &str, key: &str, json_output: bool, out: Option<PathBuf>) -> Result<()> {
     let root = require_project()?;
     let path = root.join(PROJECT_DIR).join("state").join(file);
     let value = read_yaml_value(&path).unwrap_or_else(|| json_yaml_map(key));
@@ -5450,10 +5918,9 @@ fn state_report(file: &str, key: &str, json_output: bool) -> Result<()> {
         .unwrap_or(0);
     let data = json!({"path": path, "count": count, "data": yaml_to_json(&value)});
     if json_output {
-        print_json(data)
+        write_json_or_print(out, &data)
     } else {
-        println!("{}", serde_yaml::to_string(&data)?);
-        Ok(())
+        write_or_print(out, &serde_yaml::to_string(&data)?)
     }
 }
 
@@ -5695,7 +6162,7 @@ fn context_packet(root: &Path, target: &str) -> Result<String> {
     let promises = &matrix["promises"];
     let progression = &matrix["progression"];
     Ok(format!(
-        "# Context Packet: {target}\n\n## Project\n```yaml\n{project}\n```\n\n## Story Seed\n```yaml\n{}\n```\n\n## Target Scene Card\n```yaml\n{}\n```\n\n## Characters\n```yaml\n{}\n```\n\n## Open Plot Threads\n```yaml\n{}\n```\n\n## Open Promises / Open Loops\n```yaml\n{}\n```\n\n## Progression And Power Notes\n```yaml\n{}\n```\n\n## Story Matrix Summary\n```yaml\n{}\n```\n\n## Instructions\n- Preserve canon unless the scene card explicitly changes it.\n- Bring character motives, open threads, open loops, power-system costs, do-not-repeat notes, and previous scene state into the draft.\n- Run `novel-craft eval chapter <draft.md>`, then extract a reviewable memory diff after drafting.\n",
+        "# Context Packet: {target}\n\n## Project\n```yaml\n{project}\n```\n\n## Story Seed\n```yaml\n{}\n```\n\n## Target Scene Card\n```yaml\n{}\n```\n\n## Characters\n```yaml\n{}\n```\n\n## Open Plot Threads\n```yaml\n{}\n```\n\n## Open Loops\n```yaml\n{}\n```\n\n## Progression And Power Notes\n```yaml\n{}\n```\n\n## Story Matrix Summary\n```yaml\n{}\n```\n\n## Instructions\n- Preserve canon unless the scene card explicitly changes it.\n- Bring character motives, open threads, open loops, power-system costs, do-not-repeat notes, and previous scene state into the draft.\n- Treat `background_only` facts as context to preserve, not as things to explain early unless the present scene forces them.\n- Run `novel-craft eval chapter <draft.md>`, then extract a reviewable memory diff after drafting.\n",
         serde_yaml::to_string(story_seed)?,
         serde_yaml::to_string(&target_scene)?,
         serde_yaml::to_string(characters)?,
@@ -5729,8 +6196,9 @@ fn extract_fact_candidates(text: &str) -> Vec<serde_json::Value> {
                 "brand",
                 "claim",
                 "claimable",
-                "debt-bearing",
-                "first claim",
+                "named",
+                "chosen",
+                "exiled",
             ],
         ),
         (
@@ -5751,27 +6219,25 @@ fn extract_fact_candidates(text: &str) -> Vec<serde_json::Value> {
                 "recognizes",
                 "witnessed",
                 "rule",
-                "ledger",
                 "authority",
-                "toll",
+                "boundary",
+                "custom",
             ],
         ),
         (
             "location_or_route",
             &[
                 "exists",
-                "service stair",
+                "hidden stair",
                 "gate",
                 "door",
                 "floor one",
-                "oathspire",
+                "threshold",
             ],
         ),
         (
             "open_loop_or_timer",
-            &[
-                "wake", "wakes", "bell", "deadline", "unpaid", "missing", "secret",
-            ],
+            &["wake", "wakes", "bell", "deadline", "missing", "secret"],
         ),
     ];
 
@@ -5780,12 +6246,34 @@ fn extract_fact_candidates(text: &str) -> Vec<serde_json::Value> {
         if sentence.len() < 8 {
             continue;
         }
+        if count_words(sentence) > 26
+            && !contains_any(
+                &sentence.to_lowercase(),
+                &[
+                    "status:",
+                    "skill",
+                    "rule",
+                    "class",
+                    "route named",
+                    "missing",
+                ],
+            )
+        {
+            continue;
+        }
         let lower = sentence.to_lowercase();
         for (category, needles) in categories {
             if contains_any(&lower, needles) {
+                let kind = match *category {
+                    "power_or_skill" | "world_rule" | "location_or_route" => "canon_fact",
+                    "open_loop_or_timer" => "open_loop",
+                    "character_role" | "status_or_mark" => "relationship_or_status_change",
+                    _ => "scene_event",
+                };
                 facts.push(json!({
                     "fact": sentence,
                     "category": category,
+                    "kind": kind,
                     "confidence": "candidate",
                     "reason": "Matched a canon-change signal; review before committing."
                 }));
@@ -5798,6 +6286,44 @@ fn extract_fact_candidates(text: &str) -> Vec<serde_json::Value> {
     }
 
     dedupe_json_facts(facts)
+}
+
+fn discard_likely_memory_candidates(text: &str) -> Vec<serde_json::Value> {
+    let mut out = Vec::new();
+    for raw in text.split(['.', '!', '?', '\n']) {
+        let sentence = raw.trim().trim_matches('"').trim();
+        if sentence.len() < 24 {
+            continue;
+        }
+        let lower = sentence.to_lowercase();
+        let word_count = count_words(sentence);
+        let looks_like_dialogue = raw.trim_start().starts_with('"')
+            || contains_any(&lower, &[" said", " asked", " whispered", " shouted"]);
+        let looks_like_physical_prose = contains_any(
+            &lower,
+            &[
+                "slid",
+                "swung",
+                "turned",
+                "looked",
+                "tasted",
+                "became hands",
+                "hugged",
+                "zigzagged",
+            ],
+        );
+        if looks_like_dialogue || (word_count > 18 && looks_like_physical_prose) {
+            out.push(json!({
+                "text": sentence.chars().take(180).collect::<String>(),
+                "kind": "discard_likely",
+                "reason": "Looks like dialogue or moment-by-moment prose rather than durable canon."
+            }));
+        }
+        if out.len() >= 12 {
+            break;
+        }
+    }
+    out
 }
 
 fn dedupe_json_facts(facts: Vec<serde_json::Value>) -> Vec<serde_json::Value> {
@@ -5864,5 +6390,24 @@ fn join_or_none(values: &[String]) -> String {
         "none".to_string()
     } else {
         values.join(", ")
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn promise_ids_get_collision_suffixes() {
+        let base = "promise-fixed";
+        let matrix = serde_yaml::to_value(json!({
+            "promises": [
+                {"id": base}
+            ]
+        }))
+        .expect("yaml");
+        let generated = unique_promise_id_with_base(&matrix, base);
+        assert_ne!(generated, base);
+        assert!(generated.starts_with(&format!("{base}-")));
     }
 }

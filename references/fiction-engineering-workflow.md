@@ -62,7 +62,7 @@ Novel Craft should never stuff the whole manuscript into one prompt. It builds a
 - knowledge state
 - relationship state
 - open plot threads
-- promise/payoff state
+- open-loop/payoff state
 - recent scene chain
 - target scene card
 - style profile
@@ -101,7 +101,7 @@ Novel Craft is especially designed to catch failures common in agent-assisted lo
 - smooth scenes with no turn
 - openings that lean on the macro premise before dramatizing the smallest working unit, when that weakens reader grip
 - repeated arguments with no changed power dynamic
-- promises repeated without progress
+- open loops repeated without progress
 - characters using knowledge they do not have
 - emotional loops that do not escalate
 - progression chapters with no advancement, cost, limitation, or rival pressure

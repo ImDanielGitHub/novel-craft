@@ -47,9 +47,9 @@ Start a project when the agent needs local story state:
 ```bash
 npx novel-craft start \
   --no-input \
-  --title "Oathspire Climber" \
+  --title "The First Handhold" \
   --idea "weak-to-strong isekai tower climbing" \
-  --genre system-isekai \
+  --genre tower-climb \
   --json
 ```
 
@@ -102,7 +102,7 @@ For stateful projects, the agent can build a draft packet from `.novel/` before 
 ```bash
 novel-craft draft chapter_01_scene_01 \
   --word-count "1800 words" \
-  --must-include "service stair" \
+  --must-include "first safe handhold" \
   --avoid "status dump" \
   --json
 ```
@@ -161,11 +161,11 @@ novel-craft skills list --json
 
 `creative novelty` reports lexical signals only. It is not a quality score.
 
-Useful genre/profile values include `breakout-serial`, `nightmare-survival`, `rational-magus`, `beast-bond-progression`, `vr-cultivation`, `monster-evolution`, `high-drama-romance`, `system-isekai`, and `general-fiction`.
+Useful genre/profile values include `tower-climb`, `progression-fantasy`, `isekai-survival`, `dungeon-core`, `breakout-serial`, `nightmare-survival`, `rational-magus`, `beast-bond-progression`, `vr-cultivation`, `monster-evolution`, `high-drama-romance`, `system-isekai`, and `general-fiction`.
 
 `creative atlas` gives agents 50 genres, 50 subgenres, 50 tropes, and 50 sub-tropes for broad mix-and-match planning. Briefs and tournaments also carry the always-on novel standard: a strong first chapter, costly advantages, scene turns, chapter-end continuation, and a wider story engine.
 
-Opening guidance: often show the big story through a small dramatic unit first. For example, a kingdom-building novel might begin with one room, meal, door, ledger, protected person, or boundary before the prose leans on kingdoms, empires, domains, or future upgrade ladders. These examples are indicators, not hard limits. Reader-effect language means expectation and page-turn pressure, not a default push toward literal oath, vow, or contract magic.
+Opening guidance: often show the big story through a small dramatic unit first. For example, a kingdom-building novel might begin with one room, meal, door, protected person, dispute, boundary, or scarce resource before the prose leans on kingdoms, empires, domains, or future upgrade ladders. These examples are loose indicators, not premise seeds.
 
 ## What The Package Contains
 
@@ -217,7 +217,7 @@ The checks are deterministic signals:
 - trope saturation
 - repeated beats
 - voice drift
-- open promises and payoff pressure
+- open loops and payoff pressure
 - power without cost
 - weak world-depth signals
 - missing chapter-end continuation reason
@@ -241,11 +241,11 @@ Use `story set` to store the real seed after the user clarifies the project:
 
 ```bash
 novel-craft story set \
-  --title "Oathspire Climber" \
-  --genre system-isekai \
+  --title "The First Handhold" \
+  --genre tower-climb \
   --premise "weak-to-strong isekai tower climbing" \
-  --protagonist "Ren Vale" \
-  --power-system "a floor ledger that charges debt for every shortcut" \
+  --protagonist "Kai Marlow" \
+  --power-system "Gripseed anchors cost body heat when other climbers use them" \
   --json
 ```
 

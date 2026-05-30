@@ -105,20 +105,20 @@ Research and craft guidance converge on a practical rule: story first, context s
 For agents:
 
 - Do not begin by naming the macro category inside the prose.
-- For kingdom-building, show one door, meal, ledger, oath, protected person, boundary, or room before naming kingdoms, domains, empires, rulers, citizens, laws, or upgrade ladders.
+- For kingdom-building, show one door, meal, protected person, dispute, boundary, scarce resource, or room before naming kingdoms, domains, empires, rulers, citizens, laws, or upgrade ladders.
 - For progression, show one painful use of the mechanic before listing ranks.
 - For magic systems, show a rule biting someone before explaining theory.
-- For politics, show one official, contract, toll, taboo, queue, punishment, or bribe before summarising history.
+- For politics, show one official, taboo, queue, punishment, bribe, border, permit, or public consequence before summarising history.
 - Let the first chapter show the larger experience through a smaller scene.
 
-Use `novel-craft eval story` to review the opening-guidance section after drafting. The JSON compatibility field is `opening_promise`, but a warning does not prove the opening is bad; it means the agent should ask whether macro labels can move later or become action, dialogue, discovery, cost, or consequence.
+Use `novel-craft eval story` to review the `opening_guidance` section after drafting. A warning does not prove the opening is bad; it means the agent should ask whether macro labels can move later or become action, dialogue, discovery, cost, or consequence.
 
 ## System-Isekai Trope Axes
 
 Use tropes as mixable parts, not clichés to copy.
 
 - Entry: wrong hero, weak local body, tutorial dungeon, sacrifice victim, doomed minor villain, prophecy extra.
-- System: hidden-cost status screen, choice-grown skill tree, mislabelled class, unreliable quest log, memory/debt inventory.
+- System: hidden-cost status screen, choice-grown skill tree, mislabelled class, unreliable quest log, consequence inventory.
 - Weakness: zero combat stats, no direct violence, injured body, language barrier, low social rank, power only works for others.
 - Growth: weak skill gains depth, support class becomes strategic core, crafting/logistics beat brute force, monster ecology as power.
 - Arena: guild, frontier village, caravan, academy, dungeon town, shrine city, floating market, border fort.
@@ -191,10 +191,10 @@ Use these before revising:
 - `novel-craft eval feedback-*`: stores beta-reader reactions as evidence instead of losing them in chat history.
 - `novel-craft eval calibrate-*`: stores liked/disliked samples as local taste anchors for future comparisons.
 - `novel-craft eval reward-*`: exports pairwise preference records for future reward/evaluator adapters.
-- `novel-craft matrix heatmap`: shows which promises and threads are getting hot, stale, or ready for payoff.
+- `novel-craft matrix heatmap`: shows which open loops and threads are getting hot, stale, or ready for payoff.
 
 The key idea is not that every check is deterministic. The CLI supplies evidence and review questions; the agent still owns the creative judgement.
 
 ## High-Aim But Not Popularity-Guaranteeing
 
-Novel Craft can help an agent aim at known reader-grip factors: clear English, memorable characters, world depth, theme fit, update-friendly chapter hooks, community-discussion hooks, clear reader draw, and adaptation-friendly images. It cannot guarantee popularity, reader votes, platform support, contract status, editor taste, or prize outcomes.
+Novel Craft can help an agent aim at known reader-grip factors: clear English, memorable characters, world depth, theme fit, update-friendly chapter hooks, community-discussion hooks, clear reader draw, and adaptation-friendly images. It cannot guarantee popularity, reader votes, platform support, rights status, editor taste, or prize outcomes.

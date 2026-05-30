@@ -1,6 +1,6 @@
 ---
 name: novel-craft-scene-planner
-description: Use Novel Craft to create scene cards with goal, conflict, turn, stakes, causality, promises, plot threads, and do-not-repeat constraints before drafting.
+description: Use Novel Craft to create scene cards with goal, conflict, turn, stakes, causality, open loops, plot threads, and do-not-repeat constraints before drafting.
 ---
 
 # Novel Craft Scene Planner

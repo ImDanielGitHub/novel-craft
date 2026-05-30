@@ -12,9 +12,9 @@ The public repo keeps only abstract craft patterns. Title-specific notes, screen
 
 High-performing serials often combine:
 
-- an unfair starting wound: poverty, illness, public rejection, family betrayal, uselessness, debt, or social ownership
+- an unfair starting wound: poverty, illness, public rejection, family betrayal, uselessness, exile, or social ownership
 - a clear reader draw: system, weak-to-strong, beast bond, VR cultivation, monster evolution, magus research, rejected romance, secret identity
-- a costly advantage: power creates exposure, ownership, moral debt, social risk, bodily cost, or a new enemy
+- a costly advantage: power creates exposure, ownership, social risk, bodily cost, moral compromise, or a new enemy
 - legible progress: power, status, knowledge, relationship, territory, or mystery advances almost every chapter
 - mystery discipline: answer one question while opening a deeper one
 - world depth: geography, culture, history, system rules, ecology, technology, or politics shape the choices
@@ -44,7 +44,7 @@ Novel Craft should push agents to:
 - reject premises with no wound, no cost, no continuation reason, or no world-depth signal
 - ask how a power can solve one problem and create another
 - make progression visible in several currencies, not only raw strength
-- keep chapter hooks fair: decision, reveal, debt, threat, relationship shift, or milestone
+- keep chapter hooks fair: decision, reveal, threat, relationship shift, consequence, or milestone
 - separate lexical novelty from quality
 - compare revisions pairwise and cite evidence
 - keep author or human judgement in the loop for taste, voice, pacing, and final direction
@@ -59,4 +59,4 @@ Novel Craft should push agents to:
 - `monster-evolution`
 - `high-drama-romance`
 
-These profiles are for inspiration and quality control. They cannot guarantee an award, ranking, contract, adaptation, popularity, or reader response.
+These profiles are for inspiration and quality control. They cannot guarantee an award, ranking, rights status, adaptation, popularity, or reader response.

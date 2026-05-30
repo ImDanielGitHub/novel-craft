@@ -80,7 +80,7 @@ Next:
 - Add semantic repeated-beat comparison.
 - Keep semantic/embedding adapters optional and outside the default install.
 - Add stronger knowledge-state contradiction extraction.
-- Add semantic promise/payoff age and reminder-without-progress detection.
+- Add semantic open-loop/payoff age and reminder-without-progress detection.
 - Compare character voice drift checks against voice matrices.
 
 ## Phase 5: Evaluation And Tuning

@@ -184,6 +184,29 @@ fn agent_plan_outputs_chapter_workflow_for_agents() {
 }
 
 #[test]
+fn tower_climb_prompt_routes_to_vertical_profile() {
+    let output = Command::cargo_bin("novel-craft")
+        .expect("binary exists")
+        .args([
+            "agent",
+            "plan",
+            "--idea",
+            "weak-to-strong isekai tower climbing",
+            "--genre",
+            "system-isekai",
+            "--json",
+        ])
+        .assert()
+        .success()
+        .get_output()
+        .stdout
+        .clone();
+    let data: Value = serde_json::from_slice(&output).expect("valid json");
+    assert_eq!(data["task_facts"]["genre"], "tower-climb");
+    assert!(data["profile_axes"]["vertical_pressure"].is_array());
+}
+
+#[test]
 fn agent_plan_supports_multiple_chapter_cards() {
     let mut cmd = Command::cargo_bin("novel-craft").expect("binary exists");
     let output = cmd
@@ -268,7 +291,7 @@ fn creative_brief_uses_always_on_excellence_standard() {
     ))
     .stdout(predicate::str::contains("banger first chapter"))
     .stdout(predicate::str::contains("micro-scene"))
-    .stdout(predicate::str::contains("Literal Oath/Vow Guardrail"))
+    .stdout(predicate::str::contains("loose indicators"))
     .stdout(predicate::str::contains("eval story"))
     .stdout(predicate::str::contains("wider story engine"))
     .stdout(predicate::str::contains("creative atlas"));
@@ -293,13 +316,15 @@ fn system_isekai_tournament_does_not_seed_literal_promise_as_default() {
         .stdout
         .clone();
     let rendered = String::from_utf8(output).expect("utf8");
-    assert!(rendered.contains("Literal oath/vow guardrail"));
+    assert!(rendered.contains("Example guardrail"));
     for forbidden in [
         "system rewards keeping promises",
         "rewards kept promises",
         "memories, or promises",
         "familiar promise",
         "micro-promise",
+        "ledger that charges debt",
+        "floor ledger",
     ] {
         assert!(!rendered.contains(forbidden), "found {forbidden}");
     }
@@ -323,8 +348,8 @@ fn gate_warns_when_opening_announces_macro_premise_too_early() {
         .clone();
     let data: Value = serde_json::from_slice(&output).expect("valid json");
     assert_eq!(data["status"], "warn");
-    assert_eq!(data["opening_promise"]["status"], "warn");
-    assert!(!data["opening_promise"]["announcement_hits"]
+    assert_eq!(data["opening_guidance"]["status"], "warn");
+    assert!(!data["opening_guidance"]["announcement_hits"]
         .as_object()
         .expect("announcement hits")
         .is_empty());
@@ -347,7 +372,7 @@ fn gate_accepts_micro_scene_opening_before_macro_scale() {
         .stdout
         .clone();
     let data: Value = serde_json::from_slice(&output).expect("valid json");
-    assert_eq!(data["opening_promise"]["status"], "pass");
+    assert_eq!(data["opening_guidance"]["status"], "pass");
     assert_eq!(data["status"], "pass");
 }
 
@@ -385,7 +410,7 @@ fn eval_story_reviews_existing_markdown_without_gate_language() {
             .as_str()
             .unwrap_or("")
             .contains("not automatic rewrite")));
-    assert!(data["opening_promise"].is_object());
+    assert!(data["opening_guidance"].is_object());
     assert!(data["chapter_spine"].is_object());
     assert!(data["scene_change"].is_object());
     assert!(data["reader_retention"].is_object());
@@ -421,6 +446,58 @@ fn eval_chapter_alias_returns_chapter_focused_review() {
 }
 
 #[test]
+fn eval_chapter_reports_status_and_authenticity_warnings() {
+    let temp = assert_fs::TempDir::new().expect("temp dir");
+    let draft = temp.child("chapter.md");
+    draft
+        .write_str("Kai hugged the wall and tasted blood. He had been in the staff room at his old climbing gym, winding tape around his fingers before the lights went white. Below, the glass moss shelf flooded. This shape was familiar. He was good at one thing: seeing the next usable hold.")
+        .expect("write draft");
+
+    let output = Command::cargo_bin("novel-craft")
+        .expect("binary exists")
+        .args(["eval", "chapter", draft.path().to_str().unwrap(), "--json"])
+        .assert()
+        .success()
+        .get_output()
+        .stdout
+        .clone();
+    let data: Value = serde_json::from_slice(&output).expect("valid json");
+    assert_eq!(data["status"], "warn");
+    assert_eq!(
+        data["opening_authenticity"]["backstory_density"]["status"],
+        "warn"
+    );
+    assert_eq!(
+        data["opening_authenticity"]["invented_noun_grounding"]["status"],
+        "warn"
+    );
+    assert_eq!(
+        data["opening_authenticity"]["declared_competence"]["status"],
+        "warn"
+    );
+}
+
+#[test]
+fn filler_counts_use_token_boundaries() {
+    let temp = assert_fs::TempDir::new().expect("temp dir");
+    let draft = temp.child("chapter.md");
+    draft
+        .write_str("Every climber reached Recovery Hall. Everyone moved carefully. The only very cold hold cut Kai's palm.")
+        .expect("write draft");
+
+    let output = Command::cargo_bin("novel-craft")
+        .expect("binary exists")
+        .args(["eval", "chapter", draft.path().to_str().unwrap(), "--json"])
+        .assert()
+        .success()
+        .get_output()
+        .stdout
+        .clone();
+    let data: Value = serde_json::from_slice(&output).expect("valid json");
+    assert_eq!(data["prose_review"]["filler_phrase_hits"]["very"], 1);
+}
+
+#[test]
 fn start_no_input_creates_project_and_packet() {
     let temp = assert_fs::TempDir::new().expect("temp dir");
     let mut cmd = Command::cargo_bin("novel-craft").expect("binary exists");
@@ -439,11 +516,13 @@ fn start_no_input_creates_project_and_packet() {
 
     let packet = std::fs::read_to_string(temp.path().join(".novel/context/start-packet.md"))
         .expect("read start packet");
-    assert!(packet.contains("Literal Oath/Vow Guardrail"));
+    assert!(packet.contains("loose indicators"));
     for forbidden in [
         "system that rewards kept promises",
         "system rewards keeping promises",
         "micro-promise",
+        "ledger that charges debt",
+        "floor ledger",
     ] {
         assert!(!packet.contains(forbidden), "found {forbidden}");
     }
@@ -460,13 +539,13 @@ fn start_story_matrix_and_context_read_back_project_state() {
             "start",
             "--no-input",
             "--title",
-            "Oathspire Climber",
+            "The First Handhold",
             "--idea",
             "weak-to-strong isekai tower climbing",
             "--genre",
             "system-isekai",
             "--power-system",
-            "a floor ledger that charges debt for every shortcut",
+            "Gripseed anchors cost body heat when other climbers use them",
             "--json",
         ])
         .assert()
@@ -479,11 +558,11 @@ fn start_story_matrix_and_context_read_back_project_state() {
             "story",
             "set",
             "--protagonist",
-            "Ren Vale",
+            "Kai Marlow",
             "--protagonist-want",
-            "protect Lio and survive Floor One",
+            "protect Seren and open a safe route on Floor One",
             "--world",
-            "Oathspire tower",
+            "Skyladder tower",
             "--json",
         ])
         .assert()
@@ -495,11 +574,11 @@ fn start_story_matrix_and_context_read_back_project_state() {
         .args([
             "character",
             "add",
-            "Lio",
+            "Seren Vale",
             "--trait",
-            "hungry",
+            "injured",
             "--motive",
-            "reach the service stair",
+            "reach the lower route",
             "--json",
         ])
         .assert()
@@ -511,9 +590,9 @@ fn start_story_matrix_and_context_read_back_project_state() {
         .args([
             "plot",
             "thread",
-            "floor_one_toll",
+            "first_handhold_claim",
             "--owner",
-            "Ren Vale",
+            "Kai Marlow",
             "--stage",
             "introduced",
             "--json",
@@ -527,11 +606,11 @@ fn start_story_matrix_and_context_read_back_project_state() {
         .args([
             "plot",
             "add-promise",
-            "What does the tower want from unpaid debts?",
+            "Who can claim Kai's route once stronger climbers notice it?",
             "--source",
             "ch01s01",
             "--thread",
-            "floor_one_toll",
+            "first_handhold_claim",
             "--json",
         ])
         .assert()
@@ -545,15 +624,15 @@ fn start_story_matrix_and_context_read_back_project_state() {
             "create",
             "ch01s01",
             "--pov",
-            "Ren Vale",
+            "Kai Marlow",
             "--goal",
-            "protect Lio at the service stair",
+            "protect Seren at the lower route",
             "--conflict",
-            "the toll collector blocks the stair",
+            "a ranked climber blocks the route",
             "--thread",
-            "floor_one_toll",
+            "first_handhold_claim",
             "--promise",
-            "What does the tower want from unpaid debts?",
+            "Who can claim Kai's route once stronger climbers notice it?",
             "--json",
         ])
         .assert()
@@ -588,10 +667,10 @@ fn start_story_matrix_and_context_read_back_project_state() {
         .assert()
         .success()
         .stdout(predicate::str::contains("## Characters"))
-        .stdout(predicate::str::contains("Ren Vale"))
-        .stdout(predicate::str::contains("floor_one_toll"))
+        .stdout(predicate::str::contains("Kai Marlow"))
+        .stdout(predicate::str::contains("first_handhold_claim"))
         .stdout(predicate::str::contains(
-            "What does the tower want from unpaid debts?",
+            "Who can claim Kai's route once stronger climbers notice it?",
         ));
 }
 
@@ -605,7 +684,7 @@ fn draft_next_memory_and_json_out_support_agent_workflow() {
         .assert()
         .success();
     temp.child("chapter-01.md")
-        .write_str("Ren learned that unpaid debts woke after the bell. Lio found the service stair, but the toll collector marked Ren's wrist before letting them pass.")
+        .write_str("Kai learned that Gripseed anchors cost body heat when other climbers used them. Seren found the lower route, but a ranked climber marked the wall before letting them pass.")
         .expect("write chapter");
 
     Command::cargo_bin("novel-craft")
@@ -617,7 +696,7 @@ fn draft_next_memory_and_json_out_support_agent_workflow() {
             "--word-count",
             "1800 words",
             "--must-include",
-            "service stair",
+            "lower route",
             "--avoid",
             "status dump",
             "--json",
@@ -636,7 +715,7 @@ fn draft_next_memory_and_json_out_support_agent_workflow() {
         .success()
         .stdout(predicate::str::contains("Source Draft Signals"))
         .stdout(predicate::str::contains("natural_next_chapter_setup"))
-        .stdout(predicate::str::contains("survive the stair"));
+        .stdout(predicate::str::contains("route"));
 
     let memory_output = Command::cargo_bin("novel-craft")
         .expect("binary exists")
@@ -653,15 +732,12 @@ fn draft_next_memory_and_json_out_support_agent_workflow() {
         .as_array()
         .expect("new facts")
         .iter()
-        .any(|fact| fact["fact"].as_str().unwrap_or("").contains("Ren learned")));
+        .any(|fact| fact["fact"].as_str().unwrap_or("").contains("Kai learned")));
     assert!(memory["new_facts"]
         .as_array()
         .expect("new facts")
         .iter()
-        .any(|fact| fact["fact"]
-            .as_str()
-            .unwrap_or("")
-            .contains("service stair")));
+        .any(|fact| fact["fact"].as_str().unwrap_or("").contains("lower route")));
 
     let out = temp.child("planning/agent-plan.json");
     Command::cargo_bin("novel-craft")
@@ -686,6 +762,122 @@ fn draft_next_memory_and_json_out_support_agent_workflow() {
 }
 
 #[test]
+fn json_out_is_honoured_for_draft_next_review_and_audits() {
+    let temp = assert_fs::TempDir::new().expect("temp dir");
+    Command::cargo_bin("novel-craft")
+        .expect("binary exists")
+        .current_dir(temp.path())
+        .args(["start", "--no-input", "--defaults", "--json"])
+        .assert()
+        .success();
+    temp.child("chapter.md")
+        .write_str("Kai opened a route because Seren could not climb alone. The wall shook, but the new hold stayed.")
+        .expect("write chapter");
+
+    for (args, out_name) in [
+        (
+            vec!["draft", "ch01s01", "--json", "--out", "draft-prompt.json"],
+            "draft-prompt.json",
+        ),
+        (
+            vec![
+                "next",
+                "chapter-02",
+                "--from",
+                "chapter.md",
+                "--json",
+                "--out",
+                "next.json",
+            ],
+            "next.json",
+        ),
+        (
+            vec!["review", "chapter.md", "--json", "--out", "review.json"],
+            "review.json",
+        ),
+        (
+            vec![
+                "audit",
+                "continuity",
+                "chapter.md",
+                "--json",
+                "--out",
+                "continuity.json",
+            ],
+            "continuity.json",
+        ),
+        (
+            vec![
+                "audit",
+                "repetition",
+                "chapter.md",
+                "--json",
+                "--out",
+                "repetition.json",
+            ],
+            "repetition.json",
+        ),
+    ] {
+        Command::cargo_bin("novel-craft")
+            .expect("binary exists")
+            .current_dir(temp.path())
+            .args(args)
+            .assert()
+            .success()
+            .stdout(predicate::str::contains("Written:"));
+        let path = temp.path().join(out_name);
+        assert!(path.exists(), "missing {out_name}");
+        let _: Value = serde_json::from_str(&std::fs::read_to_string(path).expect("read json"))
+            .expect("valid json");
+    }
+}
+
+#[test]
+fn feedback_report_reads_feedback_added_to_project_state() {
+    let temp = assert_fs::TempDir::new().expect("temp dir");
+    Command::cargo_bin("novel-craft")
+        .expect("binary exists")
+        .current_dir(temp.path())
+        .args(["start", "--no-input", "--defaults", "--json"])
+        .assert()
+        .success();
+
+    Command::cargo_bin("novel-craft")
+        .expect("binary exists")
+        .current_dir(temp.path())
+        .args([
+            "eval",
+            "feedback-add",
+            "chapter-01.md",
+            "--dimension",
+            "opening-authenticity",
+            "--rating",
+            "1",
+            "--comment",
+            "Reader bounced on backstory.",
+        ])
+        .assert()
+        .success();
+
+    let output = Command::cargo_bin("novel-craft")
+        .expect("binary exists")
+        .current_dir(temp.path())
+        .args(["eval", "feedback-report", "--json"])
+        .assert()
+        .success()
+        .get_output()
+        .stdout
+        .clone();
+    let data: Value = serde_json::from_slice(&output).expect("valid json");
+    assert_eq!(data["count"], 1);
+    assert_eq!(data["data"]["feedback"][0]["rating"], 1);
+    assert_eq!(
+        data["data"]["feedback"][0]["dimension"],
+        "opening-authenticity"
+    );
+}
+
+#[test]
 fn memory_review_revise_and_causality_are_agent_readable() {
     let temp = assert_fs::TempDir::new().expect("temp dir");
     Command::cargo_bin("novel-craft")
@@ -696,7 +888,7 @@ fn memory_review_revise_and_causality_are_agent_readable() {
         .success();
     let draft = temp.child("chapter-01.md");
     draft
-        .write_str("Ren unlocked Interpose I. Ren became a debt-bearing climber. Floor One Toll Authority got first claim. Lio became the named ward. The Oathspire Ledger recognises witnessed promises. The service stair exists. Unpaid debts wake when the bell ends.")
+        .write_str("Kai unlocked Gripseed I. Kai became the first route-reader on Floor One. First Handhold became a disputed public route. Seren became the protected climber. The Skyladder recognises routes used under lethal pressure. The hidden stair exists. Second bell opens the claim line.")
         .expect("write chapter");
 
     let memory_output = Command::cargo_bin("novel-craft")
@@ -716,12 +908,12 @@ fn memory_review_revise_and_causality_are_agent_readable() {
     let memory: Value = serde_json::from_slice(&memory_output).expect("valid json");
     let facts = memory["new_facts"].as_array().expect("facts");
     for expected in [
-        "Interpose I",
-        "debt-bearing",
-        "first claim",
-        "named ward",
-        "service stair",
-        "Unpaid debts wake",
+        "Gripseed I",
+        "route-reader",
+        "disputed public route",
+        "protected climber",
+        "hidden stair",
+        "Second bell opens",
     ] {
         assert!(
             facts
@@ -933,6 +1125,37 @@ fn gate_fails_lexical_trap_that_misses_required_fact() {
             .unwrap()
             >= 8
     );
+}
+
+#[test]
+fn gate_warns_on_word_count_range() {
+    let temp = assert_fs::TempDir::new().expect("temp dir");
+    let draft = temp.child("short.md");
+    draft
+        .write_str("Kai climbed. Seren waited.")
+        .expect("write draft");
+
+    let output = Command::cargo_bin("novel-craft")
+        .expect("binary exists")
+        .args([
+            "eval",
+            "gate",
+            draft.path().to_str().unwrap(),
+            "--min-words",
+            "10",
+            "--max-words",
+            "20",
+            "--json",
+        ])
+        .assert()
+        .success()
+        .get_output()
+        .stdout
+        .clone();
+    let data: Value = serde_json::from_slice(&output).expect("valid json");
+    assert_eq!(data["status"], "warn");
+    assert_eq!(data["word_count_gate"]["status"], "warn");
+    assert_eq!(data["word_count_gate"]["below_min"], true);
 }
 
 #[test]

@@ -12,4 +12,4 @@ novel-craft draft "<scene-id>"
 novel-craft eval chapter <draft.md> --genre <genre-or-profile> --json
 ```
 
-For continuing fiction, check hook, payoff, progression delta, cost, rival pressure, relationship movement, and unresolved promises. Commit memory only after the chapter is accepted.
+For continuing fiction, check hook, payoff, progression delta, cost, rival pressure, relationship movement, and unresolved open loops. Commit memory only after the chapter is accepted.

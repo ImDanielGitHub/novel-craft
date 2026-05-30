@@ -13,4 +13,4 @@ novel-craft audit repetition <manuscript-folder-or-file> --recent 20
 novel-craft audit causality
 ```
 
-Summarise findings by severity: canon contradictions, knowledge-state leaks, promise/payoff drift, repeated scene functions, causality gaps, progression gaps, then line polish.
+Summarise findings by severity: canon contradictions, knowledge-state leaks, open-loop/payoff drift, repeated scene functions, causality gaps, progression gaps, then line polish.

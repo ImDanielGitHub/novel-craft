@@ -19,7 +19,7 @@ novel-craft eval compare old.md new.md --json
 ## Review Focus
 
 - chapter spine: hook, orientation, goal, obstacle, escalation, turn, cost, exit hook
-- scene change: plot, character, relationship, knowledge, stakes, promise
+- scene change: plot, character, relationship, knowledge, stakes, reader expectation
 - reader retention: open question, attachment, payoff expectation, ending momentum
 - prose: clarity, rhythm, filter words, abstract emotion, sensory grounding
 - voice: what the POV notices, ignores, values, fears, and misreads

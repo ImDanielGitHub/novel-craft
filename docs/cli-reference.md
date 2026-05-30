@@ -61,7 +61,7 @@ novel-craft creative atlas --json
 
 The atlas returns 50 genres, 50 subgenres, 50 tropes, 50 sub-tropes, a mixing protocol, and the always-on novel excellence standard. It is an ingredient map for the agent, not a recipe to copy mechanically.
 
-Opening guidance is micro before macro when it helps. The agent should usually dramatise the smallest working unit of the premise before naming the full roadmap. For kingdom-building, that might be one door, meal, ledger, protected person, dispute, or boundary before any talk of kingdoms, domains, empires, or upgrade ladders. These are indicators, not hard limits.
+Opening guidance is micro before macro when it helps. The agent should usually dramatise the smallest working unit of the premise before naming the full roadmap. For kingdom-building, that might be one door, meal, protected person, dispute, boundary, or scarce resource before any talk of kingdoms, domains, empires, or upgrade ladders. These are loose indicators, not premise seeds.
 
 Use `creative brief` when the user gives a prompt and the agent needs a better drafting instruction.
 
@@ -103,7 +103,7 @@ Available genre/profile matrices include:
 - `tech-fantasy-celebration`
 - `general-fiction`
 
-These profiles are planning tools, not promises of awards or popularity. Use them to force stronger hooks, clearer costs, deeper world signals, and serial-retention checks before drafting.
+These profiles are planning tools, not guarantees of awards or popularity. Use them to force stronger hooks, clearer costs, deeper world signals, and serial-retention checks before drafting.
 
 Every profile still uses the same baseline ambition: a strong first chapter, costly advantages, scene turns, chapter-end continuation, and a wider story engine. Use `breakout-serial` only when the reader profile is specifically long-form serial fiction, not because quality is optional elsewhere.
 
@@ -151,7 +151,7 @@ Gate status:
 
 The gate includes metrics, lint summary, reader-profile warnings, constraint adherence, opening guidance, lexical novelty signals, action-ranked revision priorities, and review notes.
 
-The JSON field is still called `opening_promise` for compatibility, but treat it as opening guidance: a heuristic warning for first chapters that may announce macro-scale labels too early. The fix is often to move world/system explanation into a present-tense choice, obstacle, cost, or consequence.
+The JSON field is `opening_guidance`: a heuristic warning for first chapters that may announce macro-scale labels too early. The fix is often to move world/system explanation into a present-tense choice, obstacle, cost, or consequence.
 
 ## Compare Revisions
 
@@ -195,20 +195,20 @@ Use project state when the agent is continuing a longer work.
 ```bash
 novel-craft start \
   --no-input \
-  --title "Oathspire Climber" \
+  --title "The First Handhold" \
   --idea "weak-to-strong isekai tower climbing" \
-  --genre system-isekai \
+  --genre tower-climb \
   --json
 novel-craft story set \
-  --protagonist "Ren Vale" \
-  --protagonist-want "protect Lio and survive Floor One" \
-  --world "Oathspire tower" \
-  --power-system "a floor ledger that charges debt for every shortcut" \
+  --protagonist "Kai Marlow" \
+  --protagonist-want "protect Seren and open a safe route on Floor One" \
+  --world "Skyladder tower" \
+  --power-system "Gripseed anchors cost body heat when other climbers use them" \
   --json
 novel-craft scene create chapter_01_scene_01 --goal "Find shelter" --conflict "No one trusts her"
 novel-craft character add Mara --trait guarded --motive "clear her family name"
 novel-craft plot thread missing_brother --owner Mara --stage clue
-novel-craft plot add-promise "Who opened the western gate?" --source chapter_01_scene_01 --json
+novel-craft plot add-loop "Who opened the western gate?" --source chapter_01_scene_01 --json
 novel-craft matrix build --json
 novel-craft matrix heatmap --json
 novel-craft context build chapter_01_scene_01 --out .novel/context/ch01s01.md
@@ -223,7 +223,7 @@ Use `draft` when the agent wants a prose brief from project state:
 ```bash
 novel-craft draft chapter_01_scene_01 \
   --word-count "1800 words" \
-  --must-include "service stair" \
+  --must-include "first safe handhold" \
   --avoid "status dump" \
   --json
 ```

@@ -77,7 +77,7 @@ The agent should generate several alternatives before committing. It should chec
 - Does the first chapter show the smallest working unit of the premise before leaning on the whole roadmap, if that would improve reader grip?
 - Is the protagonist's situation broadly relatable?
 - Is the frame too niche, such as extended office/accounting mechanics before fantasy appears?
-- Can this premise sustain 50+ chapters through growth, costs, rivals, locations, promises, and relationship turns?
+- Can this premise sustain 50+ chapters through growth, costs, rivals, locations, open loops, and relationship turns?
 - Is the language easy enough to read while the story ideas stay rich?
 
 ## Expanded Craft Modules
@@ -88,7 +88,7 @@ The executable rulebook now covers these modules:
 - **Narrative distance:** classify filters as redundant distance or functional perception.
 - **Motivation-reaction order:** prefer external stimulus, internal reaction, physical response, then speech/action in close POV.
 - **Scene goal/conflict/turn:** every scene should usually contain a want, resistance, and changed state.
-- **Promises and payoffs:** track hooks, mysteries, powers, debts, wounds, threats, prophecies, and relationship tensions as open loops.
+- **Open loops and payoffs:** track hooks, mysteries, powers, wounds, threats, prophecies, and relationship tensions as open loops.
 - **Knowledge state:** record who knows what so characters cannot use information before learning it.
 - **Emotional progression:** prevent repeated emotional endpoints unless cost, escalation, or motif is deliberate.
 - **Dialogue power:** identify leverage, withholding, lies, tests, interruptions, and power shifts.
@@ -115,7 +115,7 @@ For webnovel and progression fantasy, add checks that general novel tools often 
 - Rival competence.
 - Power limitations.
 - Repeated training beats.
-- Promise/payoff age.
+- Open-loop/payoff age.
 - Repeated training scenes with no new cost, limitation, rival pressure, capability change, or strategic discovery.
 - Kingdom-building progression signals such as authority, law, guard capacity, roads, water, rations, tax, trade, courts, boundaries, public trust, and logistics.
 - Open-loop reminders that repeat without adding new evidence or changed stakes.
@@ -130,14 +130,14 @@ Character sheets should include:
 - sensory signature: scent, sound, touch, visual motifs
 - psychology: public mask, private self, wound, false belief, conscious want, unconscious need, fear, shame, contradiction
 - behaviour: default body language, stress behaviour, speech style, taboo phrases, overuse list
-- relationships: trust, debt, attraction, resentment, last change, hidden dynamic
+- relationships: trust, obligation, attraction, resentment, last change, hidden dynamic
 - knowledge: facts known, facts not known, secrets, lies, false beliefs
 
 Scene cards should include:
 
 - POV, location, time, goal, conflict, stakes, turn, consequence
 - entry and exit state
-- open plot threads, promises opened, promises paid
+- open plot threads, loops opened, loops paid
 - emotional beat, scene shape, progression delta
 - do-not-repeat items
 - causal link to previous and next scenes

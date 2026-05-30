@@ -20,7 +20,7 @@
   severity: S3
   automation_risk: R1
   rewrite_strategy: Swap the abstract judgement for image, action, object detail, sensory cue, or consequence.
-  review_guidance: Treat the detector as a cue to ask whether the prose has created the promised quality on the page.
+  review_guidance: Treat the detector as a cue to ask whether the prose has created the intended quality on the page.
   review_questions:
     - What exact evidence makes the thing creepy, beautiful, dangerous, tense, or powerful?
     - Is the judgement being used as fast summary, voice, irony, or a lazy substitute for evidence?
@@ -171,7 +171,7 @@
   rewrite_strategy: Vary sentence length, clause order, punctuation, and emphasis.
   examples:
     bad: He opened the drawer. He found the key. He left the room.
-    better: In the drawer, beneath the ledgers, he found the key. Then he ran.
+    better: In the drawer, beneath the papers, he found the key. Then he ran.
 - id: PROSE-PURPLE
   level: line
   description: Flag dense ornate image clusters, abstract grandeur, and mixed metaphors.
@@ -441,22 +441,22 @@
   examples:
     bad: Three tavern scenes all prove the hero is stubborn.
     better: Keep one, transform one, and cut or merge the third.
-- id: PLOT-PROMISE
+- id: OPEN-LOOP-PAYOFF
   level: plot
-  description: Track setups, hooks, mysteries, threats, debts, and payoffs.
+  description: Track setups, hooks, mysteries, threats, unresolved questions, and payoffs.
   applies_when:
     mode:
       - full-book
   detect:
-    kind: unresolved-promises
+    kind: unresolved-open-loops
   break_when:
     - Deliberate anti-climax or later-book payoff is clearly marked.
   severity: S4
   automation_risk: R3
   rewrite_strategy: Add reminder, partial payoff, explicit deferral, or payoff.
   examples:
-    bad: Introduce magical debt and never collect on it.
-    better: Pay it off, remind the reader, or mark the deferral.
+    bad: Reveal a missing heir clue and never return to it.
+    better: Pay it off, escalate it, remind the reader, or mark the deferral.
 - id: PROG-DELTA
   level: plot
   description: Progression chapters should show advancement, cost, limitation, rival pressure, or system discovery.
@@ -468,7 +468,7 @@
   detect:
     kind: progression-signal
   break_when:
-    - Deliberate recovery, romance, mystery, or worldbuilding chapter still advances another major promise.
+    - Deliberate recovery, romance, mystery, or worldbuilding chapter still advances another major thread.
   severity: S3
   automation_risk: R2
   rewrite_strategy: Add visible growth, cost, limitation, tactical discovery, or changed status.
@@ -679,7 +679,7 @@
   rewrite_strategy: Update the knowledge matrix or remove the leaked information from the character's speech, action, or thought.
   examples:
     bad: Mara mentions Elian is alive three chapters before she learns it.
-    better: Mara suspects the ledger is false but does not know why.
+    better: Mara suspects the map is false but does not know why.
 - id: EMOTION-PROGRESSION
   name: Emotional Progression
   level: plot
@@ -713,7 +713,7 @@
   level: scene
   priority: P1
   effect: Dialogue gains tension when characters enter with unequal leverage and leave with a changed power relationship.
-  description: Check whether a conversation shifts leverage, trust, debt, threat, attraction, or access.
+  description: Check whether a conversation shifts leverage, trust, threat, attraction, obligation, or access.
   applies_when:
     mode:
       - dialogue
@@ -733,7 +733,7 @@
   rewrite_strategy: Give each speaker a want, leverage, and tactic; make the exchange change the relationship or next action.
   examples:
     bad: They exchange facts about the prison archive.
-    better: Mara uses the forged ledger to make Soren choose between his oath and his secret.
+    better: Mara uses the forged map to make Soren choose between his public story and his secret.
 - id: DIALOGUE-SUBTEXT
   name: Dialogue Subtext
   level: scene
@@ -749,7 +749,7 @@
     - characters explain themselves instead of behaving under pressure
     - tension leaks out of the scene
   good_when:
-    - confession, vow, child speech, comedy, or clarity after prolonged ambiguity is intended
+    - confession, ceremonial speech, child speech, comedy, or clarity after prolonged ambiguity is intended
   bad_when:
     - every character says exactly what they want, fear, or mean
     - direct statement replaces behaviour, evasion, or power move
@@ -863,7 +863,7 @@
   bad_when:
     - no decision, conflict, or consequence changes after the explanation
   break_when:
-    - Omniscient or reflective mode is part of the style contract.
+    - Omniscient or reflective mode is part of the style agreement.
   severity: S3
   automation_risk: R2
   rewrite_strategy: Attach exposition to pressure, object, contradiction, action, or argument; compress the rest.
