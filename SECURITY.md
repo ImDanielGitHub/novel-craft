@@ -21,11 +21,11 @@ Until a dedicated security advisory channel is configured, contact the maintaine
 
 Novel Craft is local-first:
 
-- no built-in LLM provider calls
+- no built-in provider integrations
 - no API-key storage
 - no telemetry
 - no hidden network calls
 - no scraping workflows
-- no model training or embedding pipeline over copyrighted hosted fiction
+- no training or embedding pipeline over copyrighted hosted fiction
 
 Release workflows must use least-privilege GitHub tokens and npm trusted publishing/OIDC rather than long-lived npm tokens.

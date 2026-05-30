@@ -1,6 +1,6 @@
 # General Writing Support
 
-Novel Craft is fiction-first. Its main job is to help an AI agent turn a user prompt into a stronger novel-writing brief, draft with clearer constraints, review the draft, and revise with evidence.
+Novel Craft is fiction-first. Its main job is to help a writing agent turn a user prompt into a stronger novel-writing brief, draft with clearer constraints, review the draft, and revise with evidence.
 
 The writing-support layer is smaller on purpose. It supports the prose around a novel project: names, READMEs, release notes, docs, short explanations, and claim checks. It is not a separate product line and it does not replace the novel-specific skills.
 

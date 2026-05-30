@@ -20,4 +20,4 @@ Operational default:
 
 - Use external web fiction as ephemeral reference only.
 - Store only your own notes about craft patterns unless the source is public-domain/licensed or user-provided.
-- Keep metrics and AI reviews advisory. The author decides when a rule should be broken.
+- Keep metrics and automated reviews advisory. The author decides when a rule should be broken.

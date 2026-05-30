@@ -7,7 +7,7 @@ Thanks for helping improve Novel Craft.
 - Public PRs are welcome.
 - Maintainers decide what merges.
 - All source, workflow, release, security, and skill changes require maintainer review.
-- Do not add model API calls, telemetry, scraping, or hidden network behavior without an accepted design issue first.
+- Do not add external provider integrations, telemetry, scraping, or hidden network behavior without an accepted design issue first.
 - Do not include copyrighted novel text unless you own it or it is clearly licensed for this use.
 
 ## Local Checks
@@ -25,7 +25,7 @@ cargo test
 
 - Explain the reader/writer problem being solved.
 - Add or update tests for command output, JSON shape, or fixture behavior.
-- Keep outputs model-neutral.
+- Keep outputs tool-neutral and reviewable.
 - Update docs for new public commands.
 - Avoid broad rewrites unless the issue was accepted first.
 

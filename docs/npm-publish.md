@@ -27,7 +27,30 @@ npm view novel-craft version
 
 Use npm trusted publishing instead of long-lived npm tokens.
 
-In npm:
+Configure it with the current npm CLI. Use `npx npm@latest` so the command supports the current `--allow-publish` permission flag:
+
+```bash
+npx --yes npm@latest trust github novel-craft \
+  --repo ImDanielGitHub/novel-craft \
+  --file release.yml \
+  --env npm \
+  --allow-publish \
+  -y
+
+npx --yes npm@latest trust list novel-craft
+```
+
+Expected trust record:
+
+- type: `github`
+- repository: `ImDanielGitHub/novel-craft`
+- file: `release.yml`
+- environment: `npm`
+- permissions: `createPackage` in `npm trust list` output, created with the `--allow-publish` flag
+
+If `npm publish` fails with `E404 Not Found` for an existing package, treat it as a trusted-publisher permission problem first. Re-run the trust command above, approve the npm passkey prompt, then re-run the failed GitHub Actions job.
+
+In npm's web UI, the same setting is:
 
 1. Open the `novel-craft` package publishing settings.
 2. Add the GitHub repository as a trusted publisher.
@@ -55,10 +78,10 @@ cargo build --release
 npm pack --dry-run
 ```
 
-Create and push a signed tag:
+Create and push an annotated release tag. Use a signed tag only after GPG signing is configured locally:
 
 ```bash
-git tag -s v0.1.2 -m "Novel Craft v0.1.2"
+git tag -a v0.1.2 -m "Novel Craft v0.1.2"
 git push origin v0.1.2
 ```
 
@@ -72,7 +95,7 @@ The release workflow should:
 - publish with provenance:
 
 ```bash
-npm publish --provenance --access public
+npx --yes npm@latest publish --provenance --access public
 ```
 
 ## Package Verification

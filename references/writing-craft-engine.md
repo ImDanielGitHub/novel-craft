@@ -1,6 +1,6 @@
 # Writing Craft Engine
 
-Novel Craft's public craft engine helps an agent turn a user prompt into stronger fiction. It is not a publishing, award, contract, platform, monetisation, or AI-eligibility rulebook. Those facts change and should be checked live when the user asks for them.
+Novel Craft's public craft engine helps an agent turn a user prompt into stronger fiction. It is not a publishing, award, contract, platform, monetisation, or eligibility rulebook. Those facts change and should be checked live when the user asks for them.
 
 ## Foundation
 

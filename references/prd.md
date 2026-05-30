@@ -2,7 +2,7 @@
 
 ## Goal
 
-Novel Craft helps AI agents help writers draft, review, revise, and continue fiction without losing purpose, reader effect, voice, clarity, structure, or long-context state.
+Novel Craft helps writing agents help writers draft, review, revise, and continue fiction without losing purpose, reader effect, voice, clarity, structure, or long-context state.
 
 The current product is a local-first CLI with bundled agent skills. Its public domain pack is long-form fiction, especially webnovel and progression fantasy.
 
@@ -27,7 +27,7 @@ Novel Craft should therefore encode effect-first rule cards, purpose profiles, e
 ## Users
 
 - A writer drafting serial chapters.
-- An AI agent helping with next-chapter planning, line editing, continuity sync, or whole-book review.
+- A writing agent helping with next-chapter planning, line editing, continuity sync, or whole-book review.
 - A maintainer extending craft rule cards, genre profiles, purpose profiles, or packet generation.
 
 ## Non-Goals

@@ -13,7 +13,7 @@ What changed and why?
 ## Source Policy
 
 - [ ] This PR does not add copyrighted hosted-fiction text without clear permission.
-- [ ] This PR does not add scraping, telemetry, hidden network calls, or model-provider calls.
+- [ ] This PR does not add scraping, telemetry, hidden network calls, or external provider integrations.
 
 ## Notes
 

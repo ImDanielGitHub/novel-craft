@@ -53,3 +53,18 @@ Create an `npm` environment:
 ## npm Trusted Publishing
 
 Configure npm trusted publishing for this repository and the `Release` workflow. The release workflow uses OIDC and `npm publish --provenance --access public`.
+
+Use the current npm CLI so the trusted publisher receives publish permission:
+
+```bash
+npx --yes npm@latest trust github novel-craft \
+  --repo ImDanielGitHub/novel-craft \
+  --file release.yml \
+  --env npm \
+  --allow-publish \
+  -y
+
+npx --yes npm@latest trust list novel-craft
+```
+
+If a GitHub Actions publish fails with `E404 Not Found` for an existing package, re-check this trusted publisher record first.

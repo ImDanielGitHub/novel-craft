@@ -18,7 +18,7 @@ body:
     validations:
       required: true
   - type: textarea
-    id: model_boundary
+    id: integration_scope
     attributes:
-      label: Model boundary
-      description: Confirm whether this stays prompt-packet only or requires a future optional adapter.
+      label: Integration scope
+      description: Confirm whether this belongs in the bundled CLI/skills or requires a future optional adapter.
