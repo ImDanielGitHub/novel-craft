@@ -93,6 +93,15 @@ jobs:
           registry-url: "https://registry.npmjs.org"
           package-manager-cache: false
 
+      - name: npm wrapper tests
+        run: npm run test:wrapper
+
+      - name: Smoke npm wrapper
+        run: node npm/bin/novel-craft.js --version
+
+      - name: Verify npm package contract
+        run: npm run verify:package:release
+
       - name: Verify npm trusted publishing runtime
         run: |
           node --version
@@ -105,9 +114,6 @@ jobs:
             --allow-publish \
             --dry-run \
             --json
-
-      - name: Smoke npm wrapper
-        run: node npm/bin/novel-craft.js --version
 
       - name: Publish to npm with provenance
         run: npx --yes npm@latest publish --provenance --access public

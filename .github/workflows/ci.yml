@@ -56,8 +56,11 @@ jobs:
         with:
           node-version: "22"
 
+      - name: npm wrapper tests
+        run: npm run test:wrapper
+
       - name: npm wrapper smoke
         run: node npm/bin/novel-craft.js --version
 
-      - name: npm package dry run
-        run: npm pack --dry-run
+      - name: npm package contract
+        run: npm run verify:package:release
