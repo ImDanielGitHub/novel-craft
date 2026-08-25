@@ -23,6 +23,7 @@ From the repository root:
 
 ```bash
 cargo build --release
+npm run test:wrapper
 target/release/novel-craft --help
 target/release/novel-craft setup --no-skills --json
 target/release/novel-craft doctor --json
@@ -48,23 +49,26 @@ $HOST_TRIPLE = rustc -vV | Select-String "host:" | ForEach-Object { $_.ToString(
 Copy-Item target\release\novel-craft.exe "npm\bin\novel-craft-$HOST_TRIPLE.exe"
 ```
 
-Inspect the package before installing it:
+Inspect and validate the package before installing it:
 
 ```bash
-npm pack --dry-run
+npm run verify:package:release
 npm pack
 ```
+
+Use `npm run verify:package` when checking a source tree before a release binary has been prepared. The release variant additionally requires at least one packaged platform binary.
 
 The dry run should include only:
 
 - `npm/bin/novel-craft.js`
+- `npm/lib/launcher.js`
 - the platform binary or release binaries prepared for packaging
 - `README.md`
 - `LICENSE`
 - README-owned assets and provenance notes
 - npm metadata
 
-It should not include `.novel/`, `target/`, `node_modules/`, local tarballs, credentials, or generated caches.
+It should not include `.novel/`, `target/`, `node_modules/`, local tarballs, credentials, tests, workflow files, source trees, or generated caches.
 
 ## Install Globally From The Local Tarball
 
@@ -89,6 +93,42 @@ If your npm version does not accept that local tarball syntax, use:
 
 ```bash
 npm exec --yes --package ./novel-craft-0.1.2.tgz -- novel-craft --version
+```
+
+## Launcher Troubleshooting
+
+When the launcher cannot find a usable binary, it reports:
+
+- the detected Node platform and architecture
+- the expected Rust target triple
+- every path it searched and why that candidate was rejected
+- any platform binaries present in `npm/bin`
+
+Use an explicit binary without moving files:
+
+```bash
+NOVEL_CRAFT_BINARY="$(pwd)/target/release/novel-craft" node npm/bin/novel-craft.js --version
+```
+
+PowerShell:
+
+```powershell
+$env:NOVEL_CRAFT_BINARY = (Resolve-Path .\target\release\novel-craft.exe)
+node npm\bin\novel-craft.js --version
+```
+
+The override is tried first. If it is missing or unusable, the launcher continues through the normal packaged, release, and debug candidates and includes the rejected override in its diagnostics.
+
+On macOS or Linux, restore executable permission when a copied binary is reported as not executable:
+
+```bash
+chmod +x npm/bin/novel-craft-*
+```
+
+Run the dependency-free launcher tests directly:
+
+```bash
+npm run test:wrapper
 ```
 
 ## Add npm To PATH

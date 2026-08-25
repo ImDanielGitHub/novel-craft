@@ -17,6 +17,7 @@
   },
   "files": [
     "npm/bin/",
+    "npm/lib/",
     "assets/readme/hero.png",
     "assets/readme/PROVENANCE.md",
     "README.md",
@@ -35,10 +36,13 @@
     "webnovel"
   ],
   "scripts": {
-    "test": "node npm/bin/novel-craft.js --version",
-    "pack:dry": "npm pack --dry-run",
+    "test": "npm run test:wrapper && node npm/bin/novel-craft.js --version",
+    "test:wrapper": "node --test npm/test/launcher.test.js npm/test/package-contract.test.js",
+    "verify:package": "node npm/scripts/verify-package.js",
+    "verify:package:release": "node npm/scripts/verify-package.js --require-binary",
+    "pack:dry": "npm run verify:package",
     "smoke:local": "node npm/bin/novel-craft.js --version && node npm/bin/novel-craft.js doctor --json",
-    "prepublishOnly": "node npm/bin/novel-craft.js --version && node npm/bin/novel-craft.js doctor --json && npm pack --dry-run"
+    "prepublishOnly": "npm run test:wrapper && node npm/bin/novel-craft.js --version && node npm/bin/novel-craft.js doctor --json && npm run verify:package:release"
   },
   "publishConfig": {
     "access": "public",

@@ -2,6 +2,21 @@
 
 All notable changes to Novel Craft are recorded here.
 
+## Unreleased
+
+- Harden the npm launcher with an explicit `NOVEL_CRAFT_BINARY` override, candidate validation, platform-aware diagnostics, and child signal preservation.
+- Add dependency-free Node tests for target mapping, argument forwarding, wrapper metadata, missing and unusable binaries, exit codes, and POSIX signals.
+- Add an npm package-contract verifier that checks required launcher files, rejects development-only paths, and requires release binaries before publishing.
+- Run launcher and package checks in cross-platform CI and before npm release publishing.
+
+## 0.1.2 - 2026-05-30
+
+- Add the guided setup flow for bundled Novel Craft skills, including opt-out and unattended installation modes.
+- Add tower-climb, progression-fantasy, isekai-survival, and dungeon-core planning profiles.
+- Strengthen chapter review for opening exposition, backstory density, invented-noun grounding, declared competence, requested word counts, avoid terms, memory noise, and action-ranked revision priorities.
+- Prefer open-loop terminology while retaining the deprecated `plot add-promise` alias for compatibility.
+- Honour JSON output files consistently across draft, next, review, and audit workflows.
+
 ## 0.1.1 - 2026-05-30
 
 - Add `agent plan` for prompt-to-plan-to-finished-chapter agent workflows.
