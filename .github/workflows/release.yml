@@ -5,15 +5,14 @@ on:
     tags:
       - "v*.*.*"
 
-permissions:
-  contents: write
-  id-token: write
-  attestations: write
+permissions: {}
 
 jobs:
   build:
     name: Build release binary (${{ matrix.os }})
     runs-on: ${{ matrix.os }}
+    permissions:
+      contents: read
     strategy:
       fail-fast: false
       matrix:
@@ -21,7 +20,9 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
 
       - name: Install Rust toolchain
         shell: bash
@@ -30,10 +31,10 @@ jobs:
           rustup default stable
 
       - name: Test
-        run: cargo test
+        run: cargo test --locked
 
       - name: Build release
-        run: cargo build --release
+        run: cargo build --locked --release
 
       - name: Package binary
         shell: bash
@@ -52,7 +53,7 @@ jobs:
           fi
 
       - name: Upload artifacts
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
         with:
           name: release-${{ matrix.os }}
           path: |
@@ -65,29 +66,29 @@ jobs:
     runs-on: ubuntu-latest
     environment: npm
     permissions:
-      contents: write
+      contents: read
       id-token: write
-      attestations: write
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
 
       - name: Download release artifacts
-        uses: actions/download-artifact@v6
+        uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131 # v7
         with:
           path: artifacts
 
       - name: Collect npm binaries
         shell: bash
         run: |
-          mkdir -p npm/bin dist
+          mkdir -p npm/bin
           find artifacts -type f -name 'novel-craft-*' ! -name '*.sha256' -exec cp {} npm/bin/ \;
-          find artifacts -type f -path '*/dist/*' -exec cp {} dist/ \;
           find npm/bin -type f -name 'novel-craft-*' ! -name '*.exe' -exec chmod 755 {} \;
 
       - name: Setup Node
-        uses: actions/setup-node@v6
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
         with:
           node-version: "24"
           registry-url: "https://registry.npmjs.org"
@@ -118,7 +119,70 @@ jobs:
       - name: Publish to npm with provenance
         run: npx --yes npm@latest publish --provenance --access public
 
+  prepare-release:
+    name: Prepare signed release assets
+    needs: [build, publish-npm]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+      attestations: write
+
+    steps:
+      - name: Download release artifacts
+        uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131 # v7
+        with:
+          path: artifacts
+
+      - name: Collect release assets
+        shell: bash
+        run: |
+          mkdir -p release
+          find artifacts -type f -path '*/dist/*' -exec cp {} release/ \;
+
+      - name: Attest release assets
+        uses: actions/attest@a1948c3f048ba23858d222213b7c278aabede763 # v4.1.1
+        with:
+          subject-path: release/novel-craft-*
+
+      - name: Download offline attestation bundles
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          mkdir -p release/attestations
+          for artifact in release/novel-craft-*; do
+            case "$artifact" in
+              *.sha256) continue ;;
+            esac
+            gh attestation download "$artifact" -R "$GITHUB_REPOSITORY"
+          done
+          find . -maxdepth 1 -type f -name 'sha256*.jsonl' -exec mv {} release/attestations/ \;
+
+      - name: Upload GitHub release assets
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        with:
+          name: github-release-assets
+          path: release/
+
+  github-release:
+    name: Create GitHub Release
+    needs: prepare-release
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Download prepared release assets
+        uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131 # v7
+        with:
+          name: github-release-assets
+          path: release
+
       - name: Create GitHub Release
         env:
           GH_TOKEN: ${{ github.token }}
-        run: gh release create "$GITHUB_REF_NAME" dist/* --generate-notes
+        shell: bash
+        run: |
+          mapfile -t assets < <(find release -type f -print | sort)
+          gh release create "$GITHUB_REF_NAME" "${assets[@]}" --generate-notes --verify-tag

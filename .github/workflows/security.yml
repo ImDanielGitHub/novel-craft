@@ -1,21 +1,27 @@
 name: Security
 
 on:
+  pull_request:
+  push:
+    branches: [main]
   workflow_dispatch:
   schedule:
     - cron: "37 4 * * 3"
 
-permissions:
-  contents: read
+permissions: {}
 
 jobs:
   rust-security:
-    name: Rust dependency and workflow security
+    name: Rust dependency security
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
 
       - name: Install Rust toolchain
         shell: bash
@@ -23,21 +29,33 @@ jobs:
           rustup toolchain install stable --profile minimal
           rustup default stable
 
-      - name: Install cargo security tools
-        run: |
-          cargo install cargo-audit --locked
-          cargo install cargo-deny --locked
+      - name: Install cargo-audit
+        run: cargo install cargo-audit --locked --version 0.22.2
 
       - name: cargo audit
         run: cargo audit
 
       - name: cargo deny
-        run: cargo deny check
+        uses: EmbarkStudios/cargo-deny-action@3c6349835b2b7b196a839186cb8b78e02f7b5f25 # v2.1.1
+        with:
+          command: check
 
-      - name: Install zizmor
-        run: python -m pip install --user zizmor
+  workflow-security:
+    name: GitHub Actions security
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
 
-      - name: GitHub Actions scan
-        run: |
-          echo "$HOME/.local/bin" >> "$GITHUB_PATH"
-          "$HOME/.local/bin/zizmor" .github/workflows
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Run zizmor
+        uses: zizmorcore/zizmor-action@3dc1ecc9bcb9e94e9b2c709687979e1298497054 # v0.6.2
+        with:
+          version: "1.29.0"
+          inputs: .github/
+          online-audits: false
+          advanced-security: false
