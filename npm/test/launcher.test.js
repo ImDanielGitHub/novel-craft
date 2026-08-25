@@ -135,7 +135,7 @@ test("the child receives wrapper metadata", (t) => {
   assert.equal(result.status, 0, result.stderr);
   const data = JSON.parse(result.stdout.trim());
   assert.equal(data.enabled, "1");
-  assert.equal(data.wrapperPath, fixture.wrapperPath);
+  assert.equal(fs.realpathSync(data.wrapperPath), fs.realpathSync(fixture.wrapperPath));
 });
 
 test("a missing binary reports the detected platform, target, and searched paths", (t) => {
