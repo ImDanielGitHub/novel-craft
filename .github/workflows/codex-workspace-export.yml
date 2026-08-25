@@ -1,6 +1,9 @@
 name: Codex Workspace Export
 
 on:
+  pull_request:
+    branches:
+      - main
   push:
     branches:
       - codex/novel-craft-200-modernisation
