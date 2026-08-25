@@ -1,0 +1,67 @@
+name: Codex Workspace Export
+
+on:
+  pull_request:
+    branches:
+      - main
+  push:
+    branches:
+      - codex/novel-craft-200-modernisation
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  export:
+    name: Export source workspace
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        with:
+          persist-credentials: false
+
+      - name: Install Rust toolchain
+        shell: bash
+        run: |
+          rustup toolchain install stable --profile minimal
+          rustup default stable
+
+      - name: Refresh advisory-affected dependencies
+        shell: bash
+        run: |
+          cargo update -p anyhow --precise 1.0.103
+          cargo update -p crossbeam-epoch --precise 0.9.20
+
+      - name: Create generated lockfile blob
+        id: lockfile
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          blob_sha="$(gh api --method POST \
+            -H 'Accept: application/vnd.github+json' \
+            "/repos/${GITHUB_REPOSITORY}/git/blobs" \
+            -f encoding=base64 \
+            -f content="$(base64 -w0 Cargo.lock)" \
+            --jq .sha)"
+          echo "sha=${blob_sha}" >> "$GITHUB_OUTPUT"
+          printf 'Cargo.lock blob SHA: `%s`\n' "$blob_sha" >> "$GITHUB_STEP_SUMMARY"
+          printf '%s\n' "$blob_sha" > /tmp/Cargo.lock.blob-sha
+
+      - name: Archive source workspace
+        shell: bash
+        run: |
+          tar --exclude=.git --exclude=target -czf /tmp/novel-craft-workspace.tar.gz .
+          cp Cargo.lock /tmp/Cargo.lock
+
+      - name: Upload workspace
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6
+        with:
+          name: codex-workspace
+          path: |
+            /tmp/novel-craft-workspace.tar.gz
+            /tmp/Cargo.lock
+            /tmp/Cargo.lock.blob-sha
+          if-no-files-found: error
