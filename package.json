@@ -1,51 +1,23 @@
 {
   "name": "novel-craft",
-  "version": "0.1.2",
-  "description": "A local fiction-writing CLI for writing agents.",
+  "version": "0.2.0",
+  "description": "Agent-native webnovel creation, revision and continuity with recoverable local manuscripts.",
   "license": "MIT",
   "homepage": "https://github.com/ImDanielGitHub/novel-craft#readme",
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/ImDanielGitHub/novel-craft.git"
-  },
-  "bugs": {
-    "url": "https://github.com/ImDanielGitHub/novel-craft/issues"
-  },
-  "bin": {
-    "novel-craft": "npm/bin/novel-craft.js",
-    "novel": "npm/bin/novel-craft.js"
-  },
-  "files": [
-    "npm/bin/",
-    "npm/lib/",
-    "assets/readme/hero.png",
-    "assets/readme/PROVENANCE.md",
-    "README.md",
-    "LICENSE"
-  ],
-  "engines": {
-    "node": ">=18"
-  },
-  "keywords": [
-    "creative-writing",
-    "fiction",
-    "storytelling",
-    "novel",
-    "cli",
-    "ai-agents",
-    "webnovel"
-  ],
+  "repository": {"type": "git", "url": "git+https://github.com/ImDanielGitHub/novel-craft.git"},
+  "bugs": {"url": "https://github.com/ImDanielGitHub/novel-craft/issues"},
+  "bin": {"novel-craft": "cli/index.mjs", "novel": "cli/index.mjs"},
+  "files": ["cli/*.mjs", "cli/SKILL.md", "README.md", "LICENSE", "docs/CLI.md", "docs/REBIRTH.md"],
+  "engines": {"node": ">=22.14.0"},
+  "keywords": ["fiction", "webnovel", "creative-writing", "cli", "agents", "continuity", "local-first"],
   "scripts": {
-    "test": "npm run test:wrapper && node npm/bin/novel-craft.js --version",
-    "test:wrapper": "node --test npm/test/launcher.test.js npm/test/package-contract.test.js",
-    "verify:package": "node npm/scripts/verify-package.js",
-    "verify:package:release": "node npm/scripts/verify-package.js --require-binary",
-    "pack:dry": "npm run verify:package",
-    "smoke:local": "node npm/bin/novel-craft.js --version && node npm/bin/novel-craft.js doctor --json",
-    "prepublishOnly": "npm run test:wrapper && node npm/bin/novel-craft.js --version && node npm/bin/novel-craft.js doctor --json && npm run verify:package:release"
+    "test": "node --test cli/test/*.test.mjs",
+    "test:legacy-wrapper": "node --test npm/test/launcher.test.js npm/test/package-contract.test.js",
+    "verify:package": "node cli/verify-package.mjs",
+    "verify:package:release": "node cli/verify-package.mjs",
+    "pack:dry": "npm pack --dry-run --ignore-scripts",
+    "smoke:local": "node cli/index.mjs --version && node cli/index.mjs schema --json",
+    "prepublishOnly": "npm test && npm run verify:package"
   },
-  "publishConfig": {
-    "access": "public",
-    "provenance": true
-  }
+  "publishConfig": {"access": "public", "provenance": true}
 }

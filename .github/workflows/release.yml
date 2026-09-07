@@ -1,124 +1,117 @@
 name: Release
 
 on:
+  workflow_run:
+    workflows: [CI]
+    types: [completed]
+    branches: [main]
   push:
-    tags:
-      - "v*.*.*"
+    tags: ['v*.*.*']
 
 permissions:
-  contents: write
-  id-token: write
-  attestations: write
+  contents: read
+
+concurrency:
+  group: novel-craft-npm-publish
+  cancel-in-progress: false
 
 jobs:
-  build:
-    name: Build release binary (${{ matrix.os }})
-    runs-on: ${{ matrix.os }}
-    strategy:
-      fail-fast: false
-      matrix:
-        os: [ubuntu-latest, macos-latest, windows-latest]
-
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v6
-
-      - name: Install Rust toolchain
-        shell: bash
-        run: |
-          rustup toolchain install stable --profile minimal --component clippy --component rustfmt
-          rustup default stable
-
-      - name: Test
-        run: cargo test
-
-      - name: Build release
-        run: cargo build --release
-
-      - name: Package binary
-        shell: bash
-        run: |
-          triple="$(rustc -vV | sed -n 's/^host: //p')"
-          ext=""
-          if [[ "${{ runner.os }}" == "Windows" ]]; then ext=".exe"; fi
-          mkdir -p dist npm/bin
-          cp "target/release/novel-craft${ext}" "npm/bin/novel-craft-${triple}${ext}"
-          cp "target/release/novel-craft${ext}" "dist/novel-craft-${triple}${ext}"
-          artifact="dist/novel-craft-${triple}${ext}"
-          if command -v shasum >/dev/null 2>&1; then
-            shasum -a 256 "$artifact" > "$artifact.sha256"
-          else
-            sha256sum "$artifact" > "$artifact.sha256"
-          fi
-
-      - name: Upload artifacts
-        uses: actions/upload-artifact@v6
-        with:
-          name: release-${{ matrix.os }}
-          path: |
-            dist/*
-            npm/bin/novel-craft-*
-
   publish-npm:
-    name: Publish npm package
-    needs: build
+    name: Verify and publish npm package
+    if: >-
+      github.repository == 'ImDanielGitHub/novel-craft' &&
+      ((github.event_name == 'workflow_run' &&
+        github.event.workflow_run.conclusion == 'success' &&
+        github.event.workflow_run.event == 'push' &&
+        github.event.workflow_run.head_branch == 'main' &&
+        github.event.workflow_run.head_repository.full_name == github.repository) ||
+       (github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v')))
     runs-on: ubuntu-latest
     environment: npm
     permissions:
       contents: write
       id-token: write
       attestations: write
-
+    env:
+      RELEASE_COMMIT: ${{ github.event.workflow_run.head_sha || github.sha }}
     steps:
-      - name: Checkout
+      - name: Checkout the tested commit
         uses: actions/checkout@v6
-
-      - name: Download release artifacts
-        uses: actions/download-artifact@v6
         with:
-          path: artifacts
-
-      - name: Collect npm binaries
-        shell: bash
-        run: |
-          mkdir -p npm/bin dist
-          find artifacts -type f -name 'novel-craft-*' ! -name '*.sha256' -exec cp {} npm/bin/ \;
-          find artifacts -type f -path '*/dist/*' -exec cp {} dist/ \;
-          find npm/bin -type f -name 'novel-craft-*' ! -name '*.exe' -exec chmod 755 {} \;
-
+          ref: ${{ github.event.workflow_run.head_sha || github.sha }}
+          persist-credentials: false
       - name: Setup Node
         uses: actions/setup-node@v6
         with:
-          node-version: "24"
-          registry-url: "https://registry.npmjs.org"
+          node-version: '24'
+          registry-url: 'https://registry.npmjs.org'
           package-manager-cache: false
-
-      - name: npm wrapper tests
-        run: npm run test:wrapper
-
-      - name: Smoke npm wrapper
-        run: node npm/bin/novel-craft.js --version
-
-      - name: Verify npm package contract
-        run: npm run verify:package:release
-
-      - name: Verify npm trusted publishing runtime
+      - name: Ensure OIDC-capable npm
+        run: npm install --global npm@11
+      - name: Install
+        run: npm ci --ignore-scripts --offline --no-audit --no-fund
+      - name: Test runtime and installed tarball
+        run: npm test
+      - name: Verify distribution
+        run: npm run verify:package
+      - name: Pack exact release artefact
+        id: package
+        shell: bash
         run: |
-          node --version
-          npm --version
-          npx --yes npm@latest --version
-          npx --yes npm@latest trust github novel-craft \
-            --repo ImDanielGitHub/novel-craft \
-            --file release.yml \
-            --env npm \
-            --allow-publish \
-            --dry-run \
-            --json
-
-      - name: Publish to npm with provenance
-        run: npx --yes npm@latest publish --provenance --access public
-
-      - name: Create GitHub Release
+          npm pack --ignore-scripts --json > package-info.json
+          node --input-type=module <<'NODE'
+          import fs from 'node:fs';
+          const p=JSON.parse(fs.readFileSync('package.json','utf8'));
+          const packed=JSON.parse(fs.readFileSync('package-info.json','utf8'))[0];
+          if(!/^\d+\.\d+\.\d+$/.test(p.version)) throw new Error('Stable semantic version required.');
+          if(process.env.GITHUB_REF.startsWith('refs/tags/') && process.env.GITHUB_REF!==`refs/tags/v${p.version}`) throw new Error('Tag and package version differ.');
+          fs.appendFileSync(process.env.GITHUB_OUTPUT,`version=${p.version}\narchive=${packed.filename}\nintegrity=${packed.integrity}\n`);
+          NODE
+      - name: Preserve installable artefact even if publication fails
+        uses: actions/upload-artifact@v6
+        with:
+          name: novel-craft-${{ steps.package.outputs.version }}
+          path: ${{ steps.package.outputs.archive }}
+      - name: Check whether this version is already published
+        id: registry
+        env:
+          RELEASE_VERSION: ${{ steps.package.outputs.version }}
+        run: |
+          node --input-type=module <<'NODE'
+          import fs from 'node:fs';
+          const response=await fetch(`https://registry.npmjs.org/novel-craft/${process.env.RELEASE_VERSION}`,{signal:AbortSignal.timeout(30000),cache:'no-store'});
+          if(response.status!==200 && response.status!==404) throw new Error(`Registry unavailable: ${response.status}`);
+          fs.appendFileSync(process.env.GITHUB_OUTPUT,`exists=${response.status===200}\n`);
+          NODE
+      - name: Publish with the existing trusted publisher identity
+        if: steps.registry.outputs.exists == 'false'
+        env:
+          RELEASE_ARCHIVE: ${{ steps.package.outputs.archive }}
+        run: npm publish "$RELEASE_ARCHIVE" --provenance --access public --ignore-scripts
+      - name: Verify published integrity and clean registry install
+        if: steps.registry.outputs.exists == 'false'
+        env:
+          RELEASE_VERSION: ${{ steps.package.outputs.version }}
+          RELEASE_INTEGRITY: ${{ steps.package.outputs.integrity }}
+        run: |
+          node --input-type=module <<'NODE'
+          const response=await fetch(`https://registry.npmjs.org/novel-craft/${process.env.RELEASE_VERSION}`,{signal:AbortSignal.timeout(30000),cache:'no-store'});
+          if(!response.ok)throw new Error(`Registry readback failed: ${response.status}`);
+          const data=await response.json();
+          if(data.dist?.integrity!==process.env.RELEASE_INTEGRITY)throw new Error('Published integrity differs from tested tarball.');
+          console.log(`Verified registry integrity for novel-craft@${data.version}`);
+          NODE
+          prefix="$RUNNER_TEMP/novel-craft-registry-smoke"
+          npm install --prefix "$prefix" --ignore-scripts --no-audit --no-fund "novel-craft@$RELEASE_VERSION"
+          node "$prefix/node_modules/novel-craft/cli/index.mjs" --version
+          node "$prefix/node_modules/novel-craft/cli/index.mjs" genres coverage --json
+      - name: Create GitHub release from the published artefact
+        if: steps.registry.outputs.exists == 'false'
         env:
           GH_TOKEN: ${{ github.token }}
-        run: gh release create "$GITHUB_REF_NAME" dist/* --generate-notes
+          RELEASE_VERSION: ${{ steps.package.outputs.version }}
+          RELEASE_ARCHIVE: ${{ steps.package.outputs.archive }}
+        run: |
+          gh release create "v$RELEASE_VERSION" "$RELEASE_ARCHIVE" \
+            --target "$RELEASE_COMMIT" --title "Novel Craft $RELEASE_VERSION" \
+            --generate-notes --notes "Agent-native webnovel creation and revision, source-grounded canon, recoverable proposals, broad category guidance, and a dependency-free Node CLI. Real-model quality remains a separate evaluation."
