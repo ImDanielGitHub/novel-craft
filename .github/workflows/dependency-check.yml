@@ -2,8 +2,18 @@ name: Dependency checks
 
 on:
   pull_request:
+    paths:
+      - 'Cargo.toml'
+      - 'Cargo.lock'
+      - 'deny.toml'
+      - '.github/workflows/dependency-check.yml'
   push:
     branches: [main]
+    paths:
+      - 'Cargo.toml'
+      - 'Cargo.lock'
+      - 'deny.toml'
+      - '.github/workflows/dependency-check.yml'
 
 permissions: {}
 
